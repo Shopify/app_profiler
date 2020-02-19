@@ -1,0 +1,16 @@
+name: app-profiler
+
+type: ruby
+
+up:
+  - ruby: 2.6.3
+  - bundler
+
+commands:
+  console:
+    desc: "start a console"
+    run: bin/console
+  test:
+    run: bundle exec rake test
+  lint:
+    run: bundle exec rubocop
