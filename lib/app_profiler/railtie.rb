@@ -25,6 +25,7 @@ module AppProfiler
         "tmp", "app_profiler"
       )
       AppProfiler.context = app.config.app_profiler.context || Rails.env
+      AppProfiler.request_authorization_required = !(Rails.env.development? || Rails.env.test?)
     end
 
     initializer "app_profiler.add_middleware" do |app|

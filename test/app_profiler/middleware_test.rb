@@ -20,6 +20,32 @@ module AppProfiler
       end
     end
 
+    test "requests are not uploaded if authorization is required and not given" do
+      assert_profiles_dumped(0) do
+        with_authorization_required do
+          middleware = AppProfiler::Middleware.new(app_env)
+          response = middleware.call(mock_request_env(path: "/?profile=cpu"))
+
+          assert_nil(AppProfiler.request_authorized?)
+          response
+        end
+      end
+    end
+
+    test "profiles are uploaded if authorization is required and is given" do
+      assert_profiles_dumped do
+        assert_profiles_uploaded do
+          with_authorization_required do
+            middleware = AppProfiler::Middleware.new(app_env)
+
+            # Pretend the mocked request authorized the profiling when it ran
+            AppProfiler.stubs(:request_authorized?).returns(true)
+            middleware.call(mock_request_env(path: "/?profile=cpu"))
+          end
+        end
+      end
+    end
+
     AppProfiler::RequestParameters::MODES.each do |mode|
       test "profile mode #{mode} is supported" do
         assert_profiles_dumped do

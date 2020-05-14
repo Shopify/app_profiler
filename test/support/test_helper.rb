@@ -39,6 +39,14 @@ module AppProfiler
       AppProfiler.context = old_context
     end
 
+    def with_authorization_required
+      AppProfiler.request_authorization_required = true
+      yield
+    ensure
+      AppProfiler.send(:deauthorize_request)
+      AppProfiler.request_authorization_required = false
+    end
+
     private
 
     def tmp_profiles

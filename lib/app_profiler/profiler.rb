@@ -25,6 +25,8 @@ module AppProfiler
       end
 
       def results
+        return if AppProfiler.request_authorization_required && !AppProfiler.request_authorized?
+
         stackprof_profile = stackprof_results
 
         return unless stackprof_profile

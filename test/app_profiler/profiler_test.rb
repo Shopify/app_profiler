@@ -121,5 +121,33 @@ module AppProfiler
 
       assert_nil(Profiler.results)
     end
+
+    test "profile does not return results if an authorization is required and not given" do
+      with_authorization_required do
+        AppProfiler.logger.expects(:info).never
+        assert_equal(true, Profiler.send(:start, stackprof_profile))
+        assert_equal(true, Profiler.send(:running?))
+        assert_nil(Profiler.results)
+        assert_equal(true, Profiler.send(:stop))
+        assert_nil(Profiler.results)
+      end
+    end
+
+    test "profile runs correctly, if an authorization is required and is given" do
+      with_authorization_required do
+        AppProfiler.logger.expects(:info).never
+
+        assert_equal(true, Profiler.send(:start, stackprof_profile))
+        AppProfiler.send(:authorize_request)
+
+        assert_equal(true, Profiler.send(:running?))
+        assert_equal(true, Profiler.send(:stop))
+        assert_equal(false, Profiler.send(:running?))
+
+        profile = Profiler.results
+        assert_instance_of(AppProfiler::Profile, profile)
+        assert_predicate(profile, :valid?)
+      end
+    end
   end
 end

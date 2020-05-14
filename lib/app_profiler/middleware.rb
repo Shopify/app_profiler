@@ -15,6 +15,8 @@ module AppProfiler
     end
 
     def call(env)
+      AppProfiler.deauthorize_request if AppProfiler.request_authorization_required
+
       profile(env) do
         @app.call(env)
       end

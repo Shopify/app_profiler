@@ -27,6 +27,7 @@ module AppProfiler
   mattr_accessor :logger
   mattr_accessor :root
   mattr_accessor :profile_root
+  mattr_accessor :request_authorization_required
 
   mattr_accessor :speedscope_host, default: "https://speedscope.app"
   mattr_accessor :autoredirect, default: false
@@ -56,6 +57,18 @@ module AppProfiler
 
     def profile_data_header
       @@profile_data_header ||= profile_header.dup << "-Data" # rubocop:disable Style/ClassVars
+    end
+
+    def authorize_request
+      Thread.current[:app_profiler_authorized] = true
+    end
+
+    def deauthorize_request
+      Thread.current[:app_profiler_authorized] = nil
+    end
+
+    def request_authorized?
+      Thread.current[:app_profiler_authorized]
     end
   end
 end
