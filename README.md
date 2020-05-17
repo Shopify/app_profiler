@@ -71,6 +71,26 @@ AppProfiler.storage.bucket_name = "new-bucket-name"
 Rails.application.config.app_profiler.storage_bucket_name = "new-bucket-name"
 ```
 
+### Access control
+
+You may restrict the storing of profiling results by defining your own Middleware based on `AppProfiler::Middleware` and changing the `after_profile` hook method to return `false` for such cases.
+
+For example, the following middleware only stores the profiling results if a `disallow_profiling` key was not added to the `request.env` while processing the request.
+
+```
+class AppProfilerAuthorizedMiddleware < AppProfiler::Middleware
+  def after_profile(env, params)
+    !env.key?("disallow_profiling")
+  end
+end
+```
+
+The middleware can be enabled by using in the relevant environment configurations:
+
+```ruby
+Rails.application.config.app_profiler.middleware = AppProfilerAuthorizedMiddleware
+```
+
 ## Profiling manually
 
 `AppProfiler` can be used more simply to profile blocks of code. Here's how:
