@@ -77,7 +77,7 @@ You may restrict the storing of profiling results by defining your own Middlewar
 
 For example, the following middleware only stores the profiling results if a `disallow_profiling` key was not added to the `request.env` while processing the request.
 
-```
+```ruby
 class AppProfilerAuthorizedMiddleware < AppProfiler::Middleware
   def after_profile(env, params)
     !env.key?("disallow_profiling")
@@ -85,7 +85,7 @@ class AppProfilerAuthorizedMiddleware < AppProfiler::Middleware
 end
 ```
 
-The middleware can be enabled by using in the relevant environment configurations:
+The custom middleware can then be configured like the following:
 
 ```ruby
 Rails.application.config.app_profiler.middleware = AppProfilerAuthorizedMiddleware
