@@ -23,6 +23,8 @@ Gem::Specification.new do |spec|
   spec.files = Dir["lib/**/*.rb"]
   spec.require_paths = %w(lib)
 
+  spec.metadata["allowed_push_host"] = "https://rubygems.org"
+
   spec.add_dependency("activesupport", ">= 5.2")
   spec.add_dependency("railties", ">= 5.2")
   spec.add_dependency("rack")
