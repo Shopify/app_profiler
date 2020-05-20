@@ -49,7 +49,7 @@ Rails.application.config.app_profiler.profile_header = "X-Profile"
 | Key | Value | Notes |
 | --- | ----- | ----- |
 | profile/mode | Supported profiling modes: `cpu`, `wall`, `object`. | Use `profile` in (1), and `mode` in (2). |
-| interval | Sampling interval in milliseconds. | |
+| interval | Sampling interval in microseconds. | |
 | autoredirect | Redirect request automatically to Speedscope's page after profiling. | |
 | context | Directory within the specified bucket in the selected storage where raw profile data should be written. | Only supported in (2). Defaults to `Rails.env` if not specified. |
 
