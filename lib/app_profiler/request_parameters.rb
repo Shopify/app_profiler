@@ -4,8 +4,8 @@ require "rack"
 
 module AppProfiler
   class RequestParameters
-    DEFAULT_INTERVALS = { "cpu" => 1000, "wall" => 1000, "object" => 10000 }.freeze
-    MIN_INTERVALS = { "cpu" => 200, "wall" => 200, "object" => 10000 }.freeze
+    DEFAULT_INTERVALS = { "cpu" => 1000, "wall" => 1000, "object" => 2000 }.freeze
+    MIN_INTERVALS = { "cpu" => 200, "wall" => 200, "object" => 400 }.freeze
     MODES = DEFAULT_INTERVALS.keys.freeze
 
     def initialize(request)
