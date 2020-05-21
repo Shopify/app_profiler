@@ -7,3 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 [Unreleased]: https://github.com/Shopify/app_profiler
+
+## [0.0.3] - 2020-05-20
+
+### Changed
+
+- The default object sampling rate is decreased from 10,000 to 2000 (#5).
+- The acceptable minimum interval for object profiling is decreased from 10,000 to 400 (#5).
