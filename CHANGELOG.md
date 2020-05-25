@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Shopify/app_profiler
 
+## [0.0.4] - 2020-05-25
+
+- Fix keyword argument warnings on Ruby 2.7 (#11).
+
 ## [0.0.3] - 2020-05-20
 
 ### Changed
