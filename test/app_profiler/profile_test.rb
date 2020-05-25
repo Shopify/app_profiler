@@ -70,7 +70,7 @@ module AppProfiler
     end
 
     test "#valid? is true when mode is present" do
-      profile = Profile.new(mode: :cpu)
+      profile = Profile.new({ mode: :cpu })
 
       assert_predicate(profile, :valid?)
     end
