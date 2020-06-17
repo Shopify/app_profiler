@@ -11,6 +11,10 @@ module AppProfiler
         def url
           @file
         end
+
+        def name
+          @file.basename
+        end
       end
 
       class << self

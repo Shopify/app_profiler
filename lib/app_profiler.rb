@@ -32,6 +32,7 @@ module AppProfiler
   mattr_accessor :autoredirect, default: false
   mattr_reader   :profile_header, default: "X-Profile"
   mattr_accessor :context, default: nil
+  mattr_reader   :profile_url_formatter, default: nil
 
   mattr_accessor :storage, default: Storage::FileStorage
   mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
@@ -56,6 +57,10 @@ module AppProfiler
 
     def profile_data_header
       @@profile_data_header ||= profile_header.dup << "-Data" # rubocop:disable Style/ClassVars
+    end
+
+    def profile_url_formatter=(block)
+      @@profile_url_formatter = block # rubocop:disable Style/ClassVars
     end
   end
 end
