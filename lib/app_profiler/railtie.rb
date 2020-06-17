@@ -25,6 +25,7 @@ module AppProfiler
         "tmp", "app_profiler"
       )
       AppProfiler.context = app.config.app_profiler.context || Rails.env
+      AppProfiler.profile_url_formatter = app.config.app_profiler.profile_url_formatter
     end
 
     initializer "app_profiler.add_middleware" do |app|

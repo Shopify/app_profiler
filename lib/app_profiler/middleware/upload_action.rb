@@ -34,7 +34,11 @@ module AppProfiler
         end
 
         def profile_url(upload)
-          "#{AppProfiler.speedscope_host}#profileURL=#{upload.url}"
+          if AppProfiler.profile_url_formatter.nil?
+            "#{AppProfiler.speedscope_host}#profileURL=#{upload.url}"
+          else
+            AppProfiler.profile_url_formatter.call(upload)
+          end
         end
 
         def profile_data_url(upload)

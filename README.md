@@ -61,6 +61,14 @@ AppProfiler.autoredirect = true
 Rails.application.config.app_profiler.autoredirect = true
 ```
 
+To customize the redirect location you can provide a proc:
+
+```ruby
+AppProfiler.profile_url_formatter = ->(upload) { "https://host.com/custom/#{upload.name}" }
+# OR
+Rails.application.config.app_profiler.profile_url_formatter = ->(upload) { "https://host.com/custom/#{upload.name}" }
+```
+
 When profiling is triggered, the middleware will generate the profile through StackProf and upload the profiles to your specified storage. For example, the default configuration would upload profiles to file storage.
 
 When using a cloud storage provider, you can configure the target bucket name using:
