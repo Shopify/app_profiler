@@ -93,6 +93,17 @@ class AppProfilerAuthorizedMiddleware < AppProfiler::Middleware
 end
 ```
 
+You can also restrict running profiling at all by using `before_profile`. For
+example you may wish to prevent anonymous users triggering the profiler:
+
+```ruby
+class AppProfilerAuthorizedMiddleware < AppProfiler::Middleware
+  def before_profile(env, params)
+    current_user.present?
+  end
+end
+```
+
 The custom middleware can then be configured like the following:
 
 ```ruby
