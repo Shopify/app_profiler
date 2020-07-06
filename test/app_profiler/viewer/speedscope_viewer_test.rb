@@ -18,7 +18,7 @@ module AppProfiler
         viewer = SpeedscopeViewer.new(profile)
         viewer.expects(:system).with("which yarn > /dev/null").returns(true)
         viewer.expects(:system).with("yarn init --yes").returns(true)
-        viewer.expects(:system).with("yarn add --dev speedscope").returns(true)
+        viewer.expects(:system).with("yarn add --dev --ignore-workspace-root-check speedscope").returns(true)
         viewer.expects(:system).with("yarn run speedscope \"#{profile.file}\"").returns(true)
 
         viewer.view
