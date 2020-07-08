@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Shopify/app_profiler
 
+## [0.0.6] - 2020-07-08
+
+- Fix development Speedscope view when using Yarn workspaces (#16).
+
 ## [0.0.5] - 2020-06-17
 
-- Support for customizing the profile url (#12)
+- Support for customizing the profile url (#12).
 
 ## [0.0.4] - 2020-05-25
 
