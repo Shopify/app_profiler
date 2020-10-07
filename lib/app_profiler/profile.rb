@@ -63,14 +63,7 @@ module AppProfiler
     private
 
     def path
-      filename = [
-        Time.zone.now.strftime("%Y%m%d-%H%M%S"),
-        mode,
-        id,
-        Socket.gethostname,
-      ].compact.join("-") << ".json"
-
-      AppProfiler.profile_root.join(filename)
+      AppProfiler.profile_root.join("#{id}.json")
     end
   end
 end
