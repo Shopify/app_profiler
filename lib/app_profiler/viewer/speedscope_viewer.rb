@@ -37,7 +37,7 @@ module AppProfiler
         # We currently only support this gem in the root Gemfile.
         # See https://github.com/Shopify/app_profiler/issues/15
         # for more information
-        yarn("add --dev --ignore-workspace-root-check speedscope")
+        yarn("add --dev --ignore-workspace-root-check speedscope") unless speedscope_added?
       end
 
       def ensure_yarn_installed
@@ -55,6 +55,10 @@ module AppProfiler
 
       def package_json_exists?
         AppProfiler.root.join("package.json").exist?
+      end
+
+      def speedscope_added?
+        AppProfiler.root.join("node_modules/speedscope").exist?
       end
 
       def exec(command)

@@ -28,6 +28,44 @@ module AppProfiler
         SpeedscopeViewer.yarn_setup = false
       end
 
+      test "#view doesn't init when package.json exists" do
+        profile = Profile.new(stackprof_profile)
+
+        AppProfiler.root.mkpath
+        AppProfiler.root.join("package.json").write("{}")
+
+        viewer = SpeedscopeViewer.new(profile)
+        viewer.expects(:system).with("which yarn > /dev/null").returns(true)
+        viewer.expects(:system).with("yarn add --dev --ignore-workspace-root-check speedscope").returns(true)
+        viewer.expects(:system).with("yarn run speedscope \"#{profile.file}\"").returns(true)
+
+        viewer.view
+
+        assert_predicate(SpeedscopeViewer, :yarn_setup)
+      ensure
+        SpeedscopeViewer.yarn_setup = false
+        AppProfiler.root.rmtree
+      end
+
+      test "#view doesn't add when speedscope exists" do
+        profile = Profile.new(stackprof_profile)
+
+        AppProfiler.root.mkpath
+        AppProfiler.root.join("node_modules/speedscope").mkpath
+
+        viewer = SpeedscopeViewer.new(profile)
+        viewer.expects(:system).with("which yarn > /dev/null").returns(true)
+        viewer.expects(:system).with("yarn init --yes").returns(true)
+        viewer.expects(:system).with("yarn run speedscope \"#{profile.file}\"").returns(true)
+
+        viewer.view
+
+        assert_predicate(SpeedscopeViewer, :yarn_setup)
+      ensure
+        SpeedscopeViewer.yarn_setup = false
+        AppProfiler.root.rmtree
+      end
+
       test "#view only opens profile in speedscope if yarn is already setup" do
         profile = Profile.new(stackprof_profile)
 
