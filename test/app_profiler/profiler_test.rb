@@ -38,10 +38,10 @@ module AppProfiler
       assert_nil(profile)
       assert_predicate(Profiler, :running?)
     ensure
-      Profiler.send(:stop)
+      StackProf.stop
     end
 
-    test "cpu profile by default" do
+    test ".run uses cpu profile by default" do
       profile = Profiler.run(stackprof_profile) do
         sleep(0.1)
       end
@@ -51,7 +51,7 @@ module AppProfiler
       assert_equal(1000, profile[:interval])
     end
 
-    test "assigns id and context to profiles" do
+    test ".run assigns metadata to profiles" do
       profile = Profiler.run(stackprof_profile(metadata: { id: "wowza", context: "bar" })) do
         sleep(0.1)
       end
@@ -61,7 +61,7 @@ module AppProfiler
       assert_equal("bar", profile.context)
     end
 
-    test "cpu profile" do
+    test ".run cpu profile" do
       profile = Profiler.run(stackprof_profile(mode: :cpu, interval: 2000)) do
         sleep(0.1)
       end
@@ -71,7 +71,7 @@ module AppProfiler
       assert_equal(2000, profile[:interval])
     end
 
-    test "wall profile" do
+    test ".run wall profile" do
       profile = Profiler.run(stackprof_profile(mode: :wall, interval: 2000)) do
         sleep(0.1)
       end
@@ -81,7 +81,7 @@ module AppProfiler
       assert_equal(2000, profile[:interval])
     end
 
-    test "object profile" do
+    test ".run object profile" do
       profile = Profiler.run(stackprof_profile(mode: :object, interval: 2)) do
         sleep(0.1)
       end
@@ -89,6 +89,66 @@ module AppProfiler
       assert_instance_of(AppProfiler::Profile, profile)
       assert_equal(:object, profile[:mode])
       assert_equal(2, profile[:interval])
+    end
+
+    test ".start uses cpu profile by default" do
+      Profiler.start(stackprof_profile)
+      Profiler.stop
+
+      profile = Profiler.results
+
+      assert_instance_of(AppProfiler::Profile, profile)
+      assert_equal(:cpu, profile[:mode])
+      assert_equal(1000, profile[:interval])
+    end
+
+    test ".start assigns metadata to profiles" do
+      Profiler.start(stackprof_profile(metadata: { id: "wowza", context: "bar" }))
+      Profiler.stop
+
+      profile = Profiler.results
+
+      assert_instance_of(AppProfiler::Profile, profile)
+      assert_equal("wowza", profile.id)
+      assert_equal("bar", profile.context)
+    end
+
+    test ".start cpu profile" do
+      Profiler.start(stackprof_profile(mode: :cpu, interval: 2000))
+      Profiler.stop
+
+      profile = Profiler.results
+
+      assert_instance_of(AppProfiler::Profile, profile)
+      assert_equal(:cpu, profile[:mode])
+      assert_equal(2000, profile[:interval])
+    end
+
+    test ".start wall profile" do
+      Profiler.start(stackprof_profile(mode: :wall, interval: 2000))
+      Profiler.stop
+
+      profile = Profiler.results
+
+      assert_instance_of(AppProfiler::Profile, profile)
+      assert_equal(:wall, profile[:mode])
+      assert_equal(2000, profile[:interval])
+    end
+
+    test ".start object profile" do
+      Profiler.start(stackprof_profile(mode: :object, interval: 2))
+      Profiler.stop
+
+      profile = Profiler.results
+
+      assert_instance_of(AppProfiler::Profile, profile)
+      assert_equal(:object, profile[:mode])
+      assert_equal(2, profile[:interval])
+    end
+
+    test ".stop" do
+      StackProf.expects(:stop)
+      AppProfiler.stop
     end
 
     test ".results prints error when failed" do
@@ -107,12 +167,12 @@ module AppProfiler
     test ".start, .stop, and .results interact well" do
       AppProfiler.logger.expects(:info).never
 
-      assert_equal(true, Profiler.send(:start, stackprof_profile))
-      assert_equal(false, Profiler.send(:start, stackprof_profile))
+      assert_equal(true, Profiler.start(stackprof_profile))
+      assert_equal(false, Profiler.start(stackprof_profile))
       assert_equal(true, Profiler.send(:running?))
       assert_nil(Profiler.results)
-      assert_equal(true, Profiler.send(:stop))
-      assert_equal(false, Profiler.send(:stop))
+      assert_equal(true, Profiler.stop)
+      assert_equal(false, Profiler.stop)
       assert_equal(false, Profiler.send(:running?))
 
       profile = Profiler.results
