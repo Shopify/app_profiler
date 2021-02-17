@@ -7,7 +7,7 @@ module AppProfiler
     test ".run prints error when failed" do
       AppProfiler.logger.expects(:info).with { |value| value =~ /failed to start the profiler/ }
       profile = Profiler.run(mode: :unsupported) do
-        sleep 0.1
+        sleep(0.1)
       end
 
       assert_nil(profile)
@@ -17,7 +17,7 @@ module AppProfiler
       error = StandardError.new("An error occurred.")
       exception = assert_raises(StandardError) do
         Profiler.run(stackprof_profile) do
-          assert_predicate Profiler, :running?
+          assert_predicate(Profiler, :running?)
           raise error
         end
       end
@@ -32,7 +32,7 @@ module AppProfiler
       assert_equal(true, Profiler.send(:start, stackprof_profile))
 
       profile = Profiler.run(stackprof_profile) do
-        sleep 0.1
+        sleep(0.1)
       end
 
       assert_nil(profile)
@@ -43,7 +43,7 @@ module AppProfiler
 
     test "cpu profile by default" do
       profile = Profiler.run(stackprof_profile) do
-        sleep 0.1
+        sleep(0.1)
       end
 
       assert_instance_of(AppProfiler::Profile, profile)
@@ -53,7 +53,7 @@ module AppProfiler
 
     test "assigns id and context to profiles" do
       profile = Profiler.run(stackprof_profile(metadata: { id: "wowza", context: "bar" })) do
-        sleep 0.1
+        sleep(0.1)
       end
 
       assert_instance_of(AppProfiler::Profile, profile)
@@ -63,7 +63,7 @@ module AppProfiler
 
     test "cpu profile" do
       profile = Profiler.run(stackprof_profile(mode: :cpu, interval: 2000)) do
-        sleep 0.1
+        sleep(0.1)
       end
 
       assert_instance_of(AppProfiler::Profile, profile)
@@ -73,7 +73,7 @@ module AppProfiler
 
     test "wall profile" do
       profile = Profiler.run(stackprof_profile(mode: :wall, interval: 2000)) do
-        sleep 0.1
+        sleep(0.1)
       end
 
       assert_instance_of(AppProfiler::Profile, profile)
@@ -83,7 +83,7 @@ module AppProfiler
 
     test "object profile" do
       profile = Profiler.run(stackprof_profile(mode: :object, interval: 2)) do
-        sleep 0.1
+        sleep(0.1)
       end
 
       assert_instance_of(AppProfiler::Profile, profile)

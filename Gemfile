@@ -8,5 +8,6 @@ gem("activesupport", "~> 5.2")
 gem("railties", "~> 5.2")
 
 gem("google-cloud-storage", "~> 1.21")
-gem("rubocop")
-gem("rubocop-performance")
+gem("rubocop", require: false)
+gem("rubocop-shopify", require: false)
+gem("rubocop-performance", require: false)

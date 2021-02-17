@@ -14,6 +14,7 @@ module AppProfiler
       end
 
       def initialize(profile)
+        super()
         @profile = profile
       end
 
