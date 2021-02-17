@@ -43,6 +43,15 @@ module AppProfiler
       Profiler.run(*args, &block)
     end
 
+    def start(*args)
+      Profiler.start(*args)
+    end
+
+    def stop
+      Profiler.stop
+      Profiler.results
+    end
+
     def profile_header=(profile_header)
       @@profile_header = profile_header # rubocop:disable Style/ClassVars
       @@request_profile_header = nil    # rubocop:disable Style/ClassVars

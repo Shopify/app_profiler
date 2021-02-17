@@ -24,21 +24,6 @@ module AppProfiler
         stop if started
       end
 
-      def results
-        stackprof_profile = stackprof_results
-
-        return unless stackprof_profile
-
-        Profile.from_stackprof(stackprof_profile)
-      rescue => error
-        AppProfiler.logger.info(
-          "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"
-        )
-        nil
-      end
-
-      private
-
       def start(params = {})
         # Do not start the profiler if StackProf was started somewhere else.
         return false if running?
@@ -58,6 +43,21 @@ module AppProfiler
       def stop
         StackProf.stop
       end
+
+      def results
+        stackprof_profile = stackprof_results
+
+        return unless stackprof_profile
+
+        Profile.from_stackprof(stackprof_profile)
+      rescue => error
+        AppProfiler.logger.info(
+          "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"
+        )
+        nil
+      end
+
+      private
 
       def stackprof_results
         StackProf.results
