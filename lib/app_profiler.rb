@@ -24,7 +24,7 @@ module AppProfiler
   autoload :Profiler, "app_profiler/profiler"
   autoload :Profile, "app_profiler/profile"
 
-  mattr_accessor :logger
+  mattr_accessor :logger, default: Logger.new($stdout)
   mattr_accessor :root
   mattr_accessor :profile_root
 
