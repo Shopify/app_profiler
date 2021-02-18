@@ -20,7 +20,8 @@ Pathname.new(__dir__).join("support").glob("**/*.rb").each do |file|
 end
 
 TEST_ROOT = Pathname.new(__dir__)
-TMP_ROOT  = TEST_ROOT.join("..").expand_path.join("tmp")
+TMP_ROOT  = TEST_ROOT.join("..").join("tmp")
+TMP_APP_ROOT = TMP_ROOT.join("app")
 
 Time.zone = "Pacific Time (US & Canada)" # For Time.zone.now.
 
@@ -31,7 +32,7 @@ end
 
 AppProfiler.tap do |config|
   config.logger       = Logger.new("/dev/null")
-  config.root         = TEST_ROOT
+  config.root         = TMP_APP_ROOT
   config.profile_root = TMP_ROOT
 end
 
