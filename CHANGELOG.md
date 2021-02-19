@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Shopify/app_profiler
 
+## [0.0.7] - 2021-02-19
+
 - Add default logger for non-rails contexts (#21).
 - Fix redundant `yarn add`s when viewing profiles (#20).
 - Add `AppProfiler.start` and `AppProfiler.stop` (#19).
