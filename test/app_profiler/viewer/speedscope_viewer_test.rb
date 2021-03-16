@@ -23,9 +23,9 @@ module AppProfiler
 
         viewer.view
 
-        assert_predicate(SpeedscopeViewer, :yarn_setup)
+        assert_predicate(Yarn::Command, :yarn_setup)
       ensure
-        SpeedscopeViewer.yarn_setup = false
+        Yarn::Command.yarn_setup = false
       end
 
       test "#view doesn't init when package.json exists" do
@@ -41,9 +41,9 @@ module AppProfiler
 
         viewer.view
 
-        assert_predicate(SpeedscopeViewer, :yarn_setup)
+        assert_predicate(Yarn::Command, :yarn_setup)
       ensure
-        SpeedscopeViewer.yarn_setup = false
+        Yarn::Command.yarn_setup = false
         AppProfiler.root.rmtree
       end
 
@@ -60,9 +60,9 @@ module AppProfiler
 
         viewer.view
 
-        assert_predicate(SpeedscopeViewer, :yarn_setup)
+        assert_predicate(Yarn::Command, :yarn_setup)
       ensure
-        SpeedscopeViewer.yarn_setup = false
+        Yarn::Command.yarn_setup = false
         AppProfiler.root.rmtree
       end
 
@@ -85,16 +85,6 @@ module AppProfiler
         assert_raises(SpeedscopeViewer::YarnError) do
           viewer.view
         end
-      end
-
-      private
-
-      def with_yarn_setup
-        old_yarn_setup = SpeedscopeViewer.yarn_setup
-        SpeedscopeViewer.yarn_setup = true
-        yield
-      ensure
-        SpeedscopeViewer.yarn_setup = old_yarn_setup
       end
     end
   end
