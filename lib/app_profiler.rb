@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require "active_support"
+require "active_support/core_ext/class"
+require "active_support/core_ext/module"
+require "logger"
 require "app_profiler/version"
 require "app_profiler/railtie" if defined?(Rails::Railtie)
 

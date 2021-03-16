@@ -3,7 +3,13 @@
 module AppProfiler
   module Viewer
     class BaseViewer
-      def self.view(_profile)
+      class << self
+        def view(profile)
+          new(profile).view
+        end
+      end
+
+      def view(_profile)
         raise NotImplementedError
       end
     end
