@@ -31,6 +31,7 @@ module AppProfiler
     initializer "app_profiler.add_middleware" do |app|
       unless AppProfiler.middleware.disabled
         app.middleware.insert_before(0, AppProfiler.middleware)
+        app.middleware.insert_before(1, AppProfiler::Viewer::SpeedscopeMiddleware)
       end
     end
 

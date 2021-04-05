@@ -19,6 +19,9 @@ module AppProfiler
   module Viewer
     autoload :BaseViewer, "app_profiler/viewer/base_viewer"
     autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope_viewer"
+
+    autoload :BaseMiddleware, "app_profiler/viewer/base_middleware"
+    autoload :SpeedscopeMiddleware, "app_profiler/viewer/speedscope_middleware"
   end
 
   autoload :Middleware, "app_profiler/middleware"
