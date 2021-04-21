@@ -1,7 +1,4 @@
 classification: library
-slack_channels:
-- webscale
-
 org_line: Production Engineering
 owners:
   - Shopify/sysperf
