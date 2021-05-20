@@ -84,7 +84,7 @@ GEM
     mocha (1.11.2)
     multi_json (1.14.1)
     multipart-post (2.1.1)
-    nokogiri (1.11.3)
+    nokogiri (1.11.5)
       mini_portile2 (~> 2.5.0)
       racc (~> 1.4)
     os (1.1.0)
