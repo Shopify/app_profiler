@@ -137,5 +137,12 @@ module AppProfiler
 
       assert_equal(10_000, profile[:interval])
     end
+
+    test "#path raises an UnsafeFilename exception given chars not in allow list" do
+      assert_raises(AppProfiler::Profile::UnsafeFilename) do
+        profile = Profile.from_stackprof(stackprof_profile(metadata: { id: "|`@${}", context: "bar" }))
+        profile.file
+      end
+    end
   end
 end
