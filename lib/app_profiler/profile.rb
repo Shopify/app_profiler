@@ -71,7 +71,7 @@ module AppProfiler
         Socket.gethostname,
       ].compact.join("-") << ".json"
 
-      raise UnsafeFilename if %r{[^0-9A-Za-z.\-\_]}.match(filename)
+      raise UnsafeFilename if /[^0-9A-Za-z.\-\_]/.match(filename)
 
       AppProfiler.profile_root.join(filename)
     end
