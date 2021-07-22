@@ -145,6 +145,12 @@ AppProfiler.storage.credentials = { "key" => "value" }
 Rails.application.config.app_profiler.storage_credentials = { "key" => "value" }
 ```
 
+Note that in `development` mode the file isn't uploaded. Instead, it is viewed via the `Middleware::ViewAction`. If you want to change that, use the `middleware_action` configuration:
+
+```ruby
+Rails.application.config.app_profiler.middleware_action = AppProfiler::Middleware::UploadAction
+```
+
 ## Running tests
 
 ```
