@@ -20,7 +20,7 @@ module AppProfiler
       end
 
       def view
-        yarn("run speedscope \"#{@profile.file}\"")
+        yarn("run", "speedscope", "\"#{@profile.file}\"")
       end
     end
   end
