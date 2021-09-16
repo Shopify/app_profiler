@@ -16,16 +16,18 @@ module AppProfiler
         profile = Profile.new(stackprof_profile)
 
         viewer = SpeedscopeViewer.new(profile)
-        viewer.expects(:system).with("which yarn > /dev/null").returns(true)
-        viewer.expects(:system).with("yarn init --yes").returns(true)
-        viewer.expects(:system).with("yarn add --dev --ignore-workspace-root-check speedscope").returns(true)
-        viewer.expects(:system).with("yarn run speedscope \"#{profile.file}\"").returns(true)
+        viewer.expects(:system).with("which", "yarn > /dev/null").returns(true)
+        viewer.expects(:system).with("yarn", "init", "--yes").returns(true)
+        viewer.expects(:system).with(
+          "yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"
+        ).returns(true)
+        viewer.expects(:system).with("yarn", "run", "speedscope", "\"#{profile.file}\"").returns(true)
 
         viewer.view
 
-        assert_predicate(SpeedscopeViewer, :yarn_setup)
+        assert_predicate(Yarn::Command, :yarn_setup)
       ensure
-        SpeedscopeViewer.yarn_setup = false
+        Yarn::Command.yarn_setup = false
       end
 
       test "#view doesn't init when package.json exists" do
@@ -35,15 +37,17 @@ module AppProfiler
         AppProfiler.root.join("package.json").write("{}")
 
         viewer = SpeedscopeViewer.new(profile)
-        viewer.expects(:system).with("which yarn > /dev/null").returns(true)
-        viewer.expects(:system).with("yarn add --dev --ignore-workspace-root-check speedscope").returns(true)
-        viewer.expects(:system).with("yarn run speedscope \"#{profile.file}\"").returns(true)
+        viewer.expects(:system).with("which", "yarn > /dev/null").returns(true)
+        viewer.expects(:system).with(
+          "yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"
+        ).returns(true)
+        viewer.expects(:system).with("yarn", "run", "speedscope", "\"#{profile.file}\"").returns(true)
 
         viewer.view
 
-        assert_predicate(SpeedscopeViewer, :yarn_setup)
+        assert_predicate(Yarn::Command, :yarn_setup)
       ensure
-        SpeedscopeViewer.yarn_setup = false
+        Yarn::Command.yarn_setup = false
         AppProfiler.root.rmtree
       end
 
@@ -54,15 +58,15 @@ module AppProfiler
         AppProfiler.root.join("node_modules/speedscope").mkpath
 
         viewer = SpeedscopeViewer.new(profile)
-        viewer.expects(:system).with("which yarn > /dev/null").returns(true)
-        viewer.expects(:system).with("yarn init --yes").returns(true)
-        viewer.expects(:system).with("yarn run speedscope \"#{profile.file}\"").returns(true)
+        viewer.expects(:system).with("which", "yarn > /dev/null").returns(true)
+        viewer.expects(:system).with("yarn", "init", "--yes").returns(true)
+        viewer.expects(:system).with("yarn", "run", "speedscope", "\"#{profile.file}\"").returns(true)
 
         viewer.view
 
-        assert_predicate(SpeedscopeViewer, :yarn_setup)
+        assert_predicate(Yarn::Command, :yarn_setup)
       ensure
-        SpeedscopeViewer.yarn_setup = false
+        Yarn::Command.yarn_setup = false
         AppProfiler.root.rmtree
       end
 
@@ -71,7 +75,7 @@ module AppProfiler
 
         with_yarn_setup do
           viewer = SpeedscopeViewer.new(profile)
-          viewer.expects(:system).with("yarn run speedscope \"#{profile.file}\"").returns(true)
+          viewer.expects(:system).with("yarn", "run", "speedscope", "\"#{profile.file}\"").returns(true)
 
           viewer.view
         end
@@ -85,16 +89,6 @@ module AppProfiler
         assert_raises(SpeedscopeViewer::YarnError) do
           viewer.view
         end
-      end
-
-      private
-
-      def with_yarn_setup
-        old_yarn_setup = SpeedscopeViewer.yarn_setup
-        SpeedscopeViewer.yarn_setup = true
-        yield
-      ensure
-        SpeedscopeViewer.yarn_setup = old_yarn_setup
       end
     end
   end

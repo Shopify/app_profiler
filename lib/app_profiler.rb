@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require "active_support"
+require "active_support/core_ext/class"
+require "active_support/core_ext/module"
+require "logger"
 require "app_profiler/version"
 require "app_profiler/railtie" if defined?(Rails::Railtie)
 
@@ -17,6 +19,7 @@ module AppProfiler
   module Viewer
     autoload :BaseViewer, "app_profiler/viewer/base_viewer"
     autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope_viewer"
+    autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/speedscope_remote_viewer"
   end
 
   autoload :Middleware, "app_profiler/middleware"
