@@ -5,10 +5,10 @@ module AppProfiler
       class YarnError < StandardError; end
 
       VALID_COMMANDS = [
-        ["which", "yarn > /dev/null"],
+        ["which", "yarn"],
         ["yarn", "init", "--yes"],
         ["yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"],
-        ["yarn", "run", "speedscope", /\".*\.json\"/],
+        ["yarn", "run", "speedscope", /.*\.json/],
       ]
 
       private_constant(:VALID_COMMANDS)
@@ -16,6 +16,7 @@ module AppProfiler
 
       def yarn(command, *options)
         setup_yarn unless yarn_setup
+
         exec("yarn", command, *options) do
           raise YarnError, "Failed to run #{command}."
         end
@@ -23,6 +24,7 @@ module AppProfiler
 
       def setup_yarn
         ensure_yarn_installed
+
         yarn("init", "--yes") unless package_json_exists?
       end
 
@@ -43,7 +45,7 @@ module AppProfiler
       end
 
       def ensure_yarn_installed
-        exec("which", "yarn > /dev/null") do
+        exec("which", "yarn", silent: true) do
           raise(
             YarnError,
             <<~MSG.squish
@@ -59,10 +61,13 @@ module AppProfiler
         AppProfiler.root.join("package.json").exist?
       end
 
-      def exec(*command)
+      def exec(*command, silent: false)
         ensure_command_valid(command)
-        system(*command).tap do |return_code|
-          yield unless return_code
+
+        if silent
+          system(*command, out: File::NULL).tap { |return_code| yield unless return_code }
+        else
+          system(*command).tap { |return_code| yield unless return_code }
         end
       end
     end

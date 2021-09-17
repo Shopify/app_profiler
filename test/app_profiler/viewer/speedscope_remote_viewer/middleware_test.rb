@@ -47,7 +47,7 @@ module AppProfiler
         end
 
         test "#call viewer sets up yarn" do
-          @app.expects(:system).with("which", "yarn > /dev/null").returns(true)
+          @app.expects(:system).with("which", "yarn", out: File::NULL).returns(true)
           @app.expects(:system).with("yarn", "init", "--yes").returns(true)
           @app.expects(:system).with(
             "yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"
