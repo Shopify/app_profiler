@@ -1,7 +1,5 @@
 classification: library
 org_line: Production Engineering
 owners:
-  - Shopify/sysperf
+- Shopify/sysperf
 url: https://development.shopify.io/engineering/production/performance/profiling/
-slack_channels:
-  - team-sysperf
