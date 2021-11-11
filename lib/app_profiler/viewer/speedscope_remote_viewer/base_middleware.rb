@@ -26,7 +26,7 @@ module AppProfiler
         def call(env)
           request = Rack::Request.new(env)
 
-          return index(env)                        if request.path_info =~ %r(\A/app_profiler\z)
+          return index(env)                        if request.path_info =~ %r(\A/app_profiler/?\z)
           return viewer(env, Regexp.last_match(1)) if request.path_info =~ %r(\A/app_profiler/viewer/(.*)\z)
           return show(env, Regexp.last_match(1))   if request.path_info =~ %r(\A/app_profiler/(.*)\z)
 

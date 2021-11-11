@@ -33,6 +33,20 @@ module AppProfiler
           end
         end
 
+        test "#call index with slash" do
+          profiles = 3.times.map { Profile.new(stackprof_profile).tap(&:file) }
+
+          code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/" })
+          html = html.first
+
+          assert_equal(200, code)
+          assert_equal({ "Content-Type" => "text/html" }, content_type)
+          assert_match(%r(<title>App Profiler</title>), html)
+          profiles.each do |profile|
+            assert_match(%r(<a href="/app_profiler/#{Middleware.id(profile.file)}">), html)
+          end
+        end
+
         test "#call show" do
           profile = Profile.new(stackprof_profile)
           id = Middleware.id(profile.file)
