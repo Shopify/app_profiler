@@ -42,7 +42,7 @@ module AppProfiler
         end
 
         def profile_data_url(upload)
-          upload.url
+          upload.url.to_s
         end
 
         def profile_header
