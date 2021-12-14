@@ -44,6 +44,7 @@ module AppProfiler
 
         assert_predicate(@response[1][AppProfiler.profile_header], :present?)
         assert_predicate(@response[1][AppProfiler.profile_data_header], :present?)
+        assert_equal(@response[1][AppProfiler.profile_data_header].class, String)
         assert_predicate(@response[1]["Location"], :blank?)
         assert_equal(@response[0], 200)
       end
