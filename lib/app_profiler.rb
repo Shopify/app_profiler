@@ -22,10 +22,10 @@ module AppProfiler
     autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/speedscope_remote_viewer"
   end
 
-  autoload :Middleware, "app_profiler/middleware"
-  autoload :RequestParameters, "app_profiler/request_parameters"
-  autoload :Profiler, "app_profiler/profiler"
-  autoload :Profile, "app_profiler/profile"
+  require "app_profiler/middleware"
+  require "app_profiler/request_parameters"
+  require "app_profiler/profiler"
+  require "app_profiler/profile"
 
   mattr_accessor :logger, default: Logger.new($stdout)
   mattr_accessor :root
