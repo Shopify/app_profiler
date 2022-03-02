@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]: https://github.com/Shopify/app_profiler
 
 
+## [0.0.9] - 2022-03-02
+
+- Add speedscope remote viewer (#33)
+- Properly cast X-Profile-Data to String (#40)
+- Allow a trailing slah in the URL (#39)
+
 ## [0.0.8] - 2021-06-09
 
 - Add File Safe Regex to Profile Filename (#30)
