@@ -41,7 +41,7 @@ Rails.application.config.app_profiler.profile_header = "X-Profile"
 
 ### Here are some examples:
 
-1. `/?profile=cpu&interval=2000&autoredirect=1`
+1. `/?profile=cpu&interval=2000&autoredirect=1&ignore_gc=1`
 2. Set `X-Profile` to `mode=wall;interval=1000;context=test-directory;autoredirect=1`
 
 ### Possible keys:
@@ -50,6 +50,7 @@ Rails.application.config.app_profiler.profile_header = "X-Profile"
 | --- | ----- | ----- |
 | profile/mode | Supported profiling modes: `cpu`, `wall`, `object`. | Use `profile` in (1), and `mode` in (2). |
 | interval | Sampling interval in microseconds. | |
+| ignore_gc | Ignore garbage collection frames | |
 | autoredirect | Redirect request automatically to Speedscope's page after profiling. | |
 | context | Directory within the specified bucket in the selected storage where raw profile data should be written. | Only supported in (2). Defaults to `Rails.env` if not specified. |
 

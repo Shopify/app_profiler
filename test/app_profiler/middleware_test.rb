@@ -74,6 +74,25 @@ module AppProfiler
       end
     end
 
+    test "ignore_gc option is supported" do
+      assert_profiles_dumped do
+        assert_profiles_uploaded do
+          middleware = AppProfiler::Middleware.new(app_env)
+          middleware.call(mock_request_env(path: "/?profile=cpu&ignore_gc=1"))
+        end
+      end
+    end
+
+    test "ignore_gc option through headers is supported" do
+      assert_profiles_dumped do
+        assert_profiles_uploaded do
+          middleware = AppProfiler::Middleware.new(app_env)
+          opt = { AppProfiler.request_profile_header => "mode=cpu;interval=2000;ignore_gc=1" }
+          middleware.call(mock_request_env(opt: opt))
+        end
+      end
+    end
+
     test "invalid profile mode will not profile" do
       assert_profiles_dumped(0) do
         AppProfiler.logger.expects(:info).with { |value| value =~ /unsupported profiling mode=hello/ }

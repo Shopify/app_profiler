@@ -37,6 +37,7 @@ module AppProfiler
       {
         mode: mode.to_sym,
         interval: interval.to_i,
+        ignore_gc: !!ignore_gc,
         metadata: {
           id: request_id,
           context: context,
@@ -48,6 +49,10 @@ module AppProfiler
 
     def mode
       query_param("profile") || profile_header_param("mode")
+    end
+
+    def ignore_gc
+      query_param("ignore_gc") || profile_header_param("ignore_gc")
     end
 
     def interval
