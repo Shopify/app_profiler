@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module AppProfiler
-  VERSION = "0.0.9"
+  VERSION = "0.10.0"
 end
