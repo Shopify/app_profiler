@@ -62,9 +62,7 @@ module AppProfiler
     end
 
     def request_profile_header
-      @@request_profile_header ||= begin # rubocop:disable Style/ClassVars
-        profile_header.upcase.gsub("-", "_").prepend("HTTP_")
-      end
+      @@request_profile_header ||= profile_header.upcase.tr("-", "_").prepend("HTTP_") # rubocop:disable Style/ClassVars
     end
 
     def profile_data_header

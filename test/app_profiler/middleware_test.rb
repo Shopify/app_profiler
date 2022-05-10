@@ -111,11 +111,17 @@ module AppProfiler
     test "profiles will not be generated when query string failed to be parsed" do
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
-        middleware.call(mock_request_env(path: "/?profile=cpu&contact%5Bemail%5D]%F0%9D%92%B6]%F0%9D%92%B6]%22]" \
-          "%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]" \
-          "%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]" \
-          "%22]%22]%22]%22%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]" \
-          "%22]]%22]%22%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22%22]%22]%22]%22]"))
+        middleware.call(
+          mock_request_env(
+            path: <<~PATH.delete("\n")
+              /?profile=cpu&contact%5Bemail%5D]%F0%9D%92%B6]%F0%9D%92%B6]%22]
+              %22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]
+              %22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]
+              %22]%22]%22]%22%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]
+              %22]]%22]%22%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22%22]%22]%22]%22]
+            PATH
+          )
+        )
       end
     end
 
@@ -266,12 +272,14 @@ module AppProfiler
 
           AppProfiler.middleware.any_instance.expects(:before_profile).with do |env, params|
             return false unless request_env == env && params.is_a?(Hash)
+
             params[:metadata][:test_key] = "test_value"
             true
           end.returns(true)
 
           AppProfiler.middleware.any_instance.expects(:after_profile).with do |env, profile|
             return false unless request_env == env && profile.is_a?(AppProfiler::Profile)
+
             profile[:metadata][:test_key] == "test_value"
           end.returns(true)
 
@@ -284,7 +292,7 @@ module AppProfiler
     private
 
     def app_env
-      ->(_) { [200, {}, %w(OK)] }
+      ->(_) { [200, {}, ["OK"]] }
     end
 
     def mock_request_env(path: "/", opt: {})

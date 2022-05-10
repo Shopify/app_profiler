@@ -3,7 +3,7 @@ name: app-profiler
 type: ruby
 
 up:
-  - ruby: 2.6.3
+  - ruby: 3.1.2
   - bundler
 
 commands:
