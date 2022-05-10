@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module AppProfiler
   module Yarn
     module Command
@@ -32,7 +33,7 @@ module AppProfiler
 
       def ensure_command_valid(command)
         unless valid_command?(command)
-          raise YarnError, "Illegal command: #{command.join(' ')}."
+          raise YarnError, "Illegal command: #{command.join(" ")}."
         end
       end
 

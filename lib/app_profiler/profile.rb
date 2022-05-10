@@ -2,7 +2,7 @@
 
 module AppProfiler
   class Profile
-    INTERNAL_METADATA_KEYS = %i(id context)
+    INTERNAL_METADATA_KEYS = [:id, :context]
     private_constant :INTERNAL_METADATA_KEYS
     class UnsafeFilename < StandardError; end
 
@@ -71,7 +71,7 @@ module AppProfiler
         Socket.gethostname,
       ].compact.join("-") << ".json"
 
-      raise UnsafeFilename if /[^0-9A-Za-z.\-\_]/.match(filename)
+      raise UnsafeFilename if /[^0-9A-Za-z.\-\_]/.match?(filename)
 
       AppProfiler.profile_root.join(filename)
     end

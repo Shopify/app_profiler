@@ -20,7 +20,7 @@ module AppProfiler
         end
 
         test "#call index" do
-          profiles = 3.times.map { Profile.new(stackprof_profile).tap(&:file) }
+          profiles = Array.new(3) { Profile.new(stackprof_profile).tap(&:file) }
 
           code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler" })
           html = html.first
@@ -34,7 +34,7 @@ module AppProfiler
         end
 
         test "#call index with slash" do
-          profiles = 3.times.map { Profile.new(stackprof_profile).tap(&:file) }
+          profiles = Array.new(3) { Profile.new(stackprof_profile).tap(&:file) }
 
           code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/" })
           html = html.first

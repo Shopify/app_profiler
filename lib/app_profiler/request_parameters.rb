@@ -81,6 +81,7 @@ module AppProfiler
 
     def header(name)
       return unless @request.has_header?(name)
+
       @request.get_header(name)
     end
 
