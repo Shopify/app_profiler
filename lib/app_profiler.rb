@@ -26,6 +26,7 @@ module AppProfiler
   require "app_profiler/request_parameters"
   require "app_profiler/profiler"
   require "app_profiler/profile"
+  require "app_profiler/server"
 
   mattr_accessor :logger, default: Logger.new($stdout)
   mattr_accessor :root
