@@ -132,6 +132,13 @@ module AppProfiler
         assert_equal(last_response.get_header("Content-Type"), "application/json")
       end
 
+      test "app returns JSON with extra start time" do
+        get("/profile?duration=0.01")
+        assert(last_response.ok?)
+        profile = JSON.parse(last_response.body)
+        assert(profile.key?("start_time_nsecs"))
+      end
+
       test "app allows CORS" do
         get("/profile?duration=0.01")
         assert(last_response.ok?)
