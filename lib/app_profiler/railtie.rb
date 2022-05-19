@@ -16,6 +16,9 @@ module AppProfiler
       AppProfiler.middleware = app.config.app_profiler.middleware || Middleware
       AppProfiler.middleware.action = app.config.app_profiler.middleware_action || default_middleware_action
       AppProfiler.middleware.disabled = app.config.app_profiler.middleware_disabled || false
+      AppProfiler.server.enabled = app.config.app_profiler.server_enabled || false
+      AppProfiler.server.port = app.config.app_profiler.server_port || 0
+      AppProfiler.server.duration = app.config.app_profiler.server_duration || 30
       AppProfiler.autoredirect = app.config.app_profiler.autoredirect || false
       AppProfiler.speedscope_host = app.config.app_profiler.speedscope_host || ENV.fetch(
         "APP_PROFILER_SPEEDSCOPE_URL", "https://speedscope.app"
@@ -35,6 +38,10 @@ module AppProfiler
         end
         app.middleware.insert_before(0, AppProfiler.middleware)
       end
+    end
+
+    initializer "app_profiler.enable_server" do
+      AppProfiler::Server.start! if AppProfiler.server.enabled
     end
 
     private
