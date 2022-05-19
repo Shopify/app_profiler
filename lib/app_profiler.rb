@@ -46,6 +46,7 @@ module AppProfiler
   mattr_accessor :storage, default: Storage::FileStorage
   mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
   mattr_accessor :middleware, default: Middleware
+  mattr_accessor :server, default: Server
 
   class << self
     def run(*args, &block)
