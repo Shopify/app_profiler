@@ -78,6 +78,7 @@ module AppProfiler
           end
 
           if start_running
+            start_time = Process.clock_gettime(Process::CLOCK_REALTIME, :nanosecond)
             AppProfiler.start(**stackprof_args)
             sleep(duration)
             profile = AppProfiler.stop
@@ -85,7 +86,9 @@ module AppProfiler
             response.status = HTTP_OK
             response.set_header("Content-Type", "application/json")
             response.set_header("Access-Control-Allow-Origin", "*")
-            response.write(JSON.dump(profile.to_h))
+            profile_hash = profile.to_h
+            profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
+            response.write(JSON.dump(profile_hash))
           else
             response.status = HTTP_CONFLICT
             response.write("A profile is already running")
