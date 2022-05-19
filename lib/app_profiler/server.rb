@@ -41,6 +41,8 @@ module AppProfiler
     HTTP_NOT_FOUND = 404
     HTTP_NOT_ALLOWED = 405
     HTTP_CONFLICT = 409
+
+    mattr_accessor :enabled, default: false
     mattr_accessor :port, default: 0
     mattr_accessor :duration, default: 30
 
