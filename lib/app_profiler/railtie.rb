@@ -7,6 +7,7 @@ module AppProfiler
     config.app_profiler = ActiveSupport::OrderedOptions.new
 
     initializer "app_profiler.configs" do |app|
+      puts "ENABLED #{app.config.app_profiler.server_enabled}"
       AppProfiler.logger = app.config.app_profiler.logger || Rails.logger
       AppProfiler.root = app.config.app_profiler.root || Rails.root
       AppProfiler.storage = app.config.app_profiler.storage || Storage::FileStorage
@@ -41,7 +42,9 @@ module AppProfiler
     end
 
     initializer "app_profiler.enable_server" do
+      puts "Starting server #{AppProfiler.server.enabled}"
       AppProfiler::Server.start! if AppProfiler.server.enabled
+      puts "Port #{AppProfiler::Server.port?}"
     end
 
     private
