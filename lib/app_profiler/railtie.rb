@@ -19,6 +19,8 @@ module AppProfiler
       AppProfiler.server.enabled = app.config.app_profiler.server_enabled || false
       AppProfiler.server.port = app.config.app_profiler.server_port || 0
       AppProfiler.server.duration = app.config.app_profiler.server_duration || 30
+      AppProfiler.server.cors = app.config.app_profiler.server_cors || true
+      AppProfiler.server.cors_host = app.config.app_profiler.server_cors_host || "*"
       AppProfiler.autoredirect = app.config.app_profiler.autoredirect || false
       AppProfiler.speedscope_host = app.config.app_profiler.speedscope_host || ENV.fetch(
         "APP_PROFILER_SPEEDSCOPE_URL", "https://speedscope.app"
