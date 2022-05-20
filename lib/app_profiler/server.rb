@@ -43,6 +43,8 @@ module AppProfiler
     HTTP_CONFLICT = 409
 
     mattr_accessor :enabled, default: false
+    mattr_accessor :cors, default: true
+    mattr_accessor :cors_host, default: "*"
     mattr_accessor :port, default: 0
     mattr_accessor :duration, default: 30
 
@@ -85,7 +87,9 @@ module AppProfiler
             stop_running
             response.status = HTTP_OK
             response.set_header("Content-Type", "application/json")
-            response.set_header("Access-Control-Allow-Origin", "*")
+            if AppProfiler::Server.cors
+              response.set_header("Access-Control-Allow-Origin", AppProfiler::Server.cors_host)
+            end
             profile_hash = profile.to_h
             profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
             response.write(JSON.dump(profile_hash))

@@ -7,6 +7,10 @@ module AppProfiler
   module Server
     TEST_PORT = 11337
     class ServerTest < TestCase
+      def setup
+        AppProfiler::Server.port = 0
+      end
+
       test ".start! creates a profile server listening on defined port" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port=#{TEST_PORT}/ }
         AppProfiler::Server.port = TEST_PORT
@@ -18,7 +22,6 @@ module AppProfiler
 
       test ".start! creates a profile server on random free port with undefined port" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port/ }
-        AppProfiler::Server.port = 0
         assert_not_nil(AppProfiler::Server.start!)
         assert_not_nil(TCPSocket.new("127.0.0.1", AppProfiler::Server.port?))
       ensure
@@ -96,6 +99,12 @@ module AppProfiler
     class ProfileApplicationTest < TestCase
       include Rack::Test::Methods
 
+      def setup
+        AppProfiler::Server.port = 0
+        AppProfiler::Server.cors = true
+        AppProfiler::Server.cors_host = "*"
+      end
+
       def app
         AppProfiler::Server::ProfileApplication.new
       end
@@ -139,11 +148,26 @@ module AppProfiler
         assert(profile.key?("start_time_nsecs"))
       end
 
-      test "app allows CORS" do
+      test "app allows CORS by default" do
         get("/profile?duration=0.01")
         assert(last_response.ok?)
         assert(last_response.has_header?("Access-Control-Allow-Origin"))
         assert_equal(last_response.get_header("Access-Control-Allow-Origin"), "*")
+      end
+
+      test "app can disable CORS" do
+        AppProfiler::Server.cors = false
+        get("/profile?duration=0.01")
+        assert(last_response.ok?)
+        refute(last_response.has_header?("Access-Control-Allow-Origin"))
+      end
+
+      test "app can limit the CORS allowed host host" do
+        AppProfiler::Server.cors_host = "foo"
+        get("/profile?duration=0.01")
+        assert(last_response.ok?)
+        assert(last_response.has_header?("Access-Control-Allow-Origin"))
+        assert_equal(last_response.get_header("Access-Control-Allow-Origin"), "foo")
       end
 
       test "app runs a profile for the correct interval" do
