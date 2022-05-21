@@ -13,54 +13,99 @@ module AppProfiler
 
       test ".start! creates a profile server listening on defined port" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port=#{TEST_PORT}/ }
-        AppProfiler::Server.port = TEST_PORT
-        assert_not_nil(AppProfiler::Server.start!)
-        assert_not_nil(TCPSocket.new("127.0.0.1", TEST_PORT))
+        Server.port = TEST_PORT
+        assert_not_nil(Server.start!)
+        assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, TEST_PORT))
       ensure
-        assert_nil(AppProfiler::Server.stop!)
+        assert_nil(Server.stop!)
       end
 
       test ".start! creates a profile server on random free port with undefined port" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port/ }
-        assert_not_nil(AppProfiler::Server.start!)
-        assert_not_nil(TCPSocket.new("127.0.0.1", AppProfiler::Server.port?))
+        assert_not_nil(Server.start!)
+        assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, Server.port?))
       ensure
-        assert_nil(AppProfiler::Server.stop!)
+        assert_nil(Server.stop!)
       end
 
       test ".stop! stops running profile server" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port=#{TEST_PORT}/ }
-        AppProfiler::Server.port = TEST_PORT
-        assert_not_nil(AppProfiler::Server.start!)
-        assert_not_nil(TCPSocket.new("127.0.0.1", TEST_PORT))
-        assert_nil(AppProfiler::Server.stop!)
-        assert_raises(Errno::ECONNREFUSED) { TCPSocket.new("127.0.0.1", TEST_PORT) }
+        Server.port = TEST_PORT
+        assert_not_nil(Server.start!)
+        assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, TEST_PORT))
+        assert_nil(Server.stop!)
+        assert_raises(Errno::ECONNREFUSED) { TCPSocket.new(ProfileServer::SERVER_ADDRESS, TEST_PORT) }
       ensure
-        assert_nil(AppProfiler::Server.stop!)
+        assert_nil(Server.stop!)
       end
 
       test ".port? returns the server port" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port=#{TEST_PORT}/ }
-        AppProfiler::Server.port = TEST_PORT
-        assert_not_nil(AppProfiler::Server.start!)
-        assert_equal(TEST_PORT, AppProfiler::Server.port?)
+        Server.port = TEST_PORT
+        assert_not_nil(Server.start!)
+        assert_equal(TEST_PORT, Server.port?)
       ensure
-        assert_nil(AppProfiler::Server.stop!)
+        assert_nil(Server.stop!)
       end
     end
 
     class ProfileServerTest < TestCase
-      test ".serve serves profile server" do
+      test ".serve starts a TCP server listening on a socket" do
         with_test_server(false) do |server|
           server.serve
-          assert_not_nil(TCPSocket.new("127.0.0.1", server.port))
+          assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port))
         end
       end
 
-      test ".serve creates tempfile with port" do
+      test ".serve starts a socket that responds with valid HTTP response" do
         with_test_server(false) do |server|
           server.serve
-          port_files = Dir["#{AppProfiler::Server::ProfileServer::PORT_TEMPFILE_PATH}/profileserver-#{Process.pid}-*"]
+          socket = TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port)
+          socket.write("GET / HTTP/1.0\r\n\r\n")
+          response = socket.read
+          expected_response = <<~RESPONSE
+            HTTP/1.0 404\r
+            Content-Length: 22\r
+            \r
+            Unsupported endpoint /
+          RESPONSE
+          assert_equal(expected_response.strip, response)
+        end
+      end
+
+      test ".serve starts a socket that serves valid JSON profiles over HTTP" do
+        with_test_server(false) do |server|
+          server.serve
+          socket = TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port)
+          socket.write("GET /profile?duration=0.001 HTTP/1.0\r\n\r\n")
+          response = socket.read
+          lines = response.lines
+          assert(lines.shift.match?(/HTTP.*200/))
+          assert_equal("Content-Type: application/json\r\n", lines.shift)
+          assert_equal("Access-Control-Allow-Origin: *\r\n", lines.shift)
+          length_line = lines.shift
+          assert(length_line =~ (/Content-Length: (.*)/))
+          content_length = Regexp.last_match(1).to_i
+          assert_equal("\r\n", lines.shift)
+          body = lines.shift
+          assert_equal(content_length, body.size)
+          assert(JSON.parse(body))
+        end
+      end
+
+      test ".serve starts a server that responds to an HTTP request" do
+        with_test_server(false) do |server|
+          server.serve
+          assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port))
+          uri = URI("http://#{ProfileServer::SERVER_ADDRESS}:#{server.port}/")
+          assert_equal("404", Net::HTTP.get_response(uri).code)
+        end
+      end
+
+      test ".serve creates magic tempfile with pid : port mapping encoded in name" do
+        with_test_server(false) do |server|
+          server.serve
+          port_files = Dir["#{ProfileServer::PORT_TEMPFILE_PATH}/profileserver-#{Process.pid}-*"]
           assert_equal(1, port_files.size)
           port_file = port_files.first
           matches = port_file.match(/port-(\d+)-/)
@@ -72,7 +117,7 @@ module AppProfiler
       test ".stop stops profile server" do
         with_test_server do |server|
           assert_nil(server.stop)
-          assert_raises(Errno::ECONNREFUSED) { TCPSocket.new("127.0.0.1", server.port) }
+          assert_raises(Errno::ECONNREFUSED) { TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port) }
         end
       end
 
@@ -86,7 +131,7 @@ module AppProfiler
 
       def with_test_server(start = true, port = 0, &block)
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port/ }
-        server = AppProfiler::Server::ProfileServer.new(port)
+        server = ProfileServer.new(port)
         if start
           server.serve
         end
@@ -100,13 +145,13 @@ module AppProfiler
       include Rack::Test::Methods
 
       def setup
-        AppProfiler::Server.port = 0
-        AppProfiler::Server.cors = true
-        AppProfiler::Server.cors_host = "*"
+        Server.port = 0
+        Server.cors = true
+        Server.cors_host = "*"
       end
 
       def app
-        AppProfiler::Server::ProfileApplication.new
+        ProfileApplication.new
       end
 
       test "app responds with 405 to unsupported method" do
@@ -156,14 +201,14 @@ module AppProfiler
       end
 
       test "app can disable CORS" do
-        AppProfiler::Server.cors = false
+        Server.cors = false
         get("/profile?duration=0.01")
         assert(last_response.ok?)
         refute(last_response.has_header?("Access-Control-Allow-Origin"))
       end
 
       test "app can limit the CORS allowed host host" do
-        AppProfiler::Server.cors_host = "foo"
+        Server.cors_host = "foo"
         get("/profile?duration=0.01")
         assert(last_response.ok?)
         assert(last_response.has_header?("Access-Control-Allow-Origin"))
