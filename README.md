@@ -111,6 +111,129 @@ The custom middleware can then be configured like the following:
 Rails.application.config.app_profiler.middleware = AppProfilerAuthorizedMiddleware
 ```
 
+## Profile Server
+
+This option allows for profiles to be passively collected via an HTTP endpoint,
+inspired by [golang's built-in pprof server](https://pkg.go.dev/net/http/pprof).
+
+A minimal Rack app runs a minimal (non-compliant) HTTP server, which exposes an
+endpoint that allows for profiling. For security purposes, the server is bound
+to localhost only. The HTTP server is built using standard library modules only,
+in order to keep dependencies minimal. Because it is an entirely separate server,
+listening on an entirely separate socket, this should not interfere with any
+existing application routes, and should even be usable in non-web apps.
+
+This allows for two main use cases:
+
+- Passive profile collection in production
+  - Periodically profiling production apps to analyze them responding to real
+workloads
+  - Providing a statistical, long-term view of the "hot paths" of the workload
+- Local development profiling
+  - Can be used to get a profile "on demand" against a development server
+
+### Configuration
+
+If using as a railtie, only a single option needs to be set:
+
+```
+config.app_profiler.server_enabled = true
+```
+
+Alternatively, the server can be directly started with:
+
+```
+AppProfiler::Server.start!
+```
+
+The default duration, for requests without a duration parameter, can also be
+set via the railtie config.
+
+```
+AppProfiler.server.duration
+```
+
+The server supports both TCP and Unix sockets for its transport. It is
+recommended to use TCP for local development, and Unix sockets for production:
+
+```
+AppProfiler.server.transport = AppProfiler::Server::TRANSPORT_UNIX
+```
+
+It is possible, but not recommended, to hardcode the listen port to be used in
+TCP server mode with:
+
+```
+AppProfiler.server.port
+```
+
+If this is done in production and it can cause port conflicts with multiple
+instances of the app, which is another reason why the Unix transport is
+preferred for production.
+
+#### Discovering the port or socket path
+
+In general, the server should be run without setting the port, in which case
+any free TCP port may be used. To determine what the port is, check the
+application logs, or resolve it from the special "Magic file" which contains
+a mapping of pid to port:
+
+```
+$ PID=49825
+$ port_file=$(ls -1 /tmp/app_profiler/profileserver-$PID-port-*)
+$ PORT=$(echo $port_file | sed 's/.*port-\([[:digit:]]*\)-.*/\1/g')
+$ echo $PORT
+60160
+```
+
+This approach is intended to be "machine friendly" so that an external
+profiling agent can easily detect what port to profile on.
+
+For the Unix mode, this is even easier as the file simply includes the PID
+in it, and this will be the file handle to use for the Unix socket:
+
+```
+$ PID=41016
+$ SOCK=$(ls -1d /tmp/app_profiler/* | grep $PID.sock)
+$ echo $SOCK
+/tmp/app_profiler/app-profiler-41016.sock
+```
+
+### Collecting a profile
+
+The API is very simple, and passes supported parameters directly to stackprof.
+
+Supported are:
+
+- mode: the stackprof mode to use [cpu, wall, object]
+- interval: the interval to use
+  - For cpu and wall, this will be the duration in microseconds between samples
+  - For object, this be the modulus of which allocations are counted. Eg, for
+1, every allocation is counted. For 10, only every tenth will be.
+- duration: how long the profiling session should last
+
+For example, to collect a heap profile for 60 seconds, counting every 10th
+allocation:
+
+```
+curl "http://127.0.0.1:$PORT/profile?duration=60&mode=object&interval=10"
+```
+
+#### Usage with speedscope directly
+
+By default the server will allow CORS. This can be disabled if it presents a
+problem, but it should be generally safe given that the server listens for
+requests on localhost only, which is already a private network address.
+
+This can be used with a local instance of speedscope to directly initiate
+profiling from the browser. Assuming speedscope is running locally on port
+`9292`, and the profile server is running on port `57510`, the server address
+can  be URL encoded, and passed to speedscope via `#profileURL`:
+
+```
+http://127.0.0.1:9292/#profileURL=http%3A%2F%2F127.0.0.1%3A57510%2Fprofile%3Fduration%3D1
+```
+
 ## Profiling manually
 
 `AppProfiler` can be used more simply to profile blocks of code. Here's how:
