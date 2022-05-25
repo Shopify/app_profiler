@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Shopify/app_profiler
 
+- Log info with link to speedscope during file upload (#47)
+
 ## [0.1.0] - 2022-04-18
 
 - Support stackprof's ignore_gc option (#42)
