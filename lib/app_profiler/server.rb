@@ -15,7 +15,11 @@ module AppProfiler
     HTTP_NOT_ALLOWED = 405
     HTTP_CONFLICT = 409
 
+    TRANSPORT_UNIX = "unix"
+    TRANSPORT_TCP = "tcp"
+
     mattr_accessor :enabled, default: false
+    mattr_accessor :transport, default: TRANSPORT_UNIX
     mattr_accessor :cors, default: true
     mattr_accessor :cors_host, default: "*"
     mattr_accessor :port, default: 0
@@ -113,20 +117,80 @@ module AppProfiler
     # It will create an extremely minimal rack environment hash and hand it off
     # to our application to process
     class ProfileServer
-      PORT_TEMPFILE_PATH = "/tmp/app_profiler" # for tempfile that indicates port in filename
-      SERVER_ADDRESS = "127.0.0.1" # it is ONLY safe to run this bound to localhost
+      PROFILER_TEMPFILE_PATH = "/tmp/app_profiler" # for tempfile that indicates port in filename or unix sockets
 
-      attr_reader :port
+      class ProfileServerTransport
+        attr_reader :socket
 
-      def initialize(port = 0)
-        FileUtils.mkdir_p(PORT_TEMPFILE_PATH)
-        @server = TCPServer.new(SERVER_ADDRESS, port)
+        def client
+          raise("'client' method not implemented for transport")
+        end
+
+        def stop
+          raise("'stop' method not implemented for transport")
+        end
+      end
+
+      class ProfileServerTransportUNIX < ProfileServerTransport
+        def initialize
+          super
+          FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
+          @socket_file = File.join(PROFILER_TEMPFILE_PATH, "app-profiler-#{Process.pid}.sock")
+          File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
+          @socket = UNIXServer.new(@socket_file)
+        end
+
+        def client
+          UNIXSocket.new(@socket_file)
+        end
+
+        def stop
+          File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
+          @socket.close
+        end
+      end
+
+      class ProfileServerTransportTCP < ProfileServerTransport
+        SERVER_ADDRESS = "127.0.0.1" # it is ONLY safe to run this bound to localhost
+
+        def initialize(port = 0)
+          super()
+          FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
+          @socket = TCPServer.new(SERVER_ADDRESS, port)
+          @port = @socket.addr[1]
+          @port_file = Tempfile.new("profileserver-#{Process.pid}-port-#{@port}-", PROFILER_TEMPFILE_PATH)
+        end
+
+        def client
+          TCPSocket.new(SERVER_ADDRESS, @port)
+        end
+
+        def stop
+          @port_file.unlink
+          @socket.close
+        end
+      end
+
+      def initialize(transport)
+        case transport
+        when TRANSPORT_UNIX
+          @transport = ProfileServer::ProfileServerTransportUNIX.new
+        when TRANSPORT_TCP
+          @transport = ProfileServer::ProfileServerTransportTCP.new(AppProfiler::Server.port)
+        else
+          raise "invalid transport #{transport}"
+        end
+
         @listen_thread = nil
-        @port = @server.addr[1]
-        @port_file = Tempfile.new("profileserver-#{Process.pid}-port-#{@port}-", PORT_TEMPFILE_PATH)
+
         AppProfiler.logger.info(
-          "[AppProfiler::Server] listening on port=#{@port}"
+          "[AppProfiler::Server] listening on addr=#{@transport.socket.addr}"
         )
+        at_exit { stop }
+      end
+
+      def client
+        @transport.client
       end
 
       def serve
@@ -136,7 +200,7 @@ module AppProfiler
 
         @listen_thread = Thread.new do
           loop do
-            Thread.new(@server.accept) do |session|
+            Thread.new(@transport.socket.accept) do |session|
               request = session.gets
               if request.nil?
                 session.close
@@ -176,30 +240,31 @@ module AppProfiler
 
       def stop
         @listen_thread.kill
-        @port_file.unlink
-        @server.close
+        @transport.stop
       end
     end
 
     class << self
       def start!
-        return unless @server.nil?
+        @profile_server ||= {} # FIXME
+        return if @profile_server.key?(Process.pid)
 
-        @server = ProfileServer.new(AppProfiler::Server.port)
-        @server.serve
+        @profile_server[Process.pid] = ProfileServer.new(AppProfiler::Server.transport)
+        @profile_server[Process.pid].serve
+        @profile_server[Process.pid]
+      end
+
+      def client
+        return unless @profile_server.key?(Process.pid)
+
+        @profile_server[Process.pid].client
       end
 
       def stop!
-        return if @server.nil?
+        return unless @profile_server.key?(Process.pid)
 
-        @server.stop
-        @server = nil
-      end
-
-      def port?
-        return if @server.nil?
-
-        @server.port
+        @profile_server[Process.pid].stop
+        @profile_server.delete(Process.pid)
       end
     end
   end

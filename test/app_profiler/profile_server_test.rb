@@ -6,44 +6,63 @@ require "net/http"
 module AppProfiler
   module Server
     TEST_PORT = 11337
-    class ServerTest < TestCase
+
+    class TCPServerTest < TestCase
       def setup
         AppProfiler::Server.port = 0
+        AppProfiler::Server.transport = TRANSPORT_TCP
       end
 
       test ".start! creates a profile server listening on defined port" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port=#{TEST_PORT}/ }
+        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=.*#{TEST_PORT}.*/ }
         Server.port = TEST_PORT
         assert_not_nil(Server.start!)
-        assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, TEST_PORT))
+        assert_not_nil(Server.client)
       ensure
-        assert_nil(Server.stop!)
+        assert_not_nil(Server.stop!)
       end
 
       test ".start! creates a profile server on random free port with undefined port" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port/ }
+        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=/ }
         assert_not_nil(Server.start!)
-        assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, Server.port?))
+        assert_not_nil(Server.client)
       ensure
-        assert_nil(Server.stop!)
+        assert_not_nil(Server.stop!)
       end
 
       test ".stop! stops running profile server" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port=#{TEST_PORT}/ }
+        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=.*#{TEST_PORT}.*/ }
         Server.port = TEST_PORT
-        assert_not_nil(Server.start!)
-        assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, TEST_PORT))
-        assert_nil(Server.stop!)
-        assert_raises(Errno::ECONNREFUSED) { TCPSocket.new(ProfileServer::SERVER_ADDRESS, TEST_PORT) }
+        server = Server.start!
+        assert_not_nil(server)
+        assert_not_nil(Server.client)
+        assert_not_nil(Server.stop!)
+        assert_raises(Errno::ECONNREFUSED) { server.client }
       ensure
         assert_nil(Server.stop!)
       end
+    end
 
-      test ".port? returns the server port" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port=#{TEST_PORT}/ }
-        Server.port = TEST_PORT
+    class UNIXServerTest < TestCase
+      def setup
+        AppProfiler::Server.transport = TRANSPORT_UNIX
+      end
+
+      test ".start! creates a profile server listening on unix socket" do
+        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on .*AF_UNIX.*sock/ }
         assert_not_nil(Server.start!)
-        assert_equal(TEST_PORT, Server.port?)
+        assert_not_nil(Server.client)
+      ensure
+        assert_not_nil(Server.stop!)
+      end
+
+      test ".stop! stops running profile server" do
+        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on .*AF_UNIX.*sock/ }
+        server = Server.start!
+        assert_not_nil(server)
+        assert_not_nil(Server.client)
+        assert_not_nil(Server.stop!)
+        assert_raises(Errno::ENOENT) { server.client }
       ensure
         assert_nil(Server.stop!)
       end
@@ -51,16 +70,16 @@ module AppProfiler
 
     class ProfileServerTest < TestCase
       test ".serve starts a TCP server listening on a socket" do
-        with_test_server(false) do |server|
+        with_all_transport_types do |server|
           server.serve
-          assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port))
+          assert_not_nil(server.client)
         end
       end
 
       test ".serve starts a socket that responds with valid HTTP response" do
-        with_test_server(false) do |server|
+        with_all_transport_types do |server|
           server.serve
-          socket = TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port)
+          socket = server.client
           socket.write("GET / HTTP/1.0\r\n\r\n")
           response = socket.read
           expected_response = <<~RESPONSE
@@ -74,9 +93,9 @@ module AppProfiler
       end
 
       test ".serve starts a socket that serves valid JSON profiles over HTTP" do
-        with_test_server(false) do |server|
+        with_all_transport_types do |server|
           server.serve
-          socket = TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port)
+          socket = server.client
           socket.write("GET /profile?duration=0.001 HTTP/1.0\r\n\r\n")
           response = socket.read
           lines = response.lines
@@ -94,50 +113,54 @@ module AppProfiler
       end
 
       test ".serve starts a server that responds to an HTTP request" do
-        with_test_server(false) do |server|
+        Server.port = TEST_PORT
+        with_test_server(transport: TRANSPORT_TCP) do |server|
           server.serve
-          assert_not_nil(TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port))
-          uri = URI("http://#{ProfileServer::SERVER_ADDRESS}:#{server.port}/")
+          assert_not_nil(server.client)
+          uri = URI("http://127.0.0.1:#{TEST_PORT}/")
           assert_equal("404", Net::HTTP.get_response(uri).code)
         end
       end
 
       test ".serve creates magic tempfile with pid : port mapping encoded in name" do
-        with_test_server(false) do |server|
+        with_test_server(transport: TRANSPORT_TCP) do |server|
           server.serve
-          port_files = Dir["#{ProfileServer::PORT_TEMPFILE_PATH}/profileserver-#{Process.pid}-*"]
+          port_files = Dir["#{ProfileServer::PROFILER_TEMPFILE_PATH}/profileserver-#{Process.pid}-*"]
           assert_equal(1, port_files.size)
           port_file = port_files.first
           matches = port_file.match(/port-(\d+)-/)
           assert_equal(2, matches.size)
-          assert_equal(server.port, matches[1].to_i)
         end
       end
 
-      test ".stop stops profile server" do
-        with_test_server do |server|
+      test ".stop stops tcp profile server" do
+        with_test_server(transport: TRANSPORT_TCP) do |server|
+          server.serve
           assert_nil(server.stop)
-          assert_raises(Errno::ECONNREFUSED) { TCPSocket.new(ProfileServer::SERVER_ADDRESS, server.port) }
+          assert_raises(Errno::ECONNREFUSED) { server.client }
         end
       end
 
-      test ".port returns the server port" do
-        with_test_server(true, TEST_PORT) do |server|
-          assert_equal(TEST_PORT, server.port)
+      test ".stop stops unix profile server" do
+        with_test_server(transport: TRANSPORT_UNIX) do |server|
+          server.serve
+          assert_nil(server.stop)
+          assert_raises(Errno::ENOENT) { server.client }
         end
       end
 
       private
 
-      def with_test_server(start = true, port = 0, &block)
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on port/ }
-        server = ProfileServer.new(port)
-        if start
-          server.serve
-        end
-        yield server
+      def with_all_transport_types(&block)
+        with_test_server(transport: TRANSPORT_TCP, &block)
+        with_test_server(transport: TRANSPORT_UNIX, &block)
+      end
+
+      def with_test_server(transport: TRANSPORT_UNIX, &block)
+        profile_server = ProfileServer.new(transport)
+        yield profile_server
       ensure
-        assert_nil(server.stop)
+        assert_nil(profile_server.stop)
       end
     end
 
