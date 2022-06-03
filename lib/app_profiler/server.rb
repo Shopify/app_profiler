@@ -5,7 +5,8 @@ require "rack"
 require "tempfile"
 
 # This module intends to make it easy to pull profiles from a target process via "HTTP"
-# It creates a minimal, not-fully-compliant HTTP server, by default on a random port.
+# It creates a minimal, not-fully-compliant HTTP server, either on a UNIX socket
+# or if a TCP Server, by default on a random port.
 #
 # Usage:
 #
@@ -42,7 +43,11 @@ module AppProfiler
     HTTP_NOT_ALLOWED = 405
     HTTP_CONFLICT = 409
 
+    TYPE_UNIX = "unix"
+    TYPE_TCP = "tcp"
+
     mattr_accessor :enabled, default: false
+    mattr_accessor :type, default: TYPE_UNIX
     mattr_accessor :cors, default: true
     mattr_accessor :cors_host, default: "*"
     mattr_accessor :port, default: 0
@@ -140,19 +145,57 @@ module AppProfiler
     # It will create an extremely minimal rack environment hash and hand it off
     # to our application to process
     class ProfileServer
-      PORT_TEMPFILE_PATH = "/tmp/app_profiler" # for tempfile that indicates port in filename
-      SERVER_ADDRESS = "127.0.0.1" # it is ONLY safe to run this bound to localhost
+      PROFILER_TEMPFILE_PATH = "/tmp/app_profiler" # for tempfile that indicates port in filename or unix sockets
 
-      attr_reader :port
+      class ProfileUNIXServer
+        attr_reader :server
 
-      def initialize(port = 0)
-        FileUtils.mkdir_p(PORT_TEMPFILE_PATH)
-        @server = TCPServer.new(SERVER_ADDRESS, port)
+        def initialize
+          FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
+          @socket_file = File.join(PROFILER_TEMPFILE_PATH, "app-profiler-#{Process.pid}.sock")
+          File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
+          @server = UNIXServer.new(@socket_file)
+        end
+
+        def new_socket
+          UNIXSocket.new(@socket_file)
+        end
+
+        def stop
+          File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
+          @server.close
+        end
+      end
+
+      class ProfileTCPServer
+        SERVER_ADDRESS = "127.0.0.1" # it is ONLY safe to run this bound to localhost
+
+        attr_reader :server
+
+        def initialize(port = 0)
+          FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
+          @server = TCPServer.new(SERVER_ADDRESS, port)
+          @port = @server.addr[1]
+          @port_file = Tempfile.new("profileserver-#{Process.pid}-port-#{@port}-", PROFILER_TEMPFILE_PATH)
+        end
+
+        def new_socket
+          TCPSocket.new(SERVER_ADDRESS, @port)
+        end
+
+        def stop
+          @port_file.unlink
+          @server.close
+        end
+      end
+
+      def initialize(profile_server)
+        @server = profile_server.server
+        @profile_server = profile_server
         @listen_thread = nil
-        @port = @server.addr[1]
-        @port_file = Tempfile.new("profileserver-#{Process.pid}-port-#{@port}-", PORT_TEMPFILE_PATH)
+
         AppProfiler.logger.info(
-          "[AppProfiler::Server] listening on port=#{@port}"
+          "[AppProfiler::Server] listening on addr=#{@server.addr}"
         )
       end
 
@@ -201,32 +244,44 @@ module AppProfiler
         end
       end
 
+      def new_socket
+        @profile_server.new_socket
+      end
+
       def stop
         @listen_thread.kill
-        @port_file.unlink
-        @server.close
+        @profile_server.stop
       end
     end
 
     class << self
       def start!
-        return unless @server.nil?
+        return unless @profile_server.nil?
 
-        @server = ProfileServer.new(AppProfiler::Server.port)
-        @server.serve
+        case AppProfiler::Server.type
+        when TYPE_UNIX
+          @server = ProfileServer::ProfileUNIXServer.new
+        when TYPE_TCP
+          @server = ProfileServer::ProfileTCPServer.new(AppProfiler::Server.port)
+        else
+          raise "invalid server type #{AppProfiler::Server.type}"
+        end
+
+        @profile_server = ProfileServer.new(@server)
+        @profile_server.serve
+      end
+
+      def new_socket!
+        return if @server.nil?
+
+        @server.new_socket
       end
 
       def stop!
-        return if @server.nil?
+        return if @profile_server.nil?
 
-        @server.stop
-        @server = nil
-      end
-
-      def port?
-        return if @server.nil?
-
-        @server.port
+        @profile_server.stop
+        @profile_server = nil
       end
     end
   end
