@@ -43,10 +43,6 @@ module AppProfiler
       end
     end
 
-    initializer "app_profiler.enable_server" do
-      AppProfiler::Server.start! if AppProfiler.server.enabled
-    end
-
     private
 
     def default_middleware_action
