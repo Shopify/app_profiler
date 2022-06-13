@@ -18,12 +18,21 @@ module AppProfiler
     TRANSPORT_UNIX = "unix"
     TRANSPORT_TCP = "tcp"
 
-    mattr_accessor :enabled, default: false
-    mattr_accessor :transport, default: TRANSPORT_UNIX
-    mattr_accessor :cors, default: true
-    mattr_accessor :cors_host, default: "*"
-    mattr_accessor :port, default: 0
-    mattr_accessor :duration, default: 30
+    DEFAULTS = {
+      enabled: false,
+      transport: TRANSPORT_UNIX,
+      cors: true,
+      cors_host: "*",
+      port: 0,
+      duration: 30,
+    }
+
+    mattr_accessor :enabled, default: DEFAULTS[:enabled]
+    mattr_accessor :transport, default: DEFAULTS[:transport]
+    mattr_accessor :cors, default: DEFAULTS[:cors]
+    mattr_accessor :cors_host, default: DEFAULTS[:cors_host]
+    mattr_accessor :port, default: DEFAULTS[:port]
+    mattr_accessor :duration, default: DEFAULTS[:duration]
 
     class ProfileApplication
       class InvalidProfileArgsError < StandardError; end
@@ -245,26 +254,38 @@ module AppProfiler
     end
 
     class << self
-      def start!
-        @profile_server ||= {} # FIXME
-        return if @profile_server.key?(Process.pid)
+      def reset!
+        @profile_server = {}
+        DEFAULTS.each do |config, value|
+          class_variable_set(:"@@#{config}", value) # rubocop:disable Style/ClassVars
+        end
+      end
 
-        @profile_server[Process.pid] = ProfileServer.new(AppProfiler::Server.transport)
-        @profile_server[Process.pid].serve
-        @profile_server[Process.pid]
+      def start!
+        return if profile_server.key?(Process.pid)
+
+        profile_server[Process.pid] = ProfileServer.new(AppProfiler::Server.transport)
+        profile_server[Process.pid].serve
+        profile_server[Process.pid]
       end
 
       def client
-        return unless @profile_server.key?(Process.pid)
+        return unless profile_server.key?(Process.pid)
 
-        @profile_server[Process.pid].client
+        profile_server[Process.pid].client
       end
 
       def stop!
-        return unless @profile_server.key?(Process.pid)
+        return unless profile_server.key?(Process.pid)
 
-        @profile_server[Process.pid].stop
-        @profile_server.delete(Process.pid)
+        profile_server[Process.pid].stop
+        profile_server.delete(Process.pid)
+      end
+
+      private
+
+      def profile_server
+        @profile_server ||= {}
       end
     end
   end

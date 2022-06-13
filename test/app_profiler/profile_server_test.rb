@@ -7,10 +7,21 @@ module AppProfiler
   module Server
     TEST_PORT = 11337
 
+    class ServerTest < TestCase
+      test ".reset! sets module variables back to their default" do
+        refute_equal(TRANSPORT_TCP, Server.transport)
+        Server.transport = TRANSPORT_TCP
+        refute_equal(DEFAULTS[:transport], Server.transport)
+        Server.reset!
+        refute_equal(TRANSPORT_TCP, Server.transport)
+        assert_equal(DEFAULTS[:transport], Server.transport)
+      end
+    end
+
     class TCPServerTest < TestCase
       def setup
-        AppProfiler::Server.port = 0
-        AppProfiler::Server.transport = TRANSPORT_TCP
+        Server.reset!
+        Server.transport = TRANSPORT_TCP
       end
 
       test ".start! creates a profile server listening on defined port" do
@@ -45,7 +56,8 @@ module AppProfiler
 
     class UNIXServerTest < TestCase
       def setup
-        AppProfiler::Server.transport = TRANSPORT_UNIX
+        Server.reset!
+        Server.transport = TRANSPORT_UNIX
       end
 
       test ".start! creates a profile server listening on unix socket" do
@@ -69,6 +81,10 @@ module AppProfiler
     end
 
     class ProfileServerTest < TestCase
+      def setup
+        Server.reset!
+      end
+
       test ".serve starts a TCP server listening on a socket" do
         with_all_transport_types do |server|
           server.serve
@@ -168,9 +184,7 @@ module AppProfiler
       include Rack::Test::Methods
 
       def setup
-        Server.port = 0
-        Server.cors = true
-        Server.cors_host = "*"
+        Server.reset!
       end
 
       def app
