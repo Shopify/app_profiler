@@ -146,11 +146,13 @@ Alternatively, the server can be directly started with:
 AppProfiler::Server.start!
 ```
 
-The default duration, for requests without a duration parameter, can also be
+The default duration (in seconds), for requests without a duration parameter, can also be
 set via the railtie config.
 
 ```
-AppProfiler.server.duration
+AppProfiler.server.duration = 30
+# OR
+Rails.application.config.app_profiler.server_duration = 30
 ```
 
 The server supports both TCP and Unix sockets for its transport. It is
@@ -158,13 +160,17 @@ recommended to use TCP for local development, and Unix sockets for production:
 
 ```
 AppProfiler.server.transport = AppProfiler::Server::TRANSPORT_UNIX
+# OR
+Rails.application.config.app_profiler.server_transport = AppProfiler::Server::TRANSPORT_UNIX
 ```
 
 It is possible, but not recommended, to hardcode the listen port to be used in
 TCP server mode with:
 
 ```
-AppProfiler.server.port
+AppProfiler.server.port = 8080
+# OR
+Rails.application.config.app_profiler.server_port = 8080
 ```
 
 If this is done in production and it can cause port conflicts with multiple
@@ -203,14 +209,8 @@ $ echo $SOCK
 
 The API is very simple, and passes supported parameters directly to stackprof.
 
-Supported are:
-
-- mode: the stackprof mode to use [cpu, wall, object]
-- interval: the interval to use
-  - For cpu and wall, this will be the duration in microseconds between samples
-  - For object, this be the modulus of which allocations are counted. Eg, for
-1, every allocation is counted. For 10, only every tenth will be.
-- duration: how long the profiling session should last
+See the [possible keys](#possible-keys) for additional documentation on the
+supported parameters.
 
 For example, to collect a heap profile for 60 seconds, counting every 10th
 allocation:
