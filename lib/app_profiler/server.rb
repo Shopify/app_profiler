@@ -59,7 +59,7 @@ module AppProfiler
         when "/profile"
           begin
             stackprof_args, duration = validate_profile_params(request.params)
-          rescue => e
+          rescue InvalidProfileArgsError => e
             response.status = HTTP_BAD_REQUEST
             response.write("Invalid argument #{e.message}")
             return response
@@ -93,7 +93,11 @@ module AppProfiler
       def validate_profile_params(params)
         params = params.symbolize_keys
         stackprof_args = {}
-        duration = Float(params.key?(:duration) ? params[:duration] : AppProfiler::Server.duration)
+        begin
+          duration = Float(params.key?(:duration) ? params[:duration] : AppProfiler::Server.duration)
+        rescue ArgumentError
+          raise InvalidProfileArgsError, "invalid duration #{params[:duration]}"
+        end
         if params.key?(:mode)
           if ["cpu", "wall", "object"].include?(params[:mode])
             stackprof_args[:mode] = params[:mode].to_sym
@@ -128,19 +132,19 @@ module AppProfiler
     class ProfileServer
       PROFILER_TEMPFILE_PATH = "/tmp/app_profiler" # for tempfile that indicates port in filename or unix sockets
 
-      class ProfileServerTransport
+      class Transport
         attr_reader :socket
 
         def client
-          raise("'client' method not implemented for transport")
+          raise(NotImplementedError)
         end
 
         def stop
-          raise("'stop' method not implemented for transport")
+          raise(NotImplementedError)
         end
       end
 
-      class ProfileServerTransportUNIX < ProfileServerTransport
+      class UNIX < Transport
         def initialize
           super
           FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
@@ -159,7 +163,7 @@ module AppProfiler
         end
       end
 
-      class ProfileServerTransportTCP < ProfileServerTransport
+      class TCP < Transport
         SERVER_ADDRESS = "127.0.0.1" # it is ONLY safe to run this bound to localhost
 
         def initialize(port = 0)
@@ -183,9 +187,9 @@ module AppProfiler
       def initialize(transport)
         case transport
         when TRANSPORT_UNIX
-          @transport = ProfileServer::ProfileServerTransportUNIX.new
+          @transport = ProfileServer::UNIX.new
         when TRANSPORT_TCP
-          @transport = ProfileServer::ProfileServerTransportTCP.new(AppProfiler::Server.port)
+          @transport = ProfileServer::TCP.new(AppProfiler::Server.port)
         else
           raise "invalid transport #{transport}"
         end
@@ -253,39 +257,47 @@ module AppProfiler
       end
     end
 
+    private_constant :ProfileApplication, :ProfileServer
+
     class << self
-      def reset!
-        @profile_server = {}
+      def reset
+        profile_servers.clear
         DEFAULTS.each do |config, value|
           class_variable_set(:"@@#{config}", value) # rubocop:disable Style/ClassVars
         end
       end
 
-      def start!
-        return if profile_server.key?(Process.pid)
+      def start
+        return if profile_server
 
-        profile_server[Process.pid] = ProfileServer.new(AppProfiler::Server.transport)
-        profile_server[Process.pid].serve
-        profile_server[Process.pid]
+        profile_servers[Process.pid] = ProfileServer.new(AppProfiler::Server.transport)
+        profile_server.serve
+        profile_server
       end
 
       def client
-        return unless profile_server.key?(Process.pid)
+        return unless profile_server
 
-        profile_server[Process.pid].client
+        profile_server.client
       end
 
-      def stop!
-        return unless profile_server.key?(Process.pid)
+      def stop
+        return unless profile_server
 
-        profile_server[Process.pid].stop
-        profile_server.delete(Process.pid)
+        profile_server.stop
+        profile_servers.delete(Process.pid)
       end
 
       private
 
       def profile_server
-        @profile_server ||= {}
+        profile_servers[Process.pid]
+      end
+
+      # It is possible there will be a server pre-fork, this is to distinguish
+      # the child server from its parent via PID
+      def profile_servers
+        @profile_servers ||= {}
       end
     end
   end

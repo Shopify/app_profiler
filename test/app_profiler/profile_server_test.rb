@@ -7,84 +7,83 @@ module AppProfiler
   module Server
     TEST_PORT = 11337
 
-    class ServerTest < TestCase
-      test ".reset! sets module variables back to their default" do
+    class ProfileServerTestCase < TestCase
+      setup { Server.reset }
+      teardown { Server.reset }
+    end
+
+    class ServerTest < ProfileServerTestCase
+      test ".reset sets module variables back to their default" do
         refute_equal(TRANSPORT_TCP, Server.transport)
         Server.transport = TRANSPORT_TCP
         refute_equal(DEFAULTS[:transport], Server.transport)
-        Server.reset!
+        Server.reset
         refute_equal(TRANSPORT_TCP, Server.transport)
         assert_equal(DEFAULTS[:transport], Server.transport)
       end
     end
 
-    class TCPServerTest < TestCase
-      def setup
-        Server.reset!
+    class TCPServerTest < ProfileServerTestCase
+      setup do
         Server.transport = TRANSPORT_TCP
       end
 
-      test ".start! creates a profile server listening on defined port" do
+      test ".start creates a profile server listening on defined port" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=.*#{TEST_PORT}.*/ }
         Server.port = TEST_PORT
-        assert_not_nil(Server.start!)
+        assert_not_nil(Server.start)
         assert_not_nil(Server.client)
       ensure
-        assert_not_nil(Server.stop!)
+        assert_not_nil(Server.stop)
       end
 
-      test ".start! creates a profile server on random free port with undefined port" do
+      test ".start creates a profile server on random free port with undefined port" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=/ }
-        assert_not_nil(Server.start!)
+        assert_not_nil(Server.start)
         assert_not_nil(Server.client)
       ensure
-        assert_not_nil(Server.stop!)
+        assert_not_nil(Server.stop)
       end
 
-      test ".stop! stops running profile server" do
+      test ".stop stops running profile server" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=.*#{TEST_PORT}.*/ }
         Server.port = TEST_PORT
-        server = Server.start!
+        server = Server.start
         assert_not_nil(server)
         assert_not_nil(Server.client)
-        assert_not_nil(Server.stop!)
+        assert_not_nil(Server.stop)
         assert_raises(Errno::ECONNREFUSED) { server.client }
       ensure
-        assert_nil(Server.stop!)
+        assert_nil(Server.stop)
       end
     end
 
-    class UNIXServerTest < TestCase
-      def setup
-        Server.reset!
+    class UNIXServerTest < ProfileServerTestCase
+      setup do
         Server.transport = TRANSPORT_UNIX
       end
 
-      test ".start! creates a profile server listening on unix socket" do
+      test ".start creates a profile server listening on unix socket" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on .*AF_UNIX.*sock/ }
-        assert_not_nil(Server.start!)
+        assert_not_nil(Server.start)
         assert_not_nil(Server.client)
       ensure
-        assert_not_nil(Server.stop!)
+        assert_not_nil(Server.stop)
       end
 
-      test ".stop! stops running profile server" do
+      test ".stop stops running profile server" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /listening on .*AF_UNIX.*sock/ }
-        server = Server.start!
+        server = Server.start
         assert_not_nil(server)
         assert_not_nil(Server.client)
-        assert_not_nil(Server.stop!)
+        assert_not_nil(Server.stop)
         assert_raises(Errno::ENOENT) { server.client }
       ensure
-        assert_nil(Server.stop!)
+        assert_nil(Server.stop)
       end
     end
 
-    class ProfileServerTest < TestCase
-      def setup
-        Server.reset!
-      end
-
+    class ProfileServerTest < ProfileServerTestCase
       test ".serve starts a TCP server listening on a socket" do
         with_all_transport_types do |server|
           server.serve
@@ -180,12 +179,8 @@ module AppProfiler
       end
     end
 
-    class ProfileApplicationTest < TestCase
+    class ProfileApplicationTest < ProfileServerTestCase
       include Rack::Test::Methods
-
-      def setup
-        Server.reset!
-      end
 
       def app
         ProfileApplication.new
