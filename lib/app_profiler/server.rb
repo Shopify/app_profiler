@@ -199,6 +199,7 @@ module AppProfiler
         AppProfiler.logger.info(
           "[AppProfiler::Server] listening on addr=#{@transport.socket.addr}"
         )
+        @pid = Process.pid
         at_exit { stop }
       end
 
@@ -252,6 +253,8 @@ module AppProfiler
       end
 
       def stop
+        return unless @pid == Process.pid
+
         @listen_thread.kill
         @transport.stop
       end
