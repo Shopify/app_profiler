@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Shopify/app_profiler
 
+## [0.1.1] - 2022-06-15
+
 - Support for "profile server" to support on-demand profiling via HTTP (#48)
 - Log info with link to speedscope during file upload (#47)
 
