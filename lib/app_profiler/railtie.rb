@@ -16,6 +16,12 @@ module AppProfiler
       AppProfiler.middleware = app.config.app_profiler.middleware || Middleware
       AppProfiler.middleware.action = app.config.app_profiler.middleware_action || default_middleware_action
       AppProfiler.middleware.disabled = app.config.app_profiler.middleware_disabled || false
+      AppProfiler.server.enabled = app.config.app_profiler.server_enabled || false
+      AppProfiler.server.transport = app.config.app_profiler.server_transport || default_appprofiler_transport
+      AppProfiler.server.port = app.config.app_profiler.server_port || 0
+      AppProfiler.server.duration = app.config.app_profiler.server_duration || 30
+      AppProfiler.server.cors = app.config.app_profiler.server_cors || true
+      AppProfiler.server.cors_host = app.config.app_profiler.server_cors_host || "*"
       AppProfiler.autoredirect = app.config.app_profiler.autoredirect || false
       AppProfiler.speedscope_host = app.config.app_profiler.speedscope_host || ENV.fetch(
         "APP_PROFILER_SPEEDSCOPE_URL", "https://speedscope.app"
@@ -37,6 +43,15 @@ module AppProfiler
       end
     end
 
+    initializer "app_profiler.enable_server" do
+      if AppProfiler.server.enabled
+        AppProfiler::Server.start
+        ActiveSupport::ForkTracker.after_fork do
+          AppProfiler::Server.start
+        end
+      end
+    end
+
     private
 
     def default_middleware_action
@@ -44,6 +59,16 @@ module AppProfiler
         Middleware::ViewAction
       else
         Middleware::UploadAction
+      end
+    end
+
+    def default_appprofiler_transport
+      if Rails.env.development?
+        # default to TCP server in development so that if wanted users are able to target
+        # the server with speedscope
+        AppProfiler::Server::TRANSPORT_TCP
+      else
+        AppProfiler::Server::TRANSPORT_UNIX
       end
     end
   end
