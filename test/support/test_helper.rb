@@ -15,9 +15,7 @@ module AppProfiler
 
     def assert_profiles_uploaded(autoredirect: false)
       AppProfiler.stubs(:storage).returns(MockStorage)
-      AppProfiler.logger.expects(:info).with do |value|
-        value =~ /\[Profiler\] data uploaded: profile_url=.* profile_viewer_url=.*/
-      end
+      AppProfiler.logger.expects(:info).with { |value| value =~ /uploaded profile/ }
 
       response = yield
 

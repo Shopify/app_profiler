@@ -21,15 +21,23 @@ module AppProfiler
         def append_headers(response, upload:, autoredirect:)
           return unless upload
 
-          response[1][profile_header]      = AppProfiler.profile_url(upload)
+          response[1][profile_header]      = profile_url(upload)
           response[1][profile_data_header] = profile_data_url(upload)
 
           return unless autoredirect
 
           # Automatically redirect to profile if autoredirect is true.
           if response[0].to_i < 500
-            response[1]["Location"] = AppProfiler.profile_url(upload)
+            response[1]["Location"] = profile_url(upload)
             response[0] = 303
+          end
+        end
+
+        def profile_url(upload)
+          if AppProfiler.profile_url_formatter.nil?
+            "#{AppProfiler.speedscope_host}#profileURL=#{upload.url}"
+          else
+            AppProfiler.profile_url_formatter.call(upload)
           end
         end
 

@@ -40,13 +40,7 @@ module AppProfiler
     def upload
       AppProfiler.storage.upload(self).tap do |upload|
         if upload && defined?(upload.url)
-          AppProfiler.logger.info(
-            <<~INFO.squish
-              [Profiler] data uploaded:
-              profile_url=#{upload.url}
-              profile_viewer_url=#{AppProfiler.profile_url(upload)}
-            INFO
-          )
+          AppProfiler.logger.info("[Profiler] uploaded profile profile_url=#{upload.url}")
         end
       end
     rescue => error
