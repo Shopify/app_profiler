@@ -4,7 +4,6 @@ require "active_support/core_ext/class"
 require "active_support/core_ext/module"
 require "logger"
 require "app_profiler/version"
-require "app_profiler/railtie" if defined?(Rails::Railtie)
 
 module AppProfiler
   class ConfigurationError < StandardError
@@ -81,7 +80,11 @@ module AppProfiler
     end
 
     def profile_url(upload)
+      return unless AppProfiler.profile_url_formatter
+
       AppProfiler.profile_url_formatter.call(upload)
     end
   end
+
+  require "app_profiler/railtie" if defined?(Rails::Railtie)
 end

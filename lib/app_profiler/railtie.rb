@@ -5,6 +5,7 @@ require "rails"
 module AppProfiler
   class Railtie < Rails::Railtie
     config.app_profiler = ActiveSupport::OrderedOptions.new
+    config.app_profiler.profile_url_formatter = DefaultProfileFormatter
 
     initializer "app_profiler.configs" do |app|
       AppProfiler.logger = app.config.app_profiler.logger || Rails.logger
