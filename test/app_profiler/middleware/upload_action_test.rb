@@ -71,6 +71,16 @@ module AppProfiler
         assert_equal("https://foo.com/prefix/#{@profile.file.basename}", @response[1]["Location"])
       end
 
+      test ".call does not redirect if the default formatter is nil" do
+        with_autoredirect do
+          with_url_formatter(nil) do
+            UploadAction.call(@profile, response: @response)
+          end
+        end
+
+        refute_predicate(@response[1]["Location"], :present?)
+      end
+
       private
 
       def with_autoredirect

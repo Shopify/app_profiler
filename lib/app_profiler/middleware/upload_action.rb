@@ -27,8 +27,9 @@ module AppProfiler
           return unless autoredirect
 
           # Automatically redirect to profile if autoredirect is true.
-          if response[0].to_i < 500
-            response[1]["Location"] = AppProfiler.profile_url(upload)
+          location = AppProfiler.profile_url(upload)
+          if response[0].to_i < 500 && location
+            response[1]["Location"] = location
             response[0] = 303
           end
         end

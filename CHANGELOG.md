@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/Shopify/app_profiler
+- Bug fix: Ensure default profile_url_formatter default url formatter is set during initialization (#54)
 
 ## [0.1.1] - 2022-06-15
 
