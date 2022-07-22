@@ -175,7 +175,7 @@ GEM
     thor (1.0.1)
     thread_safe (0.3.6)
     trailblazer-option (0.1.2)
-    tzinfo (1.2.7)
+    tzinfo (1.2.10)
       thread_safe (~> 0.1)
     uber (0.1.0)
     unicode-display_width (2.1.0)
