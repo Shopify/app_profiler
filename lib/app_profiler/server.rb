@@ -70,12 +70,15 @@ module AppProfiler
             start_time = Process.clock_gettime(Process::CLOCK_REALTIME, :nanosecond)
 
             sleep(duration)
-            profile = AppProfiler.stop
-            stop_running
+
+            profile = stop_running
+
             response.status = HTTP_OK
             response.set_header("Content-Type", "application/json")
+
             profile_hash = profile.to_h
             profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
+
             response.write(JSON.dump(profile_hash))
 
             if AppProfiler::Server.cors
@@ -127,7 +130,11 @@ module AppProfiler
       end
 
       def stop_running
-        @semaphore.synchronize { @profile_running = false }
+        @semaphore.synchronize do
+          AppProfiler.stop.tap do
+            @profile_running = false
+          end
+        end
       end
     end
 
