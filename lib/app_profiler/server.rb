@@ -67,25 +67,32 @@ module AppProfiler
 
           if start_running
             start_time = Process.clock_gettime(Process::CLOCK_REALTIME, :nanosecond)
-            AppProfiler.start(**stackprof_args)
-            sleep(duration)
-            profile = AppProfiler.stop
-            stop_running
-            response.status = HTTP_OK
-            response.set_header("Content-Type", "application/json")
+            if AppProfiler.start(**stackprof_args)
+              sleep(duration)
+              profile = AppProfiler.stop
+              stop_running
+              response.status = HTTP_OK
+              response.set_header("Content-Type", "application/json")
+              profile_hash = profile.to_h
+              profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
+              response.write(JSON.dump(profile_hash))
+            else
+              response.status = HTTP_CONFLICT
+              response.write("A profile is already running")
+              return response
+            end
             if AppProfiler::Server.cors
               response.set_header("Access-Control-Allow-Origin", AppProfiler::Server.cors_host)
             end
-            profile_hash = profile.to_h
-            profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
-            response.write(JSON.dump(profile_hash))
           else
             response.status = HTTP_CONFLICT
             response.write("A profile is already running")
+            return response
           end
         else
           response.status = HTTP_NOT_FOUND
           response.write("Unsupported endpoint #{request.path}")
+          return response
         end
         response
       end

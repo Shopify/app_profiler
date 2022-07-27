@@ -116,10 +116,10 @@ module AppProfiler
           lines = response.lines
           assert(lines.shift.match?(/HTTP.*200/))
           assert_equal("Content-Type: application/json\r\n", lines.shift)
-          assert_equal("Access-Control-Allow-Origin: *\r\n", lines.shift)
           length_line = lines.shift
           assert(length_line =~ (/Content-Length: (.*)/))
           content_length = Regexp.last_match(1).to_i
+          assert_equal("Access-Control-Allow-Origin: *\r\n", lines.shift)
           assert_equal("\r\n", lines.shift)
           body = lines.shift
           assert_equal(content_length, body.size)
@@ -302,6 +302,14 @@ module AppProfiler
         get("/profile?duration=0.1")
         assert_equal(decode_status(last_response.status), Net::HTTPConflict)
         req.join
+      end
+
+      test "app responds with conflict if stackprof already running" do
+        AppProfiler.start
+        get("/profile?duration=0.1")
+        assert_equal(decode_status(last_response.status), Net::HTTPConflict)
+      ensure
+        AppProfiler.stop
       end
 
       private
