@@ -60,40 +60,46 @@ module AppProfiler
 
         case request.path
         when "/profile"
-          begin
-            stackprof_args, duration = validate_profile_params(request.params)
-          rescue InvalidProfileArgsError => e
-            response.status = HTTP_BAD_REQUEST
-            response.write("Invalid argument #{e.message}")
-
-            return response
-          end
-
-          if start_running(stackprof_args)
-            start_time = Process.clock_gettime(Process::CLOCK_REALTIME, :nanosecond)
-
-            sleep(duration)
-
-            profile = stop_running
-
-            response.status = HTTP_OK
-            response.set_header("Content-Type", "application/json")
-
-            profile_hash = profile.to_h
-            profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
-
-            response.write(JSON.dump(profile_hash))
-
-            if AppProfiler::Server.cors
-              response.set_header("Access-Control-Allow-Origin", AppProfiler::Server.cors_host)
-            end
-          else
-            response.status = HTTP_CONFLICT
-            response.write("A profile is already running")
-          end
+          response = handle_profile(request, response)
         else
           response.status = HTTP_NOT_FOUND
           response.write("Unsupported endpoint #{request.path}")
+        end
+
+        response
+      end
+
+      def handle_profile(request, response)
+        begin
+          stackprof_args, duration = validate_profile_params(request.params)
+        rescue InvalidProfileArgsError => e
+          response.status = HTTP_BAD_REQUEST
+          response.write("Invalid argument #{e.message}")
+
+          return response
+        end
+
+        if start_running(stackprof_args)
+          start_time = Process.clock_gettime(Process::CLOCK_REALTIME, :nanosecond)
+
+          sleep(duration)
+
+          profile = stop_running
+
+          response.status = HTTP_OK
+          response.set_header("Content-Type", "application/json")
+
+          profile_hash = profile.to_h
+          profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
+
+          response.write(JSON.dump(profile_hash))
+
+          if AppProfiler::Server.cors
+            response.set_header("Access-Control-Allow-Origin", AppProfiler::Server.cors_host)
+          end
+        else
+          response.status = HTTP_CONFLICT
+          response.write("A profile is already running")
         end
 
         response
