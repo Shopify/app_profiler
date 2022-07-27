@@ -66,25 +66,20 @@ module AppProfiler
             return response
           end
 
-          if start_running
+          if start_running(stackprof_args)
             start_time = Process.clock_gettime(Process::CLOCK_REALTIME, :nanosecond)
 
-            if AppProfiler.start(**stackprof_args)
-              sleep(duration)
-              profile = AppProfiler.stop
-              stop_running
-              response.status = HTTP_OK
-              response.set_header("Content-Type", "application/json")
-              profile_hash = profile.to_h
-              profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
-              response.write(JSON.dump(profile_hash))
+            sleep(duration)
+            profile = AppProfiler.stop
+            stop_running
+            response.status = HTTP_OK
+            response.set_header("Content-Type", "application/json")
+            profile_hash = profile.to_h
+            profile_hash["start_time_nsecs"] = start_time # NOTE: this is not part of the stackprof profile spec
+            response.write(JSON.dump(profile_hash))
 
-              if AppProfiler::Server.cors
-                response.set_header("Access-Control-Allow-Origin", AppProfiler::Server.cors_host)
-              end
-            else
-              response.status = HTTP_CONFLICT
-              response.write("A profile is already running")
+            if AppProfiler::Server.cors
+              response.set_header("Access-Control-Allow-Origin", AppProfiler::Server.cors_host)
             end
           else
             response.status = HTTP_CONFLICT
@@ -121,11 +116,13 @@ module AppProfiler
       end
 
       # Prevent multiple concurrent profiles by synchronizing between threads
-      def start_running
+      def start_running(stackprof_args)
         @semaphore.synchronize do
           return false if @profile_running
 
           @profile_running = true
+
+          AppProfiler.start(**stackprof_args)
         end
       end
 
