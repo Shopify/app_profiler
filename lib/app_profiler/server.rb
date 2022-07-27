@@ -128,21 +128,21 @@ module AppProfiler
         begin
           duration = Float(params.key?(:duration) ? params[:duration] : AppProfiler::Server.duration)
         rescue ArgumentError
-          raise InvalidProfileArgsError, "invalid duration #{params[:duration]}"
+          raise InvalidProfileArgsError, "duration: #{params[:duration]}"
         end
 
         if params.key?(:mode)
           if ["cpu", "wall", "object"].include?(params[:mode])
             stackprof_args[:mode] = params[:mode].to_sym
           else
-            raise InvalidProfileArgsError, "invalid mode #{params[:mode]}"
+            raise InvalidProfileArgsError, "mode: #{params[:mode]}"
           end
         end
 
         if params.key?(:interval)
           stackprof_args[:interval] = params[:interval].to_i
 
-          raise InvalidProfileArgsError, "invalid interval #{params[:interval]}" if stackprof_args[:interval] <= 0
+          raise InvalidProfileArgsError, "interval: #{params[:interval]}" if stackprof_args[:interval] <= 0
         end
 
         [stackprof_args, duration]
