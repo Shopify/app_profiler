@@ -62,8 +62,7 @@ module AppProfiler
         when "/profile"
           response = handle_profile(request, response)
         else
-          response.status = HTTP_NOT_FOUND
-          response.write("Unsupported endpoint #{request.path}")
+          response = handle_not_found(request, response)
         end
 
         response
@@ -101,6 +100,13 @@ module AppProfiler
           response.status = HTTP_CONFLICT
           response.write("A profile is already running")
         end
+
+        response
+      end
+
+      def handle_not_found(request, response)
+        response.status = HTTP_NOT_FOUND
+        response.write("Unsupported endpoint #{request.path}")
 
         response
       end
