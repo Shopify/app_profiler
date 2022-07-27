@@ -69,16 +69,13 @@ module AppProfiler
       end
 
       def handle_profile(request)
-        response = Rack::Response.new
-
         begin
           stackprof_args, duration = validate_profile_params(request.params)
         rescue InvalidProfileArgsError => e
-          response.status = HTTP_BAD_REQUEST
-          response.write("Invalid argument #{e.message}")
-
-          return response
+          return handle_bad_request(request, e.message)
         end
+
+        response = Rack::Response.new
 
         if start_running(stackprof_args)
           start_time = Process.clock_gettime(Process::CLOCK_REALTIME, :nanosecond)
@@ -111,6 +108,15 @@ module AppProfiler
 
         response.status = HTTP_NOT_FOUND
         response.write("Unsupported endpoint #{request.path}")
+
+        response
+      end
+
+      def handle_bad_request(request, message)
+        response = Rack::Response.new
+
+        response.status = HTTP_BAD_REQUEST
+        response.write("Invalid argument #{message}")
 
         response
       end
