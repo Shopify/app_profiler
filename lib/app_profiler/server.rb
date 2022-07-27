@@ -50,11 +50,14 @@ module AppProfiler
 
       def handle(request)
         response = Rack::Response.new
+
         if request.request_method != "GET"
           response.status = HTTP_NOT_ALLOWED
           response.write("Only GET requests are supported")
+
           return response
         end
+
         case request.path
         when "/profile"
           begin
@@ -99,11 +102,13 @@ module AppProfiler
       def validate_profile_params(params)
         params = params.symbolize_keys
         stackprof_args = {}
+
         begin
           duration = Float(params.key?(:duration) ? params[:duration] : AppProfiler::Server.duration)
         rescue ArgumentError
           raise InvalidProfileArgsError, "invalid duration #{params[:duration]}"
         end
+
         if params.key?(:mode)
           if ["cpu", "wall", "object"].include?(params[:mode])
             stackprof_args[:mode] = params[:mode].to_sym
@@ -111,10 +116,12 @@ module AppProfiler
             raise InvalidProfileArgsError, "invalid mode #{params[:mode]}"
           end
         end
+
         if params.key?(:interval)
           stackprof_args[:interval] = params[:interval].to_i
           raise InvalidProfileArgsError, "invalid interval #{params[:interval]}" if stackprof_args[:interval] <= 0
         end
+
         [stackprof_args, duration]
       end
 
@@ -159,6 +166,7 @@ module AppProfiler
       class UNIX < Transport
         def initialize
           super
+
           FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
           @socket_file = File.join(PROFILER_TEMPFILE_PATH, "app-profiler-#{Process.pid}.sock")
           File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
@@ -228,10 +236,13 @@ module AppProfiler
           loop do
             Thread.new(@transport.socket.accept) do |session|
               request = session.gets
+
               if request.nil?
                 session.close
+
                 next
               end
+
               method, path, http_version = request.split(" ")
               path_info, query_string = path.split("?")
               env = { # an extremely minimal rack env hash, just enough to get the job done
@@ -245,10 +256,13 @@ module AppProfiler
 
               begin
                 session.print("#{http_version} #{status}\r\n")
+
                 headers.each do |header, value|
                   session.print("#{header}: #{value}\r\n")
                 end
+
                 session.print("\r\n")
+
                 body.each do |part|
                   session.print(part)
                 end
@@ -277,6 +291,7 @@ module AppProfiler
     class << self
       def reset
         profile_servers.clear
+
         DEFAULTS.each do |config, value|
           class_variable_set(:"@@#{config}", value) # rubocop:disable Style/ClassVars
         end
