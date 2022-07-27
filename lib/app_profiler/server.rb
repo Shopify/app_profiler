@@ -52,8 +52,7 @@ module AppProfiler
         response = Rack::Response.new
 
         if request.request_method != "GET"
-          response.status = HTTP_NOT_ALLOWED
-          response.write("Only GET requests are supported")
+          response = handle_not_allowed(request, response)
 
           return response
         end
@@ -64,6 +63,13 @@ module AppProfiler
         else
           response = handle_not_found(request, response)
         end
+
+        response
+      end
+
+      def handle_not_allowed(request, response)
+        response.status = HTTP_NOT_ALLOWED
+        response.write("Only GET requests are supported")
 
         response
       end
