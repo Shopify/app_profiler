@@ -49,32 +49,28 @@ module AppProfiler
       private
 
       def handle(request)
-        response = Rack::Response.new
-
-        if request.request_method != "GET"
-          response = handle_not_allowed(request, response)
-
-          return response
-        end
+        return handle_not_allowed(request) if request.request_method != "GET"
 
         case request.path
         when "/profile"
-          response = handle_profile(request, response)
+          handle_profile(request)
         else
-          response = handle_not_found(request, response)
+          handle_not_found(request)
         end
-
-        response
       end
 
-      def handle_not_allowed(request, response)
+      def handle_not_allowed(request)
+        response = Rack::Response.new
+
         response.status = HTTP_NOT_ALLOWED
         response.write("Only GET requests are supported")
 
         response
       end
 
-      def handle_profile(request, response)
+      def handle_profile(request)
+        response = Rack::Response.new
+
         begin
           stackprof_args, duration = validate_profile_params(request.params)
         rescue InvalidProfileArgsError => e
@@ -110,7 +106,9 @@ module AppProfiler
         response
       end
 
-      def handle_not_found(request, response)
+      def handle_not_found(request)
+        response = Rack::Response.new
+
         response.status = HTTP_NOT_FOUND
         response.write("Unsupported endpoint #{request.path}")
 
@@ -137,6 +135,7 @@ module AppProfiler
 
         if params.key?(:interval)
           stackprof_args[:interval] = params[:interval].to_i
+
           raise InvalidProfileArgsError, "invalid interval #{params[:interval]}" if stackprof_args[:interval] <= 0
         end
 
