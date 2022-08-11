@@ -3,6 +3,7 @@
 require "socket"
 require "rack"
 require "tempfile"
+require "active_support/core_ext"
 
 # This module provides a means to start a golang-inspired profile server
 # it is implemented using stdlib and Rack to avoid additional dependencies
