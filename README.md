@@ -143,7 +143,7 @@ config.app_profiler.server_enabled = true
 Alternatively, the server can be directly started with:
 
 ```
-AppProfiler::Server.start!
+AppProfiler::Server.start
 ```
 
 The default duration (in seconds), for requests without a duration parameter, can also be
