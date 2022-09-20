@@ -8,7 +8,10 @@ module AppProfiler
     TEST_PORT = 11337
 
     class ProfileServerTestCase < TestCase
-      setup { Server.reset }
+      setup do
+        @logger = Logger.new(IO::NULL)
+        Server.reset
+      end
       teardown { Server.reset }
     end
 
@@ -29,26 +32,25 @@ module AppProfiler
       end
 
       test ".start creates a profile server listening on defined port" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=.*#{TEST_PORT}.*/ }
+        @logger.expects(:info).with { |value| value =~ /listening on addr=.*#{TEST_PORT}.*/ }
         Server.port = TEST_PORT
-        assert_not_nil(Server.start)
+        assert_not_nil(Server.start(@logger))
         assert_not_nil(Server.client)
       ensure
         assert_not_nil(Server.stop)
       end
 
       test ".start creates a profile server on random free port with undefined port" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=/ }
-        assert_not_nil(Server.start)
+        assert_not_nil(Server.start(@logger))
         assert_not_nil(Server.client)
       ensure
         assert_not_nil(Server.stop)
       end
 
       test ".stop stops running profile server" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on addr=.*#{TEST_PORT}.*/ }
+        @logger.expects(:info).with { |value| value =~ /listening on addr=.*#{TEST_PORT}.*/ }
         Server.port = TEST_PORT
-        server = Server.start
+        server = Server.start(@logger)
         assert_not_nil(server)
         assert_not_nil(Server.client)
         assert_not_nil(Server.stop)
@@ -64,16 +66,15 @@ module AppProfiler
       end
 
       test ".start creates a profile server listening on unix socket" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on .*AF_UNIX.*sock/ }
-        assert_not_nil(Server.start)
+        @logger.expects(:info).with { |value| value =~ /listening on .*AF_UNIX.*sock/ }
+        assert_not_nil(Server.start(@logger))
         assert_not_nil(Server.client)
       ensure
         assert_not_nil(Server.stop)
       end
 
       test ".stop stops running profile server" do
-        AppProfiler.logger.expects(:info).with { |value| value =~ /listening on .*AF_UNIX.*sock/ }
-        server = Server.start
+        server = Server.start(@logger)
         assert_not_nil(server)
         assert_not_nil(Server.client)
         assert_not_nil(Server.stop)
@@ -172,7 +173,7 @@ module AppProfiler
       end
 
       def with_test_server(transport: TRANSPORT_UNIX, &block)
-        profile_server = ProfileServer.new(transport)
+        profile_server = ProfileServer.new(transport, @logger)
         yield profile_server
       ensure
         assert_nil(profile_server.stop)

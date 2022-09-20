@@ -4,7 +4,6 @@ PATH
     app_profiler (0.1.2)
       activesupport (>= 5.2)
       rack
-      railties (>= 5.2)
       stackprof (~> 0.2)
 
 GEM
