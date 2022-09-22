@@ -46,9 +46,9 @@ module AppProfiler
 
     initializer "app_profiler.enable_server" do
       if AppProfiler.server.enabled
-        AppProfiler::Server.start
+        AppProfiler::Server.start(AppProfiler.logger)
         ActiveSupport::ForkTracker.after_fork do
-          AppProfiler::Server.start
+          AppProfiler::Server.start(AppProfiler.logger)
         end
       end
     end
