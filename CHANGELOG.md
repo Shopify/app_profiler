@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2022-09-22
+
+- Take logger as an arg in `AppProfiler::Server` start method (#64)
+- Railtie is an optional dependency (#63)
+
 ## [0.1.2] - 2022-08-12
 
 - Bug fix: Update profile server to respond with a conflict if already profiling (#57)
