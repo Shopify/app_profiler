@@ -21,6 +21,10 @@ module AppProfiler
         def upload(profile)
           Location.new(profile.file)
         end
+
+        def enqueue_upload(profile)
+          upload(profile)
+        end
       end
     end
   end

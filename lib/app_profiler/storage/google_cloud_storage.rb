@@ -28,7 +28,58 @@ module AppProfiler
           end
         end
 
+        def enqueue_upload(profile)
+          mutex.synchronize do
+            process_queue_thread unless @process_queue_thread&.alive?
+
+            @queue ||= init_queue
+            begin
+              @queue.push(profile, true) # non-blocking push, raises ThreadError if queue is full
+            rescue ThreadError
+              AppProfiler.logger.info("[AppProfiler] upload queue is full, profile discarded")
+            end
+          end
+        end
+
+        def reset_queue # for testing
+          init_queue
+          @process_queue_thread&.kill
+          @process_queue_thread = nil
+        end
+
         private
+
+        def mutex
+          @mutex ||= Mutex.new
+        end
+
+        def init_queue
+          @queue = SizedQueue.new(AppProfiler.upload_queue_max_length)
+        end
+
+        def process_queue_thread
+          @process_queue_thread ||= Thread.new do
+            loop do
+              process_queue
+              sleep(AppProfiler.upload_queue_interval_secs)
+            end
+          end
+          @process_queue_thread.priority = -1 # low priority
+        end
+
+        def process_queue
+          queue = nil
+          mutex.synchronize do
+            break if @queue.nil? || @queue.empty?
+
+            queue = @queue
+            init_queue
+          end
+
+          return unless queue
+
+          queue.size.times { queue.pop(false).upload }
+        end
 
         def gcs_filename(profile)
           File.join(profile.context.to_s, profile.file.basename)

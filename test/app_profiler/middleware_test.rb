@@ -289,6 +289,18 @@ module AppProfiler
       end
     end
 
+    test "profiles are not uploaded synchronously when async is requested" do
+      old_storage = AppProfiler.storage
+      AppProfiler.storage = AppProfiler::Storage::GoogleCloudStorage
+      assert_profiles_dumped(0) do
+        middleware = AppProfiler::Middleware.new(app_env)
+        response = middleware.call(mock_request_env(path: "/?profile=cpu&async=true"))
+        assert(response[1]["X-Profile-Async"])
+      end
+    ensure
+      AppProfiler.storage = old_storage
+    end
+
     class CustomMiddleware < AppProfiler::Middleware
       def call(env)
         super(env, AppProfiler::Parameters.new)

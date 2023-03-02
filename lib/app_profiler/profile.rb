@@ -56,6 +56,10 @@ module AppProfiler
       nil
     end
 
+    def enqueue_upload
+      AppProfiler.storage.enqueue_upload(self)
+    end
+
     def file
       @file ||= path.tap do |p|
         p.dirname.mkpath

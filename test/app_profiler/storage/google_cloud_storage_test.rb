@@ -9,6 +9,10 @@ module AppProfiler
       TEST_BUCKET_NAME = "app-profile-test"
       TEST_FILE_URL = "https://www.example.com/uploaded.json"
 
+      def teardown
+        GoogleCloudStorage.reset_queue
+      end
+
       test "upload file" do
         with_mock_gcs_bucket do
           uploaded_file = GoogleCloudStorage.upload(stub(context: "context", file: json_test_file))
@@ -46,7 +50,53 @@ module AppProfiler
         end
       end
 
+      test ".process_queue is a no-op when nothing to upload" do
+        Profile.any_instance.expects(:upload).never
+        GoogleCloudStorage.send(:process_queue)
+      end
+
+      test ".process_queue uploads" do
+        with_stubbed_process_queue_thread do
+          profile = profile_from_stackprof
+          GoogleCloudStorage.enqueue_upload(profile)
+          profile.expects(:upload).once
+          GoogleCloudStorage.send(:process_queue)
+        end
+      end
+
+      test "profile is dropped when the queue is full" do
+        with_stubbed_process_queue_thread do
+          AppProfiler.upload_queue_max_length.times do
+            GoogleCloudStorage.enqueue_upload(profile_from_stackprof)
+          end
+          dropped_profile = Profile.from_stackprof(profile_from_stackprof)
+          AppProfiler.logger.expects(:info).with { |value| value =~ /upload queue is full/ }
+          GoogleCloudStorage.enqueue_upload(dropped_profile)
+        end
+      end
+
+      test "process_queue_thread is alive after first upload" do
+        th = GoogleCloudStorage.instance_variable_get(:@process_queue_thread)
+
+        refute(th&.alive?)
+        GoogleCloudStorage.enqueue_upload(profile_from_stackprof)
+        th = GoogleCloudStorage.instance_variable_get(:@process_queue_thread)
+        assert(th.alive?)
+      end
+
       private
+
+      def with_stubbed_process_queue_thread
+        # Stub out the thread creation, so that tests are not flaky.
+        GoogleCloudStorage.stubs(:process_queue_thread)
+        yield
+      ensure
+        GoogleCloudStorage.unstub(:process_queue_thread)
+      end
+
+      def profile_from_stackprof
+        Profile.from_stackprof(stackprof_profile(metadata: { id: "bar" }))
+      end
 
       def json_test_file
         file_fixture("test_file.json")

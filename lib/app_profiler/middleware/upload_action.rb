@@ -4,16 +4,19 @@ module AppProfiler
   class Middleware
     class UploadAction < BaseAction
       class << self
-        def call(profile, response: nil, autoredirect: nil)
-          profile_upload = profile.upload
+        def call(profile, response: nil, autoredirect: nil, async: false)
+          if async
+            profile.enqueue_upload
+            response[1][AppProfiler.profile_async_header] = true
+          else
+            profile_upload = profile.upload
 
-          return unless response
-
-          append_headers(
-            response,
-            upload: profile_upload,
-            autoredirect: autoredirect.nil? ? AppProfiler.autoredirect : autoredirect
-          )
+            append_headers(
+              response,
+              upload: profile_upload,
+              autoredirect: autoredirect.nil? ? AppProfiler.autoredirect : autoredirect
+            ) if response
+          end
         end
 
         private
