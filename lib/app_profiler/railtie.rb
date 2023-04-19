@@ -17,6 +17,7 @@ module AppProfiler
       AppProfiler.middleware = app.config.app_profiler.middleware || Middleware
       AppProfiler.middleware.action = app.config.app_profiler.middleware_action || default_middleware_action
       AppProfiler.middleware.disabled = app.config.app_profiler.middleware_disabled || false
+      AppProfiler.profiler_args = app.config.app_profiler.profiler_args || {}
       AppProfiler.server.enabled = app.config.app_profiler.server_enabled || false
       AppProfiler.server.transport = app.config.app_profiler.server_transport || default_appprofiler_transport
       AppProfiler.server.port = app.config.app_profiler.server_port || 0

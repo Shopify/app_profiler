@@ -30,7 +30,7 @@ module AppProfiler
 
         clear
 
-        StackProf.start(**DEFAULTS, **params)
+        StackProf.start(**DEFAULTS, **params.merge(AppProfiler.profiler_args))
       rescue => error
         AppProfiler.logger.info(
           "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}"

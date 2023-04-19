@@ -41,6 +41,7 @@ module AppProfiler
   mattr_accessor :context, default: nil
   mattr_reader   :profile_url_formatter,
     default: DefaultProfileFormatter
+  mattr_accessor :profiler_args, default: {}
 
   mattr_accessor :storage, default: Storage::FileStorage
   mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
