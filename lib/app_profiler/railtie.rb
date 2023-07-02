@@ -8,6 +8,7 @@ module AppProfiler
     config.app_profiler.profile_url_formatter = DefaultProfileFormatter
 
     initializer "app_profiler.configs" do |app|
+      puts "ENABLED #{app.config.app_profiler.server_enabled}"
       AppProfiler.logger = app.config.app_profiler.logger || Rails.logger
       AppProfiler.root = app.config.app_profiler.root || Rails.root
       AppProfiler.storage = app.config.app_profiler.storage || Storage::FileStorage
@@ -17,12 +18,6 @@ module AppProfiler
       AppProfiler.middleware = app.config.app_profiler.middleware || Middleware
       AppProfiler.middleware.action = app.config.app_profiler.middleware_action || default_middleware_action
       AppProfiler.middleware.disabled = app.config.app_profiler.middleware_disabled || false
-      AppProfiler.server.enabled = app.config.app_profiler.server_enabled || false
-      AppProfiler.server.transport = app.config.app_profiler.server_transport || default_appprofiler_transport
-      AppProfiler.server.port = app.config.app_profiler.server_port || 0
-      AppProfiler.server.duration = app.config.app_profiler.server_duration || 30
-      AppProfiler.server.cors = app.config.app_profiler.server_cors || true
-      AppProfiler.server.cors_host = app.config.app_profiler.server_cors_host || "*"
       AppProfiler.autoredirect = app.config.app_profiler.autoredirect || false
       AppProfiler.speedscope_host = app.config.app_profiler.speedscope_host || ENV.fetch(
         "APP_PROFILER_SPEEDSCOPE_URL", "https://speedscope.app"
@@ -57,6 +52,12 @@ module AppProfiler
           AppProfiler::Server.start(AppProfiler.logger)
         end
       end
+    end
+
+    initializer "app_profiler.enable_server" do
+      puts "Starting server #{AppProfiler.server.enabled}"
+      AppProfiler::Server.start! if AppProfiler.server.enabled
+      puts "Port #{AppProfiler::Server.port?}"
     end
 
     private
