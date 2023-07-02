@@ -28,11 +28,14 @@ module AppProfiler
         "APP_PROFILER_SPEEDSCOPE_URL", "https://speedscope.app"
       )
       AppProfiler.profile_header = app.config.app_profiler.profile_header || "X-Profile"
+      AppProfiler.profile_async_header = app.config.app_profiler.profile_async_header || "X-Profile-Async"
       AppProfiler.profile_root = app.config.app_profiler.profile_root || Rails.root.join(
         "tmp", "app_profiler"
       )
       AppProfiler.context = app.config.app_profiler.context || Rails.env
       AppProfiler.profile_url_formatter = app.config.app_profiler.profile_url_formatter
+      AppProfiler.upload_queue_max_length = app.config.upload_queue_max_length || 10
+      AppProfiler.upload_queue_interval_secs = app.config.upload_queue_interval_secs || 5
     end
 
     initializer "app_profiler.add_middleware" do |app|
@@ -41,6 +44,9 @@ module AppProfiler
           app.middleware.insert_before(0, Viewer::SpeedscopeRemoteViewer::Middleware)
         end
         app.middleware.insert_before(0, AppProfiler.middleware)
+        ActiveSupport::ForkTracker.after_fork do
+          AppProfiler::Middleware::UploadAction.start_process_queue_thread
+        end
       end
     end
 
