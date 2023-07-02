@@ -230,8 +230,7 @@ module AppProfiler
         end
       end
 
-      def initialize(transport, logger)
-        @logger = logger
+      def initialize(transport)
         case transport
         when TRANSPORT_UNIX
           @transport = ProfileServer::UNIX.new
@@ -243,7 +242,7 @@ module AppProfiler
 
         @listen_thread = nil
 
-        @logger.info(
+        AppProfiler.logger.info(
           "[AppProfiler::Server] listening on addr=#{@transport.socket.addr}"
         )
         @pid = Process.pid
@@ -294,7 +293,7 @@ module AppProfiler
                   session.print(part)
                 end
               rescue => e
-                @logger.error(
+                AppProfiler.logger.error(
                   "[AppProfiler::Server] exception #{e} responding to request #{request}: #{e.message}"
                 )
               ensure
@@ -324,10 +323,10 @@ module AppProfiler
         end
       end
 
-      def start(logger = Logger.new(IO::NULL))
+      def start
         return if profile_server
 
-        profile_servers[Process.pid] = ProfileServer.new(AppProfiler::Server.transport, logger)
+        profile_servers[Process.pid] = ProfileServer.new(AppProfiler::Server.transport)
         profile_server.serve
         profile_server
       end
