@@ -289,6 +289,15 @@ module AppProfiler
       end
     end
 
+    test "profiles are not uploaded synchronously when async is requested" do
+      assert_profiles_dumped(0) do
+        middleware = AppProfiler::Middleware.new(app_env)
+        response = middleware.call(mock_request_env(path: "/?profile=cpu&async=true"))
+        assert_equal(1, middleware.action.instance_variable_get("@queue").size)
+        assert(response[1]["X-Profile-Async"])
+      end
+    end
+
     private
 
     def app_env
