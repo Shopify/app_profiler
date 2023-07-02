@@ -8,6 +8,7 @@ module AppProfiler
       setup do
         @profile = Profile.new(stackprof_profile)
         @response = [200, {}, ["OK"]]
+        UploadAction.send(:init_queue)
       end
 
       test ".cleanup" do
@@ -79,6 +80,37 @@ module AppProfiler
         end
 
         refute_predicate(@response[1]["Location"], :present?)
+      end
+
+      test ".process_queue returns 0 when nothing to upload" do
+        assert_equal(0, UploadAction.send(:process_queue))
+      end
+
+      test ".process_queue uploads" do
+        UploadAction.call(@profile, response: @response, async: true)
+        @profile.expects(:upload).once
+        assert_equal(1, UploadAction.send(:process_queue))
+        assert_equal(0, UploadAction.send(:process_queue))
+      end
+
+      test "profile is dropped when the queue is full" do
+        AppProfiler.upload_queue_max_length.times do
+          UploadAction.call(@profile, response: @response, async: true)
+        end
+        dropped_profile = Profile.new(stackprof_profile(metadata: { id: "bar" }))
+
+        UploadAction.call(dropped_profile, response: @response, async: true)
+        dropped_profile.expects(:upload).never
+        num_uploaded = UploadAction.send(:process_queue)
+        assert_equal(AppProfiler.upload_queue_max_length, num_uploaded)
+      end
+
+      test ".start_process_queue_thread" do
+        UploadAction.start_process_queue_thread
+        th = UploadAction.instance_variable_get(:@process_queue_thread)
+        assert_equal(true, th.alive?)
+      ensure
+        th.kill
       end
 
       private
