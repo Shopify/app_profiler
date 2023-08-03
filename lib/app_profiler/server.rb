@@ -180,6 +180,14 @@ module AppProfiler
       class Transport
         attr_reader :socket
 
+        def initialize
+          start
+        end
+
+        def start
+          raise(NotImplementedError)
+        end
+
         def client
           raise(NotImplementedError)
         end
@@ -190,9 +198,7 @@ module AppProfiler
       end
 
       class UNIX < Transport
-        def initialize
-          super
-
+        def start
           FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
           @socket_file = File.join(PROFILER_TEMPFILE_PATH, "app-profiler-#{Process.pid}.sock")
           File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
@@ -213,9 +219,13 @@ module AppProfiler
         SERVER_ADDRESS = "127.0.0.1" # it is ONLY safe to run this bound to localhost
 
         def initialize(port = 0)
+          @port_argument = port
           super()
+        end
+
+        def start
           FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
-          @socket = TCPServer.new(SERVER_ADDRESS, port)
+          @socket = TCPServer.new(SERVER_ADDRESS, @port_argument)
           @port = @socket.addr[1]
           @port_file = Tempfile.new("profileserver-#{Process.pid}-port-#{@port}-", PROFILER_TEMPFILE_PATH)
         end
@@ -261,7 +271,15 @@ module AppProfiler
 
         @listen_thread = Thread.new do
           loop do
-            Thread.new(@transport.socket.accept) do |session|
+            session = begin
+              @transport.socket.accept
+            rescue
+              @transport.close
+              @transport.start
+              next
+            end
+
+            Thread.new(session) do |session|
               request = session.gets
 
               if request.nil?
@@ -315,9 +333,12 @@ module AppProfiler
 
     private_constant :ProfileApplication, :ProfileServer
 
+    @pid = Process.pid
+    @profile_server = nil
+
     class << self
       def reset
-        profile_servers.clear
+        self.profile_server = nil
 
         DEFAULTS.each do |config, value|
           class_variable_set(:"@@#{config}", value) # rubocop:disable Style/ClassVars
@@ -327,7 +348,7 @@ module AppProfiler
       def start(logger = Logger.new(IO::NULL))
         return if profile_server
 
-        profile_servers[Process.pid] = ProfileServer.new(AppProfiler::Server.transport, logger)
+        self.profile_server = ProfileServer.new(AppProfiler::Server.transport, logger)
         profile_server.serve
         profile_server
       end
@@ -341,20 +362,22 @@ module AppProfiler
       def stop
         return unless profile_server
 
-        profile_server.stop
-        profile_servers.delete(Process.pid)
+        server = profile_server
+        server.stop
+        self.profile_server = nil
+        server
       end
 
       private
 
       def profile_server
-        profile_servers[Process.pid]
+        @profile_server = nil if @pid != Process.pid
+        @profile_server
       end
 
-      # It is possible there will be a server pre-fork, this is to distinguish
-      # the child server from its parent via PID
-      def profile_servers
-        @profile_servers ||= {}
+      def profile_server=(server)
+        @pid = Process.pid
+        @profile_server = server
       end
     end
   end
