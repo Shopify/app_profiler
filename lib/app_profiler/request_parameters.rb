@@ -4,10 +4,6 @@ require "rack"
 
 module AppProfiler
   class RequestParameters
-    DEFAULT_INTERVALS = { "cpu" => 1000, "wall" => 1000, "object" => 2000 }.freeze
-    MIN_INTERVALS = { "cpu" => 200, "wall" => 200, "object" => 400 }.freeze
-    MODES = DEFAULT_INTERVALS.keys.freeze
-
     def initialize(request)
       @request = request
     end
@@ -21,12 +17,12 @@ module AppProfiler
         return false
       end
 
-      unless MODES.include?(mode)
+      unless Parameters::MODES.include?(mode)
         AppProfiler.logger.info("[Profiler] unsupported profiling mode=#{mode}")
         return false
       end
 
-      if interval.to_i < MIN_INTERVALS[mode]
+      if interval.to_i < Parameters::MIN_INTERVALS[mode]
         return false
       end
 
@@ -56,7 +52,7 @@ module AppProfiler
     end
 
     def interval
-      query_param("interval") || profile_header_param("interval") || DEFAULT_INTERVALS[mode]
+      query_param("interval") || profile_header_param("interval") || Parameters::DEFAULT_INTERVALS[mode]
     end
 
     def request_id

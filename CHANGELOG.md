@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Allow passing custom parameters instance to Middleware#call, to programatically trigger profiling (#87)
+
 ## [0.1.3] - 2022-09-22
 
 - Take logger as an arg in `AppProfiler::Server` start method (#64)

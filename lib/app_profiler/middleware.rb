@@ -14,16 +14,15 @@ module AppProfiler
       @app = app
     end
 
-    def call(env)
-      profile(env) do
+    def call(env, params = AppProfiler::RequestParameters.new(Rack::Request.new(env)))
+      profile(env, params) do
         @app.call(env)
       end
     end
 
     private
 
-    def profile(env)
-      params   = AppProfiler::RequestParameters.new(Rack::Request.new(env))
+    def profile(env, params)
       response = nil
 
       return yield unless params.valid?
