@@ -20,7 +20,7 @@ module AppProfiler
       end
     end
 
-    AppProfiler::RequestParameters::MODES.each do |mode|
+    AppProfiler::Parameters::MODES.each do |mode|
       test "profile mode #{mode} is supported" do
         assert_profiles_dumped do
           assert_profiles_uploaded do
@@ -145,7 +145,7 @@ module AppProfiler
       end
     end
 
-    AppProfiler::RequestParameters::MODES.each do |mode|
+    AppProfiler::Parameters::MODES.each do |mode|
       test "profile mode #{mode} through headers is supported" do
         assert_profiles_dumped do
           assert_profiles_uploaded do
@@ -285,6 +285,21 @@ module AppProfiler
 
           middleware = AppProfiler::Middleware.new(app_env)
           middleware.call(request_env)
+        end
+      end
+    end
+
+    class CustomMiddleware < AppProfiler::Middleware
+      def call(env)
+        super(env, AppProfiler::Parameters.new)
+      end
+    end
+
+    test "subclassing allows passing custom parameters" do
+      assert_profiles_dumped do
+        assert_profiles_uploaded do
+          middleware = CustomMiddleware.new(app_env)
+          middleware.call(mock_request_env)
         end
       end
     end

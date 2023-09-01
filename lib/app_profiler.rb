@@ -26,6 +26,7 @@ module AppProfiler
   end
 
   require "app_profiler/middleware"
+  require "app_profiler/parameters"
   require "app_profiler/request_parameters"
   require "app_profiler/profiler"
   require "app_profiler/profile"
