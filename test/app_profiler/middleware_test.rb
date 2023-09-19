@@ -298,6 +298,7 @@ module AppProfiler
         assert(response[1]["X-Profile-Async"])
       end
     ensure
+      AppProfiler::Storage::GoogleCloudStorage.reset_queue # kill the background thread and reset the queue
       AppProfiler.storage = old_storage
     end
 
