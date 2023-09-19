@@ -24,6 +24,7 @@ TMP_ROOT  = TEST_ROOT.join("..").join("tmp")
 TMP_APP_ROOT = TMP_ROOT.join("app")
 
 Time.zone = "Pacific Time (US & Canada)" # For Time.zone.now.
+Time.zone_default = "Pacific Time (US & Canada)"
 
 Mocha.configure do |config|
   config.stubbing_method_unnecessarily = :prevent
