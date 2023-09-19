@@ -12,6 +12,10 @@ module AppProfiler
       query_param("autoredirect") || profile_header_param("autoredirect")
     end
 
+    def async
+      query_param("async")
+    end
+
     def valid?
       if mode.blank?
         return false

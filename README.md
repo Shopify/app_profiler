@@ -31,6 +31,8 @@ Profiling can be triggered in one of two ways:
    - `X-Profile` header format: `[<key>=<value>];...`
 
 
+If `async` query string is provided, then the profile will be uploaded later, in an async manner. One use case for this is when we want to profile a certain % of traffic without incurring costs of inline profile uploads.
+
 You can configure the profile header using:
 
 ```ruby
@@ -49,6 +51,7 @@ Rails.application.config.app_profiler.profile_header = "X-Profile"
 | Key | Value | Notes |
 | --- | ----- | ----- |
 | profile/mode | Supported profiling modes: `cpu`, `wall`, `object`. | Use `profile` in (1), and `mode` in (2). |
+| async | Upload profile in a background thread. When this is set, profile redirect headers are not present in the response.
 | interval | Sampling interval in microseconds. | |
 | ignore_gc | Ignore garbage collection frames | |
 | autoredirect | Redirect request automatically to Speedscope's page after profiling. | |

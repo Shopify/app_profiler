@@ -39,6 +39,7 @@ module AppProfiler
   mattr_accessor :speedscope_host, default: "https://speedscope.app"
   mattr_accessor :autoredirect, default: false
   mattr_reader   :profile_header, default: "X-Profile"
+  mattr_accessor :profile_async_header, default: "X-Profile-Async"
   mattr_accessor :context, default: nil
   mattr_reader   :profile_url_formatter,
     default: DefaultProfileFormatter
@@ -47,6 +48,8 @@ module AppProfiler
   mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
   mattr_accessor :middleware, default: Middleware
   mattr_accessor :server, default: Server
+  mattr_accessor :upload_queue_max_length, default: 10
+  mattr_accessor :upload_queue_interval_secs, default: 5
 
   class << self
     def run(*args, &block)

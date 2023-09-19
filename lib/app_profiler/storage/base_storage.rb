@@ -9,6 +9,10 @@ module AppProfiler
       def self.upload(_profile)
         raise NotImplementedError
       end
+
+      def self.enqueue_upload(_profile)
+        raise NotImplementedError
+      end
     end
   end
 end

@@ -8,14 +8,15 @@ module AppProfiler
     MIN_INTERVALS = { "cpu" => 200, "wall" => 200, "object" => 400 }.freeze
     MODES = DEFAULT_INTERVALS.keys.freeze
 
-    attr_reader :autoredirect
+    attr_reader :autoredirect, :async
 
-    def initialize(mode: :wall, interval: nil, ignore_gc: false, autoredirect: false, metadata: {})
+    def initialize(mode: :wall, interval: nil, ignore_gc: false, autoredirect: false, async: false, metadata: {})
       @mode = mode.to_sym
       @interval = [interval&.to_i || DEFAULT_INTERVALS.fetch(@mode.to_s), MIN_INTERVALS.fetch(@mode.to_s)].max
       @ignore_gc = !!ignore_gc
       @autoredirect = autoredirect
       @metadata = { context: AppProfiler.context }.merge(metadata)
+      @async = async
     end
 
     def valid?

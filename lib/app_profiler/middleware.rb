@@ -41,6 +41,7 @@ module AppProfiler
         profile,
         response: response,
         autoredirect: params.autoredirect,
+        async: params.async
       )
 
       response

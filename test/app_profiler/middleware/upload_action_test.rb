@@ -56,6 +56,8 @@ module AppProfiler
 
         assert_predicate(@response[1][AppProfiler.profile_header], :present?)
         assert_predicate(@response[1][AppProfiler.profile_data_header], :present?)
+        assert_predicate(@response[1][AppProfiler.profile_async_header], :blank?)
+
         assert_predicate(@response[1]["Location"], :present?)
         assert_equal(@response[0], 303)
       end
@@ -79,6 +81,11 @@ module AppProfiler
         end
 
         refute_predicate(@response[1]["Location"], :present?)
+      end
+
+      test ".call with async: true" do
+        UploadAction.call(@profile, response: @response, async: true)
+        assert(@response[1][AppProfiler.profile_async_header])
       end
 
       private

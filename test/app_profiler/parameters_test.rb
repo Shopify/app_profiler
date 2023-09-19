@@ -16,5 +16,10 @@ module AppProfiler
     test "#mode is :wall by default" do
       assert_equal :wall, Parameters.new.to_h.fetch(:mode)
     end
+
+    test "#async is false by default" do
+      assert_not_predicate Parameters.new, :async
+      assert_predicate Parameters.new(async: true), :async
+    end
   end
 end
