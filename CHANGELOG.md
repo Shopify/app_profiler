@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- Fix `AppProfiler::Server` to no longer be immortal. This avoid leaking servers when respawning the server after fork (#93)
+
 ## [0.1.4] - 2023-09-19
 
 - Allow passing custom parameters instance to Middleware#call, to programatically trigger profiling (#87)

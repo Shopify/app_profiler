@@ -82,6 +82,47 @@ module AppProfiler
       ensure
         assert_nil(Server.stop)
       end
+
+      Transport = AppProfiler::Server.const_get(:ProfileServer)::Transport
+      test "servers are abandoned on fork" do
+        server = AppProfiler::Server.start(@logger)
+        server.join(1)
+
+        open_servers = ObjectSpace.each_object(Transport).select { |t| !t.socket.closed? }
+        assert_equal(1, open_servers.size)
+
+        parent_socket = File.join(ProfileServer::PROFILER_TEMPFILE_PATH, "app-profiler-#{Process.pid}.sock")
+        assert_equal(true, File.exist?(parent_socket))
+
+        r, w = IO.pipe
+        pid = fork do
+          open_servers = ObjectSpace.each_object(Transport).select { |t| !t.socket.closed? }
+          w.write(Marshal.dump(open_servers.size))
+
+          AppProfiler::Server.start(@logger)
+
+          open_servers = ObjectSpace.each_object(Transport).select { |t| !t.socket.closed? }
+          w.write(Marshal.dump(open_servers.size))
+          Marshal.load(r)
+        end
+        assert_equal(1, Marshal.load(r))
+        assert_equal(1, Marshal.load(r))
+
+        child_socket = File.join(ProfileServer::PROFILER_TEMPFILE_PATH, "app-profiler-#{pid}.sock")
+        assert_equal(true, File.exist?(parent_socket))
+        assert_equal(true, File.exist?(child_socket))
+
+        w.write(Marshal.dump(:done))
+        w.close
+
+        _, status = Process.wait2(pid)
+        assert_predicate(status, :success?)
+
+        assert_equal(true, File.exist?(parent_socket))
+        assert_equal(false, File.exist?(child_socket))
+      ensure
+        server&.stop
+      end
     end
 
     class ProfileServerTest < ProfileServerTestCase
