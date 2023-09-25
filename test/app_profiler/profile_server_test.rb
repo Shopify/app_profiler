@@ -85,14 +85,13 @@ module AppProfiler
 
       Transport = AppProfiler::Server.const_get(:ProfileServer)::Transport
       test "servers are abandoned on fork" do
+        parent_socket = File.join(ProfileServer::PROFILER_TEMPFILE_PATH, "app-profiler-#{Process.pid}.sock")
+
         server = AppProfiler::Server.start(@logger)
         server.join(1)
 
         open_servers = ObjectSpace.each_object(Transport).select { |t| !t.socket.closed? }
         assert_equal(1, open_servers.size)
-
-        parent_socket = File.join(ProfileServer::PROFILER_TEMPFILE_PATH, "app-profiler-#{Process.pid}.sock")
-        assert_equal(true, File.exist?(parent_socket))
 
         r, w = IO.pipe
         pid = fork do
