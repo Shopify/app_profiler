@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    app_profiler (0.1.4)
+    app_profiler (0.1.5)
       activesupport (>= 5.2)
       rack
       stackprof (~> 0.2)

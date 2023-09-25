@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.5] - 2023-09-25
+
 - Fix `AppProfiler::Server` to no longer be immortal. This avoid leaking servers when respawning the server after fork (#93)
 
 ## [0.1.4] - 2023-09-19
