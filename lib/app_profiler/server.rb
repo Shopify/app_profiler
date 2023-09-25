@@ -198,11 +198,26 @@ module AppProfiler
       end
 
       class UNIX < Transport
+        class << self
+          def unlink_socket(path, pid)
+            ->(_) do
+              if Process.pid == pid && File.exist?(path)
+                begin
+                  File.unlink(path)
+                rescue SystemCallError
+                  # Let not raise in a finalizer
+                end
+              end
+            end
+          end
+        end
+
         def start
           FileUtils.mkdir_p(PROFILER_TEMPFILE_PATH)
           @socket_file = File.join(PROFILER_TEMPFILE_PATH, "app-profiler-#{Process.pid}.sock")
           File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
           @socket = UNIXServer.new(@socket_file)
+          ObjectSpace.define_finalizer(self, self.class.unlink_socket(@socket_file, Process.pid))
         end
 
         def client
@@ -211,6 +226,10 @@ module AppProfiler
 
         def stop
           File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
+          @socket.close
+        end
+
+        def abandon
           @socket.close
         end
       end
@@ -238,6 +257,11 @@ module AppProfiler
           @port_file.unlink
           @socket.close
         end
+
+        def abandon
+          @port_file.close # NB: Tempfile finalizer checks Process.pid to avoid unlinking inherited IOs.
+          @socket.close
+        end
       end
 
       def initialize(transport, logger)
@@ -257,11 +281,14 @@ module AppProfiler
           "[AppProfiler::Server] listening on addr=#{@transport.socket.addr}"
         )
         @pid = Process.pid
-        at_exit { stop }
       end
 
       def client
         @transport.client
+      end
+
+      def join(...)
+        @listen_thread.join(...)
       end
 
       def serve
@@ -324,10 +351,12 @@ module AppProfiler
       end
 
       def stop
-        return unless @pid == Process.pid
-
         @listen_thread.kill
-        @transport.stop
+        if @pid == Process.pid
+          @transport.stop
+        else
+          @transport.abandon
+        end
       end
     end
 
@@ -371,7 +400,10 @@ module AppProfiler
       private
 
       def profile_server
-        @profile_server = nil if @pid != Process.pid
+        if @pid != Process.pid
+          @profile_server&.stop
+          @profile_server = nil
+        end
         @profile_server
       end
 
