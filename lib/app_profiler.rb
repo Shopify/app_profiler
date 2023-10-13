@@ -13,6 +13,10 @@ module AppProfiler
     "#{AppProfiler.speedscope_host}#profileURL=#{upload.url}"
   end
 
+  DefaultProfilePrefix = proc do
+    Time.zone.now.strftime("%Y%m%d-%H%M%S")
+  end
+
   module Storage
     autoload :BaseStorage, "app_profiler/storage/base_storage"
     autoload :FileStorage, "app_profiler/storage/file_storage"
@@ -50,6 +54,7 @@ module AppProfiler
   mattr_accessor :server, default: Server
   mattr_accessor :upload_queue_max_length, default: 10
   mattr_accessor :upload_queue_interval_secs, default: 5
+  mattr_accessor :profile_file_prefix, default: DefaultProfilePrefix
 
   class << self
     def run(*args, &block)

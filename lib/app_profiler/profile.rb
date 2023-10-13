@@ -75,7 +75,7 @@ module AppProfiler
 
     def path
       filename = [
-        Time.zone.now.strftime("%Y%m%d-%H%M%S"),
+        AppProfiler.profile_file_prefix.call,
         mode,
         id,
         Socket.gethostname,
