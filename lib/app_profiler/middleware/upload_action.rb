@@ -7,7 +7,7 @@ module AppProfiler
         def call(profile, response: nil, autoredirect: nil, async: false)
           if async
             profile.enqueue_upload
-            response[1][AppProfiler.profile_async_header] = true
+            response[1][AppProfiler.profile_async_header] = "true"
           else
             profile_upload = profile.upload
 

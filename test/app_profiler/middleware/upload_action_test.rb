@@ -85,7 +85,7 @@ module AppProfiler
 
       test ".call with async: true" do
         UploadAction.call(@profile, response: @response, async: true)
-        assert(@response[1][AppProfiler.profile_async_header])
+        assert_equal(@response[1][AppProfiler.profile_async_header], "true")
       end
 
       private
