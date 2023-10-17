@@ -153,9 +153,10 @@ module AppProfiler
     end
 
     test "#file uses default prefix format when no custom profile_file_prefix block is provided" do
-      profile = Profile.new(stackprof_profile)
-
-      assert_match(/^#{Time.zone.now.strftime("%Y%m%d")}/, File.basename(profile.file.to_s))
+      travel_to Time.zone.local(2022, 10, 06, 12, 11, 10) do
+        profile = Profile.new(stackprof_profile)
+        assert_match(/^20221006-121110/, File.basename(profile.file.to_s))
+      end
     end
   end
 end
