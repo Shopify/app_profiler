@@ -152,7 +152,7 @@ module AppProfiler
     end
 
     test ".results prints error when failed" do
-      Profiler.expects(:stackprof_results).returns({})
+      AppProfiler.profiler_backend.expects(:backend_results).returns({})
       AppProfiler.logger.expects(:info).with { |value| value =~ /failed to obtain the profile/ }
 
       assert_nil(Profiler.results)

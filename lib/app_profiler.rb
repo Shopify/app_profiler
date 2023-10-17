@@ -34,6 +34,7 @@ module AppProfiler
   require "app_profiler/request_parameters"
   require "app_profiler/profiler"
   require "app_profiler/profile"
+  require "app_profiler/backend"
   require "app_profiler/server"
 
   mattr_accessor :logger, default: Logger.new($stdout)
@@ -47,6 +48,7 @@ module AppProfiler
   mattr_accessor :context, default: nil
   mattr_reader   :profile_url_formatter,
     default: DefaultProfileFormatter
+  mattr_accessor :profiler_backend, default: AppProfiler::Backend::Stackprof
 
   mattr_accessor :storage, default: Storage::FileStorage
   mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
