@@ -225,8 +225,10 @@ module AppProfiler
         end
 
         def stop
-          File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
           @socket.close
+          File.unlink(@socket_file) if File.exist?(@socket_file) && File.socket?(@socket_file)
+          ObjectSpace.undefine_finalizer(self)
+          nil
         end
 
         def abandon
