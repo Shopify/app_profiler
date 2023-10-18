@@ -90,6 +90,8 @@ module AppProfiler
         server = AppProfiler::Server.start(@logger)
         server.join(1)
 
+        GC.start
+
         open_servers = ObjectSpace.each_object(Transport).select { |t| !t.socket.closed? }
         assert_equal(1, open_servers.size)
 
