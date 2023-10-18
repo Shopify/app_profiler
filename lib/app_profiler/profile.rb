@@ -18,7 +18,17 @@ module AppProfiler
       end
     end
 
-    # `data` is assumed to be a Hash.
+    def self.from_vernier(data)
+      #options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:meta]&.delete(key)] }.to_h
+
+      #VernierProfile.new(data, **options).tap do |profile|
+      VernierProfile.new(data).tap do |profile|
+        raise ArgumentError, "invalid profile data" unless profile.valid?
+      end
+    end
+
+    # `data` is assumed to be a Hash for Stackprof,
+    # a vernier "result" object for vernier
     def initialize(data, id: nil, context: nil)
       @id      = id.presence || SecureRandom.hex
       @context = context
@@ -84,6 +94,36 @@ module AppProfiler
       raise UnsafeFilename if /[^0-9A-Za-z.\-\_]/.match?(filename)
 
       AppProfiler.profile_root.join(filename)
+    end
+  end
+
+  class VernierProfile < Profile
+    delegate    :[], to: :@meta
+    attr_reader :data, :data
+
+    def initialize(data, id: nil, context: nil)
+      @meta = data.meta
+      super
+    end
+
+    # https://github.com/jhawthorn/vernier/blob/main/lib/vernier/result.rb#L27-L29
+    def file
+      @file ||= path.tap do |p|
+        p.dirname.mkpath
+        @data.write(p)
+      end
+    end
+
+    def valid?
+      !@data.nil?
+    end
+
+    def to_h
+      nil
+    end
+
+    def mode
+      nil
     end
   end
 end

@@ -53,6 +53,10 @@ module AppProfiler
       { mode: :cpu, interval: 1000, frames: [], metadata: { id: "foo" } }.merge(params)
     end
 
+    def vernier_profile(params = {})
+      { mode: :wall }.merge(params)
+    end
+
     def with_yarn_setup
       old_yarn_setup = Yarn::Command.yarn_setup
       Yarn::Command.yarn_setup = true
