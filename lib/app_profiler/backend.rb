@@ -6,3 +6,4 @@ module AppProfiler
 end
 
 require "app_profiler/backend/stackprof"
+require "app_profiler/backend/vernier"

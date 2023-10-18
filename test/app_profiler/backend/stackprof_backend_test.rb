@@ -3,7 +3,7 @@
 require "test_helper"
 
 module AppProfiler
-  class ProfilerTest < TestCase
+  class StackprofBackendTest < TestCase
     test ".run prints error when failed" do
       AppProfiler.logger.expects(:info).with { |value| value =~ /failed to start the profiler/ }
       profile = Profiler.run(mode: :unsupported) do
