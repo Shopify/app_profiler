@@ -36,6 +36,7 @@ module AppProfiler
       AppProfiler.profile_url_formatter = app.config.app_profiler.profile_url_formatter
       AppProfiler.upload_queue_max_length = app.config.app_profiler.upload_queue_max_length || 10
       AppProfiler.upload_queue_interval_secs = app.config.app_profiler.upload_queue_interval_secs || 5
+      AppProfiler.profile_file_prefix = app.config.app_profiler.profile_file_prefix || DefaultProfilePrefix
     end
 
     initializer "app_profiler.add_middleware" do |app|

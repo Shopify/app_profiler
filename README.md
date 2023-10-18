@@ -65,6 +65,14 @@ AppProfiler.autoredirect = true
 Rails.application.config.app_profiler.autoredirect = true
 ```
 
+File names of profiles are prefixed by default with timezoned date and time, follow by profile mode, an id, and hostname of the machine where it was capture. For example: `20221006-121110-cpu-613fa8d2cdde5820d5312dea1cfa43d9-macbook-pro-work.lan.json`. To customize the prefix you can provide a proc:
+
+```ruby
+AppProfiler.profile_file_prefix = -> { "custom-prefix" }
+# OR
+Rails.application.config.app_profiler.profile_file_prefix = -> { "custom-prefix" }
+```
+
 To customize the redirect location you can provide a proc:
 
 ```ruby

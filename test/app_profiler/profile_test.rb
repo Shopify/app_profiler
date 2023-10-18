@@ -144,5 +144,19 @@ module AppProfiler
         profile.file
       end
     end
+
+    test "#file uses custom profile_file_prefix block when provided" do
+      profile = Profile.new(stackprof_profile)
+
+      AppProfiler.stubs(:profile_file_prefix).returns(-> { "want-something-different" })
+      assert_match(/want-something-different-/, File.basename(profile.file.to_s))
+    end
+
+    test "#file uses default prefix format when no custom profile_file_prefix block is provided" do
+      travel_to Time.zone.local(2022, 10, 06, 12, 11, 10) do
+        profile = Profile.new(stackprof_profile)
+        assert_match(/^20221006-121110/, File.basename(profile.file.to_s))
+      end
+    end
   end
 end

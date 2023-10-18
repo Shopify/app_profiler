@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-- Change `'X-Profile-Async: true` to `'X-Profile-Async: "true"`
+## [0.1.6] - 2023-10-18
+
+- Allow passing custom block to determine profile file name prefix (#94)
+- Change `'X-Profile-Async: true` to `'X-Profile-Async: "true"` (#95)
 
 ## [0.1.5] - 2023-09-25
 
