@@ -25,6 +25,8 @@ module AppProfiler
               content_type: "application/json",
               content_encoding: "gzip",
             )
+          ensure
+            profile.file.unlink
           end
         end
 
