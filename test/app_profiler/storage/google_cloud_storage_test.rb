@@ -14,9 +14,11 @@ module AppProfiler
       end
 
       test "upload file" do
-        with_mock_gcs_bucket do
-          uploaded_file = GoogleCloudStorage.upload(stub(context: "context", file: json_test_file))
+        profile = profile_from_stackprof
+        with_mock_gcs_bucket(profile) do
+          uploaded_file = GoogleCloudStorage.upload(profile)
           assert_equal(uploaded_file.url, TEST_FILE_URL)
+          assert_not_predicate(profile.file, :exist?)
         end
       end
 
@@ -43,8 +45,9 @@ module AppProfiler
           assert(tags[:file_size].present?)
           event_emitted = true
         end
-        with_mock_gcs_bucket do
-          uploaded_file = GoogleCloudStorage.upload(stub(context: "context", file: json_test_file))
+        profile = profile_from_stackprof
+        with_mock_gcs_bucket(profile) do
+          uploaded_file = GoogleCloudStorage.upload(profile)
           assert_equal(uploaded_file.url, TEST_FILE_URL)
           assert(event_emitted)
         end
@@ -102,14 +105,14 @@ module AppProfiler
         file_fixture("test_file.json")
       end
 
-      def with_mock_gcs_bucket
+      def with_mock_gcs_bucket(profile)
         file = Google::Cloud::Storage::File.new
         file.stubs(:url).returns(TEST_FILE_URL)
 
         bucket = Google::Cloud::Storage::Bucket.new
         bucket.expects(:create_file).once.with do |input, filename, data|
-          assert_equal(Zlib::GzipReader.new(input).read, File.open(json_test_file).read)
-          assert_equal(filename, "context/test_file.json")
+          assert_equal(Zlib::GzipReader.new(input).read, profile.file.open.read)
+          assert_equal(filename, GoogleCloudStorage.send(:gcs_filename, profile))
           assert_equal(data[:content_type], "application/json")
           assert_equal(data[:content_encoding], "gzip")
         end.returns(file)
