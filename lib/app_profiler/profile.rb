@@ -6,23 +6,23 @@ module AppProfiler
     private_constant :INTERNAL_METADATA_KEYS
     class UnsafeFilename < StandardError; end
 
-    delegate    :[], to: :@data
     attr_reader :id, :context
 
     # This function should not be called if `StackProf.results` returns nil.
     def self.from_stackprof(data)
       options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:metadata]&.delete(key)] }.to_h
 
-      new(data, **options).tap do |profile|
+      StackprofProfile.new(data, **options).tap do |profile|
         raise ArgumentError, "invalid profile data" unless profile.valid?
       end
     end
 
     def self.from_vernier(data)
-      #options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:meta]&.delete(key)] }.to_h
+      # FIXME: we don't delete here, that is causing a segfault in vernier. Divergent behaviour from stackprof,
+      # as the special metadata keys "id" and "context" are preserved into the metadata, but maybe that isn't so bad.
+      options = INTERNAL_METADATA_KEYS.map { |key| [key, data.meta.clone[key]] }.to_h
 
-      #VernierProfile.new(data, **options).tap do |profile|
-      VernierProfile.new(data).tap do |profile|
+      VernierProfile.new(data, **options).tap do |profile|
         raise ArgumentError, "invalid profile data" unless profile.valid?
       end
     end
@@ -33,14 +33,6 @@ module AppProfiler
       @id      = id.presence || SecureRandom.hex
       @context = context
       @data    = data
-    end
-
-    def valid?
-      mode.present?
-    end
-
-    def mode
-      @data[:mode]
     end
 
     def view
@@ -71,14 +63,19 @@ module AppProfiler
     end
 
     def file
-      @file ||= path.tap do |p|
-        p.dirname.mkpath
-        p.write(JSON.dump(@data))
-      end
+      raise NotImplementedError
     end
 
     def to_h
-      @data
+      raise NotImplementedError
+    end
+
+    def valid?
+      raise NotImplementedError
+    end
+
+    def mode
+      raise NotImplementedError
     end
 
     private
@@ -97,9 +94,31 @@ module AppProfiler
     end
   end
 
+  class StackprofProfile < Profile
+    delegate :[], to: :@data
+
+    def file
+      @file ||= path.tap do |p|
+        p.dirname.mkpath
+        p.write(JSON.dump(@data))
+      end
+    end
+
+    def to_h
+      @data
+    end
+
+    def valid?
+      mode.present?
+    end
+
+    def mode
+      @data[:mode]
+    end
+  end
+
   class VernierProfile < Profile
-    delegate    :[], to: :@meta
-    attr_reader :data, :data
+    delegate :[], to: :@meta
 
     def initialize(data, id: nil, context: nil)
       @meta = data.meta
@@ -123,7 +142,7 @@ module AppProfiler
     end
 
     def mode
-      nil
+      @meta[:mode]
     end
   end
 end

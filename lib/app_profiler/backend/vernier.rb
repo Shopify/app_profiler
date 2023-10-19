@@ -54,7 +54,7 @@ module AppProfiler
 
           return unless vernier_profile
 
-          vernier_profile.meta[:mode] = @mode # TODO https://github.com/jhawthorn/vernier/issues/30
+          vernier_profile.meta[:mode] = @mode # TODO: https://github.com/jhawthorn/vernier/issues/30
           vernier_profile.meta.merge!(@metadata) if @metadata
           @mode = nil
           @metadata = nil

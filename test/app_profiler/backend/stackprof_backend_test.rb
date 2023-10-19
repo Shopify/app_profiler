@@ -46,7 +46,7 @@ module AppProfiler
         sleep(0.1)
       end
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal(:cpu, profile[:mode])
       assert_equal(1000, profile[:interval])
     end
@@ -56,7 +56,7 @@ module AppProfiler
         sleep(0.1)
       end
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal("wowza", profile.id)
       assert_equal("bar", profile.context)
     end
@@ -66,7 +66,7 @@ module AppProfiler
         sleep(0.1)
       end
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal(:cpu, profile[:mode])
       assert_equal(2000, profile[:interval])
     end
@@ -76,7 +76,7 @@ module AppProfiler
         sleep(0.1)
       end
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal(:wall, profile[:mode])
       assert_equal(2000, profile[:interval])
     end
@@ -86,7 +86,7 @@ module AppProfiler
         sleep(0.1)
       end
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal(:object, profile[:mode])
       assert_equal(2, profile[:interval])
     end
@@ -97,7 +97,7 @@ module AppProfiler
 
       profile = Profiler.results
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal(:cpu, profile[:mode])
       assert_equal(1000, profile[:interval])
     end
@@ -108,7 +108,7 @@ module AppProfiler
 
       profile = Profiler.results
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal("wowza", profile.id)
       assert_equal("bar", profile.context)
     end
@@ -119,7 +119,7 @@ module AppProfiler
 
       profile = Profiler.results
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal(:cpu, profile[:mode])
       assert_equal(2000, profile[:interval])
     end
@@ -130,7 +130,7 @@ module AppProfiler
 
       profile = Profiler.results
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal(:wall, profile[:mode])
       assert_equal(2000, profile[:interval])
     end
@@ -141,7 +141,7 @@ module AppProfiler
 
       profile = Profiler.results
 
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_equal(:object, profile[:mode])
       assert_equal(2, profile[:interval])
     end
@@ -176,7 +176,7 @@ module AppProfiler
       assert_equal(false, Profiler.send(:running?))
 
       profile = Profiler.results
-      assert_instance_of(AppProfiler::Profile, profile)
+      assert_instance_of(AppProfiler::StackprofProfile, profile)
       assert_predicate(profile, :valid?)
 
       assert_nil(Profiler.results)

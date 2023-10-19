@@ -23,7 +23,7 @@ module AppProfiler
       sleep 0.1
       profile = AppProfiler.stop
 
-      assert_instance_of(Profile, profile)
+      assert_instance_of(StackprofProfile, profile)
     end
   end
 end

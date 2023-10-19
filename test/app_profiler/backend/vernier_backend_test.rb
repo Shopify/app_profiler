@@ -4,7 +4,6 @@ require "test_helper"
 
 module AppProfiler
   class VernierBackendTest < TestCase
-
     def setup
       @orig_backend = AppProfiler.profiler_backend
       AppProfiler.profiler_backend = AppProfiler::Backend::Vernier
@@ -54,7 +53,7 @@ module AppProfiler
 
       assert_instance_of(AppProfiler::VernierProfile, profile)
       assert_equal(:wall, profile[:mode])
-      #assert_equal(1000, profile[:interval]) # TODO https://github.com/jhawthorn/vernier/issues/30
+      # assert_equal(1000, profile[:interval]) # TODO https://github.com/jhawthorn/vernier/issues/30
     end
 
     test ".run assigns metadata to profiles" do

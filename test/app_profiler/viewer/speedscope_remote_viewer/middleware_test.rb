@@ -13,14 +13,14 @@ module AppProfiler
         end
 
         test ".id" do
-          profile = Profile.new(stackprof_profile)
+          profile = StackprofProfile.new(stackprof_profile)
           profile_id = profile.file.basename.to_s.delete_suffix(".json")
 
           assert_equal(profile_id, Middleware.id(profile.file))
         end
 
         test "#call index" do
-          profiles = Array.new(3) { Profile.new(stackprof_profile).tap(&:file) }
+          profiles = Array.new(3) { StackprofProfile.new(stackprof_profile).tap(&:file) }
 
           code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler" })
           html = html.first
@@ -34,7 +34,7 @@ module AppProfiler
         end
 
         test "#call index with slash" do
-          profiles = Array.new(3) { Profile.new(stackprof_profile).tap(&:file) }
+          profiles = Array.new(3) { StackprofProfile.new(stackprof_profile).tap(&:file) }
 
           code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/" })
           html = html.first
@@ -48,7 +48,7 @@ module AppProfiler
         end
 
         test "#call show" do
-          profile = Profile.new(stackprof_profile)
+          profile = StackprofProfile.new(stackprof_profile)
           id = Middleware.id(profile.file)
 
           code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/#{id}" })
