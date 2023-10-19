@@ -8,12 +8,12 @@ module AppProfiler
       test ".view initializes and calls #view" do
         SpeedscopeRemoteViewer.any_instance.expects(:view)
 
-        profile = Profile.new(stackprof_profile)
+        profile = StackprofProfile.new(stackprof_profile)
         SpeedscopeRemoteViewer.view(profile)
       end
 
       test "#view logs middleware URL" do
-        profile = Profile.new(stackprof_profile)
+        profile = StackprofProfile.new(stackprof_profile)
 
         viewer = SpeedscopeRemoteViewer.new(profile)
         id = SpeedscopeRemoteViewer::Middleware.id(profile.file)
