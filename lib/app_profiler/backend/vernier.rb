@@ -44,13 +44,16 @@ module AppProfiler
         end
 
         def stop
+          return false unless running?
+
           @results = @collector&.stop
           @collector = nil
-          @results
+          !@results.nil?
         end
 
         def results
           vernier_profile = backend_results
+          clear
 
           return unless vernier_profile
 
@@ -61,7 +64,6 @@ module AppProfiler
 
           AppProfiler::Profile.from_vernier(vernier_profile)
         rescue => error
-          puts "HERE #{error.message}"
           AppProfiler.logger.info(
             "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"
           )
