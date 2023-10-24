@@ -6,7 +6,13 @@ module AppProfiler
   module Viewer
     class SpeedscopeRemoteViewer < BaseViewer
       class BaseMiddleware
-        class Sanitizer < Rails::Html::SafeListSanitizer
+        sanitizer_superclass = if Rails::Html::Sanitizer::VERSION >= "1.6.0" && Rails::HTML::Sanitizer.html5_support?
+          Rails::HTML5::SafeListSanitizer
+        else
+          Rails::Html::SafeListSanitizer
+        end
+
+        class Sanitizer < sanitizer_superclass
           self.allowed_tags = Set.new([
             "strong", "em", "b", "i", "p", "code", "pre", "tt", "samp", "kbd", "var", "sub",
             "sup", "dfn", "cite", "big", "small", "address", "hr", "br", "div", "span", "h1",
