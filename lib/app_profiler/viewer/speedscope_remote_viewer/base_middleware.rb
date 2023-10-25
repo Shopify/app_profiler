@@ -1,18 +1,13 @@
 # frozen_string_literal: true
 
+gem "rails-html-sanitizer", ">= 1.6.0"
 require "rails-html-sanitizer"
 
 module AppProfiler
   module Viewer
     class SpeedscopeRemoteViewer < BaseViewer
       class BaseMiddleware
-        sanitizer_superclass = if Rails::Html::Sanitizer::VERSION >= "1.6.0" && Rails::HTML::Sanitizer.html5_support?
-          Rails::HTML5::SafeListSanitizer
-        else
-          Rails::Html::SafeListSanitizer
-        end
-
-        class Sanitizer < sanitizer_superclass
+        class Sanitizer < Rails::HTML::Sanitizer.best_supported_vendor.safe_list_sanitizer
           self.allowed_tags = Set.new([
             "strong", "em", "b", "i", "p", "code", "pre", "tt", "samp", "kbd", "var", "sub",
             "sup", "dfn", "cite", "big", "small", "address", "hr", "br", "div", "span", "h1",
