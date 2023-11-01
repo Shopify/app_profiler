@@ -61,9 +61,24 @@ module AppProfiler
       test ".process_queue uploads" do
         with_stubbed_process_queue_thread do
           profile = profile_from_stackprof
+          @called = false
+          AppProfiler.profile_enqueue_success = -> { @called = true }
           GoogleCloudStorage.enqueue_upload(profile)
-          profile.expects(:upload).once
+          assert(@called)
+
+          @num_success = 0
+          @num_failures = 0
+
+          AppProfiler.after_process_queue = ->(num_success, num_failures) do
+            @num_success = num_success
+            @num_failures = num_failures
+          end
           GoogleCloudStorage.send(:process_queue)
+          assert_equal(1, @num_success)
+          assert_equal(0, @num_failures)
+
+        ensure
+          AppProfiler.profile_enqueue_success = nil
         end
       end
 
@@ -74,7 +89,18 @@ module AppProfiler
           end
           dropped_profile = Profile.from_stackprof(profile_from_stackprof)
           AppProfiler.logger.expects(:info).with { |value| value =~ /upload queue is full/ }
+
+          @called = false
+          AppProfiler.profile_enqueue_success = -> { @called = true }
+          refute(@called)
+
+          @profile = nil
+          AppProfiler.profile_enqueue_failure = ->(profile) { @profile = profile }
           GoogleCloudStorage.enqueue_upload(dropped_profile)
+          assert_equal(dropped_profile, @profile)
+        ensure
+          AppProfiler.profile_enqueue_success = nil
+          AppProfiler.profile_enqueue_failure = nil
         end
       end
 

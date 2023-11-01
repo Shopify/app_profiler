@@ -37,8 +37,10 @@ module AppProfiler
             @queue ||= init_queue
             begin
               @queue.push(profile, true) # non-blocking push, raises ThreadError if queue is full
+              AppProfiler.profile_enqueue_success&.call
             rescue ThreadError
               AppProfiler.logger.info("[AppProfiler] upload queue is full, profile discarded")
+              AppProfiler.profile_enqueue_failure&.call(profile)
             end
           end
         end
@@ -80,7 +82,12 @@ module AppProfiler
 
           return unless queue
 
-          queue.size.times { queue.pop(false).upload }
+          num_success = 0
+          num_failures = 0
+          queue.size.times do
+            queue.pop(false).upload ? num_success += 1 : num_failures += 1
+          end
+          AppProfiler.after_process_queue&.call(num_success, num_failures)
         end
 
         def gcs_filename(profile)

@@ -37,6 +37,9 @@ module AppProfiler
       AppProfiler.upload_queue_max_length = app.config.app_profiler.upload_queue_max_length || 10
       AppProfiler.upload_queue_interval_secs = app.config.app_profiler.upload_queue_interval_secs || 5
       AppProfiler.profile_file_prefix = app.config.app_profiler.profile_file_prefix || DefaultProfilePrefix
+      AppProfiler.profile_enqueue_success = app.config.app_profiler.profile_enqueue_success
+      AppProfiler.profile_enqueue_failure = app.config.app_profiler.profile_enqueue_failure
+      AppProfiler.after_process_queue = app.config.app_profiler.after_process_queue
     end
 
     initializer "app_profiler.add_middleware" do |app|
