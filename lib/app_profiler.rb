@@ -55,6 +55,9 @@ module AppProfiler
   mattr_accessor :upload_queue_max_length, default: 10
   mattr_accessor :upload_queue_interval_secs, default: 5
   mattr_accessor :profile_file_prefix, default: DefaultProfilePrefix
+  mattr_reader :profile_enqueue_success, default: nil
+  mattr_reader :profile_enqueue_failure, default: nil
+  mattr_reader :after_process_queue, default: nil
 
   class << self
     def run(*args, &block)
@@ -86,6 +89,30 @@ module AppProfiler
 
     def profile_url_formatter=(block)
       @@profile_url_formatter = block # rubocop:disable Style/ClassVars
+    end
+
+    def profile_enqueue_success=(handler)
+      if handler && (!handler.is_a?(Proc) || (handler.lambda? && handler.arity != 0))
+        raise ArgumentError, "profile_enqueue_success must be proc or a lambda that accepts no argument"
+      end
+
+      @@profile_enqueue_success = handler # rubocop:disable Style/ClassVars
+    end
+
+    def profile_enqueue_failure=(handler)
+      if handler && (!handler.is_a?(Proc) || (handler.lambda? && handler.arity != 1))
+        raise ArgumentError, "profile_enqueue_failure must be a proc or a lambda that accepts one argument"
+      end
+
+      @@profile_enqueue_failure = handler # rubocop:disable Style/ClassVars
+    end
+
+    def after_process_queue=(handler)
+      if handler && (!handler.is_a?(Proc) || (handler.lambda? && handler.arity != 2))
+        raise ArgumentError, "after_process_queue must be a proc or a lambda that accepts two arguments"
+      end
+
+      @@after_process_queue = handler # rubocop:disable Style/ClassVars
     end
 
     def profile_url(upload)

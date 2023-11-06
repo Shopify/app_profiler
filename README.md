@@ -31,7 +31,33 @@ Profiling can be triggered in one of two ways:
    - `X-Profile` header format: `[<key>=<value>];...`
 
 
-If `async` query string is provided, then the profile will be uploaded later, in an async manner. One use case for this is when we want to profile a certain % of traffic without incurring costs of inline profile uploads.
+If `async` query string is provided, then the profile will be uploaded later, in an async manner. One use case for this is when we want to profile a certain % of traffic without incurring costs of inline profile uploads. Async background processing provides three callbacks:
+
+1. profile_enqueue_success: Called when a profile is successfully added to the queue, to be uploaded later.
+2. profile_enqueue_failure: Called when a profile fails to be enqueued due to no space left in the queue, `upload_queue_max_length` exceeded.
+3. after_process_queue: Called when profiles are uploaded from the background thread.
+
+These callbacks can be configured the following manner:
+
+```ruby
+AppProfiler.profile_enqueue_success = ->() {  StatsD.increment("profile_enqueue_success") }
+# OR
+Rails.application.config.app_profiler.profile_enqueue_success = ->() {  StatsD.increment("profile_enqueue_success") }
+```
+
+```ruby
+AppProfiler.profile_enqueue_failure = ->(profile) {  Rails.logger.info("Profile #{profile.inspect} could not be enqueued.") }
+# OR
+Rails.application.config.app_profiler.profile_enqueue_failure = ->(profile) {  Rails.logger.info("Profile #{profile.inspect} could not be enqueued.")}
+```
+
+```ruby
+AppProfiler.after_process_queue = ->(num_success, num_failures) { StatsD.gauge("async_profile_upload", tags: { sucessful: num_success, failed: num_failures} )}
+# OR
+Rails.application.config.app_profiler.after_process_queue = ->(num_success, num_failures) { StatsD.gauge("async_profile_upload", tags: { sucessful: num_success, failed: num_failures} )}
+```
+
+
 
 You can configure the profile header using:
 
