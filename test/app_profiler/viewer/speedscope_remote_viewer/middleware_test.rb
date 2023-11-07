@@ -60,6 +60,21 @@ module AppProfiler
           assert_match(%r(<script type="text/javascript">), html)
         end
 
+        test "#call show can serve huge payloads" do
+          frames = { "1" => { name: "a" * 1e7 } }
+          profile = Profile.new(stackprof_profile(frames: frames))
+          id = Middleware.id(profile.file)
+
+          _, _, html = @app.call({ "PATH_INFO" => "/app_profiler/#{id}" })
+          html = html.first
+
+          assert_match(
+            %r{'Flamegraph for .*'\);\n</script>},
+            html[-200..-1],
+            message: "The generated HTML was incomplete"
+          )
+        end
+
         test "#call viewer sets up yarn" do
           @app.expects(:system).with("which", "yarn", out: File::NULL).returns(true)
           @app.expects(:system).with("yarn", "init", "--yes").returns(true)

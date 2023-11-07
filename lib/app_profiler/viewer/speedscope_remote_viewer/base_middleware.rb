@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
+gem "rails-html-sanitizer", ">= 1.6.0"
 require "rails-html-sanitizer"
 
 module AppProfiler
   module Viewer
     class SpeedscopeRemoteViewer < BaseViewer
       class BaseMiddleware
-        class Sanitizer < Rails::Html::SafeListSanitizer
+        class Sanitizer < Rails::HTML::Sanitizer.best_supported_vendor.safe_list_sanitizer
           self.allowed_tags = Set.new([
             "strong", "em", "b", "i", "p", "code", "pre", "tt", "samp", "kbd", "var", "sub",
             "sup", "dfn", "cite", "big", "small", "address", "hr", "br", "div", "span", "h1",

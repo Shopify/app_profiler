@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - add callbacks for async profile processing(#103)
 
+- Bugfix: use HTML5 sanitizer when available so Speedscope remote viewer doesn't bail on big payloads (#102)
+
 ## [0.1.7] - 2023-10-19
 
 - Clean up files after uploading to GCS (#99)
