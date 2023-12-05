@@ -32,7 +32,6 @@ module AppProfiler
   require "app_profiler/middleware"
   require "app_profiler/parameters"
   require "app_profiler/request_parameters"
-  require "app_profiler/profiler"
   require "app_profiler/profile"
   require "app_profiler/backend"
   require "app_profiler/server"
@@ -60,16 +59,24 @@ module AppProfiler
 
   class << self
     def run(*args, &block)
-      Profiler.run(*args, &block)
+
+      profiler_backend.run(*args, &block)
     end
 
     def start(*args)
-      Profiler.start(*args)
+      profiler_backend.start(*args)
     end
 
     def stop
-      Profiler.stop
-      Profiler.results
+      profiler_backend.stop
+    end
+
+    def results
+      profiler_backend.results
+    end
+
+    def running?
+      profiler_backend.running?
     end
 
     def profile_header=(profile_header)

@@ -1,0 +1,7 @@
+Run options: --seed 40128
+
+# Running:
+
+.AppProfiler.profiler_backend: AppProfiler::Backend::Vernier
+profile: #<AppProfiler::VernierProfile:0x0000000105c86a08 @meta={:started_at=>7364602334152000, :mode=>:wall, :id=>"wowza", :context=>"bar"}, @id="wowza", @context="bar", @data=#<Vernier::Result 4.1e-05 seconds, 1 threads, 0 samples, 0 unique>>
+......SS......SS

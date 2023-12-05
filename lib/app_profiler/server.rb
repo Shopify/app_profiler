@@ -164,9 +164,9 @@ module AppProfiler
 
       def stop_running
         @semaphore.synchronize do
-          AppProfiler.stop.tap do
-            @profile_running = false
-          end
+          AppProfiler.stop
+          @profile_running = false
+          AppProfiler.results
         end
       end
     end

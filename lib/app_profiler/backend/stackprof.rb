@@ -58,6 +58,10 @@ module AppProfiler
           nil
         end
 
+        def running?
+          ::StackProf.running?
+        end
+
         private
 
         def backend_results
@@ -75,10 +79,6 @@ module AppProfiler
         #
         def clear
           backend_results
-        end
-
-        def running?
-          ::StackProf.running?
         end
       end
     end
