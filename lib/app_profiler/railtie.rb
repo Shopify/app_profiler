@@ -63,7 +63,7 @@ module AppProfiler
     private
 
     def default_middleware_action
-      if Rails.env.development?
+      if Rails.env.development? || Rails.env.test?
         Middleware::ViewAction
       else
         Middleware::UploadAction
