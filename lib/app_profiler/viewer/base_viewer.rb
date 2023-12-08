@@ -4,12 +4,12 @@ module AppProfiler
   module Viewer
     class BaseViewer
       class << self
-        def view(profile)
-          new(profile).view
+        def view(profile, params = {})
+          new(profile).view(**params)
         end
       end
 
-      def view(_profile)
+      def view(_params = {})
         raise NotImplementedError
       end
     end

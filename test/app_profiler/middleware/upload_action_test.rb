@@ -90,14 +90,6 @@ module AppProfiler
 
       private
 
-      def with_autoredirect
-        old_autoredirect = AppProfiler.autoredirect
-        AppProfiler.autoredirect = true
-        yield
-      ensure
-        AppProfiler.autoredirect = old_autoredirect
-      end
-
       def with_url_formatter(block)
         old_formatter = AppProfiler.profile_url_formatter
         AppProfiler.profile_url_formatter = block

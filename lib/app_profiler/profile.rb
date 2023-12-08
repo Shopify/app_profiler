@@ -33,8 +33,8 @@ module AppProfiler
       @data[:mode]
     end
 
-    def view
-      AppProfiler.viewer.view(self)
+    def view(params = {})
+      AppProfiler.viewer.view(self, **params)
     end
 
     def upload
