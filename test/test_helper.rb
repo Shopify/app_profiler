@@ -60,13 +60,5 @@ module AppProfiler
     ensure
       Yarn::Command.yarn_setup = old_yarn_setup
     end
-
-    def with_autoredirect
-      old_autoredirect = AppProfiler.autoredirect
-      AppProfiler.autoredirect = true
-      yield
-    ensure
-      AppProfiler.autoredirect = old_autoredirect
-    end
   end
 end

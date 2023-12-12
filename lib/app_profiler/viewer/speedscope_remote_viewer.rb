@@ -20,7 +20,7 @@ module AppProfiler
       def view(response: nil, autoredirect: nil, async: false)
         id = Middleware.id(@profile.file)
 
-        if autoredirect || (autoredirect.nil? && AppProfiler.autoredirect) && response && response[0].to_i < 500
+        if response && response[0].to_i < 500
           response[1]["Location"] = "/app_profiler/#{id}"
           response[0] = 303
         else

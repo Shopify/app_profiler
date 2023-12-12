@@ -25,29 +25,14 @@ module AppProfiler
         viewer.view
       end
 
-      test "#view with autoredirect redirects to URL" do
+      test "#view with response redirects to URL" do
         response = [200, {}, ["OK"]]
         profile = Profile.new(stackprof_profile)
 
         viewer = SpeedscopeRemoteViewer.new(profile)
         id = SpeedscopeRemoteViewer::Middleware.id(profile.file)
 
-        viewer.view(response: response, autoredirect: true)
-
-        assert_equal(303, response[0])
-        assert_equal("/app_profiler/#{id}", response[1]["Location"])
-      end
-
-      test "#view with configured autoredirect redirects to URL" do
-        response = [200, {}, ["OK"]]
-        profile = Profile.new(stackprof_profile)
-
-        viewer = SpeedscopeRemoteViewer.new(profile)
-        id = SpeedscopeRemoteViewer::Middleware.id(profile.file)
-
-        with_autoredirect do
-          viewer.view(response: response)
-        end
+        viewer.view(response: response)
 
         assert_equal(303, response[0])
         assert_equal("/app_profiler/#{id}", response[1]["Location"])
