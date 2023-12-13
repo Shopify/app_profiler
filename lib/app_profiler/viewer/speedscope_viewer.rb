@@ -9,8 +9,8 @@ module AppProfiler
       include Yarn::WithSpeedscope
 
       class << self
-        def view(profile)
-          new(profile).view
+        def view(profile, params = {})
+          new(profile).view(**params)
         end
       end
 
@@ -19,7 +19,7 @@ module AppProfiler
         @profile = profile
       end
 
-      def view
+      def view(_params = {})
         yarn("run", "speedscope", @profile.file.to_s)
       end
     end

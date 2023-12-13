@@ -25,14 +25,17 @@ module AppProfiler
         viewer.view
       end
 
-      private
+      test "#view with response redirects to URL" do
+        response = [200, {}, ["OK"]]
+        profile = Profile.new(stackprof_profile)
 
-      def with_yarn_setup
-        old_yarn_setup = Yarn::Command.yarn_setup
-        Yarn::Command.yarn_setup = true
-        yield
-      ensure
-        Yarn::Command.yarn_setup = old_yarn_setup
+        viewer = SpeedscopeRemoteViewer.new(profile)
+        id = SpeedscopeRemoteViewer::Middleware.id(profile.file)
+
+        viewer.view(response: response)
+
+        assert_equal(303, response[0])
+        assert_equal("/app_profiler/#{id}", response[1]["Location"])
       end
     end
   end

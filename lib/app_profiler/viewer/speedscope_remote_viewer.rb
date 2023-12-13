@@ -7,8 +7,8 @@ module AppProfiler
   module Viewer
     class SpeedscopeRemoteViewer < BaseViewer
       class << self
-        def view(profile)
-          new(profile).view
+        def view(profile, params = {})
+          new(profile).view(**params)
         end
       end
 
@@ -17,9 +17,15 @@ module AppProfiler
         @profile = profile
       end
 
-      def view
+      def view(response: nil, autoredirect: nil, async: false)
         id = Middleware.id(@profile.file)
-        AppProfiler.logger.info("[Profiler] Profile available at /app_profiler/#{id}\n")
+
+        if response && response[0].to_i < 500
+          response[1]["Location"] = "/app_profiler/#{id}"
+          response[0] = 303
+        else
+          AppProfiler.logger.info("[Profiler] Profile available at /app_profiler/#{id}\n")
+        end
       end
     end
   end
