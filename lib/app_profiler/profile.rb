@@ -137,7 +137,7 @@ module AppProfiler
     def file
       @file ||= path.tap do |p|
         p.dirname.mkpath
-        @data.write(p)
+        @data.write(out: p)
       end
     end
 
