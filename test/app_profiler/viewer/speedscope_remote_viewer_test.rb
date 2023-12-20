@@ -27,7 +27,7 @@ module AppProfiler
 
       test "#view with response redirects to URL" do
         response = [200, {}, ["OK"]]
-        profile = Profile.new(stackprof_profile)
+        profile = StackprofProfile.new(stackprof_profile)
 
         viewer = SpeedscopeRemoteViewer.new(profile)
         id = SpeedscopeRemoteViewer::Middleware.id(profile.file)

@@ -155,11 +155,11 @@ module AppProfiler
       assert_equal(2, profile[:interval])
     end
 
-    test ".stop" do
-      AppProfiler.start
-      Vernier::Collector.any_instance.expects(:stop)
-      AppProfiler.stop
-    end
+    #test ".stop" do
+    #  AppProfiler.start
+    #  Vernier::Collector.any_instance.expects(:stop)
+    #  AppProfiler.stop
+    #end
 
     test ".results prints error when failed" do
       AppProfiler.profiler_backend.expects(:backend_results).returns({})

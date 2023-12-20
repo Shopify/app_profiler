@@ -62,7 +62,7 @@ module AppProfiler
 
         test "#call show can serve huge payloads" do
           frames = { "1" => { name: "a" * 1e7 } }
-          profile = Profile.new(stackprof_profile(frames: frames))
+          profile = StackprofProfile.new(stackprof_profile(frames: frames))
           id = Middleware.id(profile.file)
 
           _, _, html = @app.call({ "PATH_INFO" => "/app_profiler/#{id}" })
