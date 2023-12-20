@@ -6,6 +6,7 @@ gemspec
 # Specify the same dependency sources as the application Gemfile
 gem("activesupport", "~> 5.2")
 gem("railties", "~> 5.2")
+gem("vernier", "~> 0.3.1")
 
 gem("google-cloud-storage", "~> 1.21")
 gem("rubocop", require: false)

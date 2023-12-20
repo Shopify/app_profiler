@@ -29,7 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency("activesupport", ">= 5.2")
   spec.add_dependency("rack")
   spec.add_dependency("stackprof", "~> 0.2")
-  spec.add_dependency("vernier", "~> 0.3")
 
   spec.add_development_dependency("bundler")
   spec.add_development_dependency("minitest")
