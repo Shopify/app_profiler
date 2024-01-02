@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 begin
-  gem "vernier", ">= 0.3.1"
+  gem("vernier", ">= 0.3.1")
   require "vernier"
 rescue LoadError
-  warn "Vernier profiling support requires the vernier gem, version 0.3.1 or later. Please add it to your Gemfile: `gem \"vernier\", \">= 0.3.1\"`"
+  warn("Vernier profiling support requires the vernier gem, version 0.3.1 or later." \
+    "Please add it to your Gemfile: `gem \"vernier\", \">= 0.3.1\"`")
   raise
 end
 

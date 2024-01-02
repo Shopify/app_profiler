@@ -35,14 +35,6 @@ module AppProfiler
       @data    = data
     end
 
-    def valid?
-      mode.present?
-    end
-
-    def mode
-      @data[:mode]
-    end
-
     def view(params = {})
       AppProfiler.viewer.view(self, **params)
     end

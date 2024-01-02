@@ -6,4 +6,9 @@ module AppProfiler
 end
 
 require "app_profiler/backend/stackprof"
-require "app_profiler/backend/vernier"
+
+begin
+  require "app_profiler/backend/vernier"
+rescue LoadError
+  warn("Vernier is not supported.")
+end
