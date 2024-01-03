@@ -32,7 +32,6 @@ module AppProfiler
   require "app_profiler/middleware"
   require "app_profiler/parameters"
   require "app_profiler/request_parameters"
-  require "app_profiler/profiler"
   require "app_profiler/profile"
   require "app_profiler/backend"
   require "app_profiler/server"
@@ -48,7 +47,7 @@ module AppProfiler
   mattr_accessor :context, default: nil
   mattr_reader   :profile_url_formatter,
     default: DefaultProfileFormatter
-  mattr_accessor :profiler_backend, default: AppProfiler::Backend::Stackprof
+  mattr_accessor :profiler_backend, default: AppProfiler::StackprofBackend
 
   mattr_accessor :storage, default: Storage::FileStorage
   mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
@@ -63,16 +62,24 @@ module AppProfiler
 
   class << self
     def run(*args, &block)
-      Profiler.run(*args, &block)
+      profiler.run(*args, &block)
     end
 
     def start(*args)
-      Profiler.start(*args)
+      profiler.start(*args)
     end
 
     def stop
-      Profiler.stop
-      Profiler.results
+      profiler.stop
+      profiler.results
+    end
+
+    def profiler
+      @backend ||= profiler_backend.new
+    end
+
+    def clear
+      @backend = nil
     end
 
     def profile_header=(profile_header)

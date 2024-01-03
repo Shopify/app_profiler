@@ -11,7 +11,7 @@ module AppProfiler
       end
 
       test ".cleanup" do
-        Profiler.expects(:results).returns(@profile)
+        AppProfiler.profiler.expects(:results).returns(@profile)
         @profile.expects(:view)
 
         ViewAction.cleanup

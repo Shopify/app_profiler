@@ -1,7 +1,28 @@
 # frozen_string_literal: true
 
 module AppProfiler
-  module Backend
+  class Backend
+    class << self
+      def run(params = {}, &block)
+        raise NotImplementedError
+      end
+
+      def start(params = {})
+        raise NotImplementedError
+      end
+
+      def stop
+        raise NotImplementedError
+      end
+
+      def results
+        raise NotImplementedError
+      end
+
+      def running?
+        raise NotImplementedError
+      end
+    end
   end
 end
 

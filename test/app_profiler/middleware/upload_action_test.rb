@@ -11,7 +11,7 @@ module AppProfiler
       end
 
       test ".cleanup" do
-        Profiler.expects(:results).returns(@profile)
+        AppProfiler.profiler.expects(:results).returns(@profile)
         assert_nothing_raised do
           UploadAction.cleanup
         end
