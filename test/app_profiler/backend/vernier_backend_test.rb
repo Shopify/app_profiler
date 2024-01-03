@@ -97,13 +97,55 @@ module AppProfiler
 
     test ".run object profile" do
       skip "object allocation mode not yet supported by vernier"
-      profile = AppProfiler.profiler.run(stackprof_profile(mode: :object, interval: 2)) do
+      profile = AppProfiler.profiler.run(vernier_profile(mode: :object, interval: 2)) do
         sleep(0.1)
       end
 
       assert_instance_of(AppProfiler::VernierProfile, profile)
       assert_equal(:object, profile[:mode])
       assert_equal(2, profile[:interval])
+    end
+
+    test ".run retained profile" do
+      retained = []
+      objects = 10
+      profile = AppProfiler.profiler.run(vernier_profile(mode: :retained)) do
+        objects.times do
+          retained << Object.new
+        end
+      end
+
+      assert_instance_of(AppProfiler::VernierProfile, profile)
+      assert_equal(:retained, profile[:mode])
+
+      weights = []
+      profile.data.each_sample do |_, weight|
+        weights << weight
+      end
+      assert_operator(weights.size, :>=, objects)
+    end
+
+    test ".run works for supported modes" do
+      profile = AppProfiler.profiler.run(vernier_profile(mode: :wall)) do
+        sleep(0.1)
+      end
+      refute_equal(false, profile)
+
+      profile = AppProfiler.profiler.run(vernier_profile(mode: :retained)) do
+        sleep(0.1)
+      end
+      refute_equal(false, profile)
+    end
+
+    test ".run fails for unsupported modes" do
+      unsupported_modes = [:cpu, :object, :garbage, :unsupported]
+
+      unsupported_modes.each do |unsupported|
+        profile = AppProfiler.profiler.run(vernier_profile(mode: unsupported)) do
+          sleep(0.1)
+        end
+        assert_nil(profile)
+      end
     end
 
     test ".start uses wall profile by default" do

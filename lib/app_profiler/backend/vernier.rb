@@ -15,6 +15,11 @@ module AppProfiler
       mode: :wall,
     }.freeze
 
+    AVAILABLE_MODES = [
+      :wall,
+      :retained,
+    ].freeze
+
     def run(params = {})
       started = start(params)
 
@@ -34,6 +39,8 @@ module AppProfiler
       return false if running?
 
       @mode = params.delete(:mode) || DEFAULTS[:mode]
+      raise ArgumentError unless AVAILABLE_MODES.include?(@mode)
+
       @metadata = params.delete(:metadata)
       clear
 

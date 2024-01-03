@@ -120,6 +120,8 @@ module AppProfiler
   class VernierProfile < Profile
     delegate :[], to: :@meta
 
+    attr_reader :data
+
     def initialize(data, id: nil, context: nil)
       @meta = data.meta
       super
