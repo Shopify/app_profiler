@@ -2,26 +2,24 @@
 
 module AppProfiler
   class Backend
-    class << self
-      def run(params = {}, &block)
-        raise NotImplementedError
-      end
+    def run(params = {}, &block)
+      raise NotImplementedError
+    end
 
-      def start(params = {})
-        raise NotImplementedError
-      end
+    def start(params = {})
+      raise NotImplementedError
+    end
 
-      def stop
-        raise NotImplementedError
-      end
+    def stop
+      raise NotImplementedError
+    end
 
-      def results
-        raise NotImplementedError
-      end
+    def results
+      raise NotImplementedError
+    end
 
-      def running?
-        raise NotImplementedError
-      end
+    def running?
+      raise NotImplementedError
     end
   end
 end

@@ -75,6 +75,10 @@ module AppProfiler
       nil
     end
 
+    def running?
+      @collector != nil
+    end
+
     private
 
     def backend_results
@@ -83,10 +87,6 @@ module AppProfiler
 
     def clear
       @results = nil
-    end
-
-    def running?
-      @collector != nil
     end
   end
 end

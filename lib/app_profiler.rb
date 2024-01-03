@@ -75,10 +75,13 @@ module AppProfiler
     end
 
     def profiler
+      raise ConfigurationError if @backend && !@backend.is_a?(profiler_backend)
+
       @backend ||= profiler_backend.new
     end
 
     def clear
+      @backend.stop if @backend&.running?
       @backend = nil
     end
 

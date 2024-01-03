@@ -4,12 +4,12 @@ require "test_helper"
 
 module AppProfiler
   class BackendTest < TestCase
-    test ".profiler does not permit multiple backends" do
+    test ".clear is required to change backends" do
       AppProfiler.profiler_backend = AppProfiler::StackprofBackend
       assert_instance_of(StackprofBackend, AppProfiler.profiler)
 
       AppProfiler.profiler_backend = AppProfiler::VernierBackend
-      assert_instance_of(StackprofBackend, AppProfiler.profiler)
+      assert_raises(ConfigurationError) { AppProfiler.profiler }
 
       AppProfiler.clear
 
