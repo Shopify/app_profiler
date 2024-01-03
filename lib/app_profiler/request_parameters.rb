@@ -21,9 +21,12 @@ module AppProfiler
         return false
       end
 
-      unless Parameters::MODES.include?(mode) ||
-          (defined?(AppProfiler::VernierBackend) &&
-           AppProfiler::VernierBackend::AVAILABLE_MODES.include?(mode))
+      if defined?(AppProfiler::VernierBackend) &&
+          AppProfiler::VernierBackend::AVAILABLE_MODES.include?(mode)
+        return true
+      end
+
+      unless Parameters::MODES.include?(mode) # TODO: check specific backend supports mode
         AppProfiler.logger.info("[AppProfiler] unsupported profiling mode=#{mode}")
         return false
       end
