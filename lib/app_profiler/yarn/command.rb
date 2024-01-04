@@ -10,6 +10,9 @@ module AppProfiler
         ["yarn", "init", "--yes"],
         ["yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"],
         ["yarn", "run", "speedscope", /.*\.json/],
+        ["yarn", "add", "https://github.com/Shopify/firefox-profiler"],
+        ["yarn", "--cwd", "node_modules/firefox-profiler"],
+        ["yarn", "--cwd", "node_modules/firefox-profiler", "start", /.*\.json\..*/],
       ]
 
       private_constant(:VALID_COMMANDS)
