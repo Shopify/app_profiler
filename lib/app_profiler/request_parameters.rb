@@ -22,7 +22,8 @@ module AppProfiler
       end
 
       if defined?(AppProfiler::VernierBackend) &&
-          AppProfiler::VernierBackend::AVAILABLE_MODES.include?(mode)
+          AppProfiler.profiler_backend == AppProfiler::VernierBackend &&
+          AppProfiler::VernierBackend::AVAILABLE_MODES.include?(mode.to_sym)
         return true
       end
 
