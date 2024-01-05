@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "app_profiler/yarn/command"
-require "app_profiler/yarn/with_speedscope"
+require "app_profiler/yarn/with_firefox_profiler"
 
 module AppProfiler
   module Viewer
