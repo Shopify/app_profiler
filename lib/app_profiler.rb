@@ -50,6 +50,7 @@ module AppProfiler
     default: DefaultProfileFormatter
   mattr_accessor :profiler_backend, default: AppProfiler::StackprofBackend
 
+  mattr_accessor :gecko_viewer_package, default: "https://github.com/firefox-devtools/profiler"
   mattr_accessor :storage, default: Storage::FileStorage
   mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
   mattr_accessor :middleware, default: Middleware

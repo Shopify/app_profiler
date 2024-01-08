@@ -8,6 +8,8 @@ module AppProfiler
     class FirefoxProfileViewer < BaseViewer
       include Yarn::WithFirefoxProfile
 
+      KEEPALIVE_TIMEOUT_MS = 1000 # NB: must match what is allow-listed in command.rb
+
       class << self
         def view(profile, params = {})
           new(profile).view(**params)
@@ -20,7 +22,7 @@ module AppProfiler
       end
 
       def view(_params = {})
-        yarn("--cwd", "node_modules/firefox-profiler", "start", @profile.file.to_s)
+        yarn("--cwd", "node_modules/firefox-profiler", "start", "-k", KEEPALIVE_TIMEOUT_MS.to_s, @profile.file.to_s)
       end
     end
   end

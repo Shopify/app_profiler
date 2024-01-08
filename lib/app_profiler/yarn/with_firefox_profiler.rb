@@ -9,7 +9,7 @@ module AppProfiler
         super
         return if firefox_profiler_added?
 
-        yarn("add", "https://github.com/Shopify/firefox-profiler")
+        yarn("add", AppProfiler.gecko_viewer_package)
         yarn("--cwd", "node_modules/firefox-profiler")
       end
 

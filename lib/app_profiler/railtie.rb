@@ -41,6 +41,7 @@ module AppProfiler
       AppProfiler.profile_enqueue_failure = app.config.app_profiler.profile_enqueue_failure
       AppProfiler.after_process_queue = app.config.app_profiler.after_process_queue
       AppProfiler.profiler_backend = app.config.app_profiler.profiler_backend
+      AppProfiler.gecko_viewer_package = app.config.app_profiler.gecko_viewer_package
     end
 
     initializer "app_profiler.add_middleware" do |app|
