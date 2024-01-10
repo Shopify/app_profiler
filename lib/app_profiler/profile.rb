@@ -39,7 +39,7 @@ module AppProfiler
       # HACK: - we should have a better way of toggling this
       if defined?(AppProfiler::VernierBackend) &&
           AppProfiler.profiler_backend == AppProfiler::VernierBackend
-        AppProfiler.viewer = Viewer::FirefoxProfileViewer
+        AppProfiler.viewer = Viewer::FirefoxProfileRemoteViewer
       end
 
       AppProfiler.viewer.view(self, **params)
