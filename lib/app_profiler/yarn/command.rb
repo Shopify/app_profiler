@@ -10,10 +10,12 @@ module AppProfiler
         ["yarn", "init", "--yes"],
         ["yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"],
         ["yarn", "run", "speedscope", /.*\.json/],
+        ["yarn", "add", "--dev", %r{.*/firefox-profiler}],
+        ["yarn", "--cwd", %r{.*/firefox-profiler}],
+        ["yarn", "--cwd", %r{.*/firefox-profiler}, "build-prod"],
       ]
 
       private_constant(:VALID_COMMANDS)
-      mattr_accessor(:yarn_setup, default: false)
 
       def yarn(command, *options)
         setup_yarn unless yarn_setup
@@ -29,6 +31,14 @@ module AppProfiler
         yarn("init", "--yes") unless package_json_exists?
       end
 
+      def yarn_setup
+        @yarn_initialized || false
+      end
+
+      def yarn_setup=(state)
+        @yarn_initialized = state
+      end
+
       private
 
       def ensure_command_valid(command)
@@ -39,6 +49,8 @@ module AppProfiler
 
       def valid_command?(command)
         VALID_COMMANDS.any? do |valid_command|
+          next unless valid_command.size == command.size
+
           valid_command.zip(command).all? do |valid_part, part|
             part.match?(valid_part)
           end
@@ -55,7 +67,7 @@ module AppProfiler
             MSG
           )
         end
-        self.yarn_setup = true
+        @yarn_initialized = true
       end
 
       def package_json_exists?
