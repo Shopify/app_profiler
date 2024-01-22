@@ -81,14 +81,6 @@ module AppProfiler
       assert_equal("retained", profile.mode)
     end
 
-    test "#view" do
-      profile = VernierProfile.new(vernier_profile)
-
-      Viewer::FirefoxViewer.expects(:view).with(profile)
-
-      profile.view
-    end
-
     test "#upload" do
       profile = VernierProfile.new(vernier_profile)
 

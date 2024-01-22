@@ -13,14 +13,14 @@ module AppProfiler
         end
 
         test ".id" do
-          profile = Profile.new(stackprof_profile)
+          profile = Profile.from_stackprof(stackprof_profile)
           profile_id = profile.file.basename.to_s.delete_suffix(".json")
 
           assert_equal(profile_id, Middleware.id(profile.file))
         end
 
         test "#call index" do
-          profiles = Array.new(3) { Profile.new(stackprof_profile).tap(&:file) }
+          profiles = Array.new(3) { Profile.from_stackprof(stackprof_profile).tap(&:file) }
 
           code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler" })
           html = html.first
@@ -34,7 +34,7 @@ module AppProfiler
         end
 
         test "#call index with slash" do
-          profiles = Array.new(3) { Profile.new(stackprof_profile).tap(&:file) }
+          profiles = Array.new(3) { Profile.from_stackprof(stackprof_profile).tap(&:file) }
 
           code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/" })
           html = html.first
@@ -48,7 +48,7 @@ module AppProfiler
         end
 
         test "#call show" do
-          profile = Profile.new(stackprof_profile)
+          profile = Profile.from_stackprof(stackprof_profile)
           id = Middleware.id(profile.file)
 
           code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/#{id}" })
@@ -62,7 +62,7 @@ module AppProfiler
 
         test "#call show can serve huge payloads" do
           frames = { "1" => { name: "a" * 1e7 } }
-          profile = Profile.new(stackprof_profile(frames: frames))
+          profile = Profile.from_stackprof(stackprof_profile(frames: frames))
           id = Middleware.id(profile.file)
 
           _, _, html = @app.call({ "PATH_INFO" => "/app_profiler/#{id}" })

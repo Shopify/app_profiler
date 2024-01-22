@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 module AppProfiler
+  autoload :StackprofProfile, "app_profiler/profile/stackprof"
+  autoload :VernierProfile, "app_profiler/profile/vernier"
+
   class Profile
     INTERNAL_METADATA_KEYS = [:id, :context]
     private_constant :INTERNAL_METADATA_KEYS

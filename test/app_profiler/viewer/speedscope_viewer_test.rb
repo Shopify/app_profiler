@@ -8,12 +8,12 @@ module AppProfiler
       test ".view initializes and calls #view" do
         SpeedscopeViewer.any_instance.expects(:view)
 
-        profile = Profile.new(stackprof_profile)
+        profile = Profile.from_stackprof(stackprof_profile)
         SpeedscopeViewer.view(profile)
       end
 
       test "#view opens profile in speedscope and sets up yarn" do
-        profile = Profile.new(stackprof_profile)
+        profile = Profile.from_stackprof(stackprof_profile)
 
         viewer = SpeedscopeViewer.new(profile)
         viewer.expects(:system).with("which", "yarn", out: File::NULL).returns(true)
@@ -31,7 +31,7 @@ module AppProfiler
       end
 
       test "#view doesn't init when package.json exists" do
-        profile = Profile.new(stackprof_profile)
+        profile = Profile.from_stackprof(stackprof_profile)
 
         AppProfiler.root.mkpath
         AppProfiler.root.join("package.json").write("{}")
@@ -52,7 +52,7 @@ module AppProfiler
       end
 
       test "#view doesn't add when speedscope exists" do
-        profile = Profile.new(stackprof_profile)
+        profile = Profile.from_stackprof(stackprof_profile)
 
         AppProfiler.root.mkpath
         AppProfiler.root.join("node_modules/speedscope").mkpath
@@ -71,7 +71,7 @@ module AppProfiler
       end
 
       test "#view only opens profile in speedscope if yarn is already setup" do
-        profile = Profile.new(stackprof_profile)
+        profile = Profile.from_stackprof(stackprof_profile)
 
         with_yarn_setup do
           viewer = SpeedscopeViewer.new(profile)
@@ -82,7 +82,7 @@ module AppProfiler
       end
 
       test "#view raises YarnError when yarn command fails" do
-        profile = Profile.new(stackprof_profile)
+        profile = Profile.from_stackprof(stackprof_profile)
         viewer = SpeedscopeViewer.new(profile)
         viewer.expects(:system).returns(false)
 
