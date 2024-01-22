@@ -4,16 +4,16 @@ require "test_helper"
 
 module AppProfiler
   class RunTest < TestCase
-    test ".run delegates to Profiler.run" do
-      Profiler.expects(:run)
+    test ".run delegates to profiler.run" do
+      AppProfiler.profiler.expects(:run)
 
       AppProfiler.run do
         sleep 0.1
       end
     end
 
-    test ".start delegates to Profiler.start" do
-      Profiler.expects(:start)
+    test ".start delegates to profiler.start" do
+      AppProfiler.profiler.expects(:start)
 
       AppProfiler.start
     end
@@ -23,7 +23,7 @@ module AppProfiler
       sleep 0.1
       profile = AppProfiler.stop
 
-      assert_instance_of(Profile, profile)
+      assert_instance_of(StackprofProfile, profile)
     end
   end
 end

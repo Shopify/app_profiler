@@ -179,6 +179,7 @@ GEM
       thread_safe (~> 0.1)
     uber (0.1.0)
     unicode-display_width (2.1.0)
+    vernier (0.3.1)
     webrick (1.7.0)
 
 PLATFORMS
@@ -197,6 +198,7 @@ DEPENDENCIES
   rubocop
   rubocop-performance
   rubocop-shopify
+  vernier (~> 0.3.1)
 
 BUNDLED WITH
    2.4.18

@@ -6,12 +6,12 @@ module AppProfiler
   class Middleware
     class UploadActionTest < AppProfiler::TestCase
       setup do
-        @profile = Profile.new(stackprof_profile)
+        @profile = StackprofProfile.new(stackprof_profile)
         @response = [200, {}, ["OK"]]
       end
 
       test ".cleanup" do
-        Profiler.expects(:results).returns(@profile)
+        AppProfiler.profiler.expects(:results).returns(@profile)
         assert_nothing_raised do
           UploadAction.cleanup
         end

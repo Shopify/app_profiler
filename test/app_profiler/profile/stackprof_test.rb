@@ -3,7 +3,7 @@
 require "test_helper"
 
 module AppProfiler
-  class ProfileTest < TestCase
+  class StackprofProfileTest < TestCase
     test ".from_stackprof raises ArgumentError when mode is not present" do
       error = assert_raises(ArgumentError) do
         profile_without_mode = stackprof_profile.tap { |data| data.delete(:mode) }
@@ -36,7 +36,7 @@ module AppProfiler
     end
 
     test "#id" do
-      profile = Profile.new(stackprof_profile, id: "pass")
+      profile = StackprofProfile.new(stackprof_profile, id: "pass")
 
       assert_equal("pass", profile.id)
     end
@@ -44,7 +44,7 @@ module AppProfiler
     test "#id is random hex by default" do
       SecureRandom.expects(:hex).returns("mock")
 
-      profile = Profile.new(stackprof_profile)
+      profile = StackprofProfile.new(stackprof_profile)
 
       assert_equal("mock", profile.id)
     end
@@ -52,46 +52,45 @@ module AppProfiler
     test "#id is random hex when passed as empty string" do
       SecureRandom.expects(:hex).returns("mock")
 
-      profile = Profile.new(stackprof_profile, id: "")
+      profile = StackprofProfile.new(stackprof_profile, id: "")
 
       assert_equal("mock", profile.id)
     end
 
     test "#context" do
-      profile = Profile.new(stackprof_profile, context: "development")
+      profile = StackprofProfile.new(stackprof_profile, context: "development")
 
       assert_equal("development", profile.context)
     end
 
     test "#valid? is false when mode is not present" do
-      profile = Profile.new({})
+      profile = StackprofProfile.new({})
 
       assert_not_predicate(profile, :valid?)
     end
 
     test "#valid? is true when mode is present" do
-      profile = Profile.new({ mode: :cpu })
+      profile = StackprofProfile.new({ mode: :cpu })
 
       assert_predicate(profile, :valid?)
     end
 
     test "#mode" do
-      profile = Profile.new(stackprof_profile(mode: "object"))
+      profile = StackprofProfile.new(stackprof_profile(mode: "object"))
 
       assert_equal("object", profile.mode)
     end
 
     test "#view" do
-      profile = Profile.new(stackprof_profile)
+      profile = StackprofProfile.new(stackprof_profile)
 
-      AppProfiler.stubs(:viewer).returns(Viewer::SpeedscopeViewer)
       Viewer::SpeedscopeViewer.expects(:view).with(profile)
 
       profile.view
     end
 
     test "#upload" do
-      profile = Profile.new(stackprof_profile)
+      profile = StackprofProfile.new(stackprof_profile)
 
       AppProfiler.stubs(:storage).returns(MockStorage)
       MockStorage.expects(:upload).with(profile).returns("some data")
@@ -100,7 +99,7 @@ module AppProfiler
     end
 
     test "#upload returns nil if an error was raised" do
-      profile = Profile.new(stackprof_profile)
+      profile = StackprofProfile.new(stackprof_profile)
 
       AppProfiler.storage.stubs(:upload).raises(StandardError, "upload error")
 
@@ -109,14 +108,14 @@ module AppProfiler
 
     test "#file creates json file" do
       profile_data = stackprof_profile(mode: "wall")
-      profile      = Profile.new(profile_data)
+      profile      = StackprofProfile.new(profile_data)
 
       assert_match(/.*\.json/, profile.file.to_s)
       assert_equal(profile_data, JSON.parse(profile.file.read, symbolize_names: true))
     end
 
     test "#file creates file only once" do
-      profile = Profile.new(stackprof_profile)
+      profile = StackprofProfile.new(stackprof_profile)
 
       assert_predicate(profile.file, :exist?)
 
@@ -125,15 +124,8 @@ module AppProfiler
       assert_not_predicate(profile.file, :exist?)
     end
 
-    test "#to_h returns profile data" do
-      profile_data = stackprof_profile
-      profile      = Profile.new(profile_data)
-
-      assert_equal(profile_data, profile.to_h)
-    end
-
     test "#[] forwards to profile data" do
-      profile = Profile.new(stackprof_profile(interval: 10_000))
+      profile = StackprofProfile.new(stackprof_profile(interval: 10_000))
 
       assert_equal(10_000, profile[:interval])
     end
@@ -146,7 +138,7 @@ module AppProfiler
     end
 
     test "#file uses custom profile_file_prefix block when provided" do
-      profile = Profile.new(stackprof_profile)
+      profile = StackprofProfile.new(stackprof_profile)
 
       AppProfiler.stubs(:profile_file_prefix).returns(-> { "want-something-different" })
       assert_match(/want-something-different-/, File.basename(profile.file.to_s))
@@ -154,7 +146,7 @@ module AppProfiler
 
     test "#file uses default prefix format when no custom profile_file_prefix block is provided" do
       travel_to Time.zone.local(2022, 10, 06, 12, 11, 10) do
-        profile = Profile.new(stackprof_profile)
+        profile = StackprofProfile.new(stackprof_profile)
         assert_match(/^20221006-121110/, File.basename(profile.file.to_s))
       end
     end
