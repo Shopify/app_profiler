@@ -1,18 +1,11 @@
 # frozen_string_literal: true
 
-require "active_support/deprecation/constant_accessor"
-require "app_profiler/viewer/speedscope_remote_viewer/middleware"
+require "app_profiler/viewer/firefox_remote_viewer/middleware"
 
 module AppProfiler
   module Viewer
-    class SpeedscopeRemoteViewer < BaseViewer
-      include ActiveSupport::Deprecation::DeprecatedConstantAccessor
-      deprecate_constant(
-        "BaseMiddleware",
-        "AppProfiler::Viewer::BaseMiddleware",
-        deprecator: AppProfiler.deprecator,
-      )
-      NAME = "speedscope"
+    class FirefoxRemoteViewer < BaseViewer
+      NAME = "firefox"
 
       class << self
         def remote?

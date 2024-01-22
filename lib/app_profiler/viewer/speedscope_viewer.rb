@@ -8,12 +8,6 @@ module AppProfiler
     class SpeedscopeViewer < BaseViewer
       include Yarn::WithSpeedscope
 
-      class << self
-        def view(profile, params = {})
-          new(profile).view(**params)
-        end
-      end
-
       def initialize(profile)
         super()
         @profile = profile

@@ -16,14 +16,23 @@ module AppProfiler
           )
         end
 
+        def call(env)
+          request = Rack::Request.new(env)
+
+          return viewer(env, Regexp.last_match(1)) if request.path_info =~ %r(\A/app_profiler/speedscope/viewer/(.*)\z)
+          return show(env, Regexp.last_match(1))   if request.path_info =~ %r(\A/app_profiler/speedscope/(.*)\z)
+
+          super
+        end
+
         protected
 
         attr_reader(:speedscope)
 
         def viewer(env, path)
           setup_yarn unless yarn_setup
-          env[Rack::PATH_INFO] = path.delete_prefix("/app_profiler")
 
+          env[Rack::PATH_INFO] = path.delete_prefix("/app_profiler/speedscope")
           speedscope.call(env)
         end
 
@@ -32,25 +41,7 @@ module AppProfiler
             id(file) == name
           end || raise(ArgumentError)
 
-          render(
-            <<~HTML,
-              <script type="text/javascript">
-                var graph = #{profile.read};
-                var json = JSON.stringify(graph);
-                var blob = new Blob([json], { type: 'text/plain' });
-                var objUrl = encodeURIComponent(URL.createObjectURL(blob));
-                var iframe = document.createElement('iframe');
-
-                document.body.style.margin = '0px';
-                document.body.appendChild(iframe);
-
-                iframe.style.width = '100vw';
-                iframe.style.height = '100vh';
-                iframe.style.border = 'none';
-                iframe.setAttribute('src', '/app_profiler/viewer/index.html#profileURL=' + objUrl + '&title=' + 'Flamegraph for #{name}');
-              </script>
-            HTML
-          )
+          [200, { "Content-Type" => "application/json" }, [profile.read]]
         end
       end
     end

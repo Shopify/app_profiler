@@ -162,7 +162,7 @@ module AppProfiler
           assert_equal(filename, GoogleCloudStorage.send(:gcs_filename, profile))
           assert_equal(data[:content_type], "application/json")
           assert_equal(data[:content_encoding], "gzip")
-          assert_equal(data[:metadata], metadata)
+          assert_equal(data[:metadata].to_s, metadata.to_s)
         end.returns(file)
 
         GoogleCloudStorage.stubs(:bucket).returns(bucket)

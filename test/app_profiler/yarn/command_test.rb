@@ -8,11 +8,11 @@ module AppProfiler
       include(Command)
 
       setup do
-        Command.yarn_setup = true
+        @yarn_initialized = true
       end
 
       teardown do
-        Command.yarn_setup = false
+        @yarn_initialized = false
       end
 
       test "#yarn allows add speedscope" do

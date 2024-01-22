@@ -14,7 +14,7 @@ module AppProfiler
 
         test ".id" do
           profile = BaseProfile.from_stackprof(stackprof_profile)
-          profile_id = profile.file.basename.to_s.delete_suffix(".json")
+          profile_id = profile.file.basename.to_s
 
           assert_equal(profile_id, Middleware.id(profile.file))
         end
@@ -29,7 +29,10 @@ module AppProfiler
           assert_equal({ "Content-Type" => "text/html" }, content_type)
           assert_match(%r(<title>App Profiler</title>), html)
           profiles.each do |profile|
-            assert_match(%r(<a href="/app_profiler/#{Middleware.id(profile.file)}">), html)
+            id = Middleware.id(profile.file)
+            assert_match(
+              %r(<a href="/app_profiler/speedscope/viewer/#{id}">), html
+            )
           end
         end
 
@@ -43,7 +46,10 @@ module AppProfiler
           assert_equal({ "Content-Type" => "text/html" }, content_type)
           assert_match(%r(<title>App Profiler</title>), html)
           profiles.each do |profile|
-            assert_match(%r(<a href="/app_profiler/#{Middleware.id(profile.file)}">), html)
+            id = Middleware.id(profile.file)
+            assert_match(
+              %r(<a href="/app_profiler/speedscope/viewer/#{id}">), html
+            )
           end
         end
 
@@ -51,28 +57,11 @@ module AppProfiler
           profile = BaseProfile.from_stackprof(stackprof_profile)
           id = Middleware.id(profile.file)
 
-          code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/#{id}" })
-          html = html.first
+          code, content_type, body = @app.call({ "PATH_INFO" => "/app_profiler/speedscope/#{id}" })
 
           assert_equal(200, code)
-          assert_equal({ "Content-Type" => "text/html" }, content_type)
-          assert_match(%r(<title>App Profiler</title>), html)
-          assert_match(%r(<script type="text/javascript">), html)
-        end
-
-        test "#call show can serve huge payloads" do
-          frames = { "1" => { name: "a" * 1e7 } }
-          profile = BaseProfile.from_stackprof(stackprof_profile(frames: frames))
-          id = Middleware.id(profile.file)
-
-          _, _, html = @app.call({ "PATH_INFO" => "/app_profiler/#{id}" })
-          html = html.first
-
-          assert_match(
-            %r{'Flamegraph for .*'\);\n</script>},
-            html[-200..-1],
-            message: "The generated HTML was incomplete",
-          )
+          assert_equal({ "Content-Type" => "application/json" }, content_type)
+          assert_equal(JSON.dump(profile.to_h), body.first)
         end
 
         test "#call viewer sets up yarn" do
@@ -82,18 +71,16 @@ module AppProfiler
             "yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"
           ).returns(true)
 
-          @app.call({ "PATH_INFO" => "/app_profiler/viewer/index.html" })
+          @app.call({ "PATH_INFO" => "/app_profiler/speedscope/viewer/index.html" })
 
-          assert_predicate(Yarn::Command, :yarn_setup)
-        ensure
-          Yarn::Command.yarn_setup = false
+          assert_predicate(@app, :yarn_setup)
         end
 
         test "#call viewer" do
-          with_yarn_setup do
+          with_yarn_setup(@app) do
             @app.expects(:speedscope).returns(proc { [200, { "Content-Type" => "text/plain" }, ["Speedscope"]] })
 
-            response = @app.call({ "PATH_INFO" => "/app_profiler/viewer/index.html" })
+            response = @app.call({ "PATH_INFO" => "/app_profiler/speedscope/viewer/index.html" })
 
             assert_equal([200, { "Content-Type" => "text/plain" }, ["Speedscope"]], response)
           end
