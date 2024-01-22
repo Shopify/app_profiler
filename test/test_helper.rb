@@ -84,12 +84,12 @@ module AppProfiler
       { mode: :wall, interval: 1000, metadata: { id: "foo" } }.merge(params)
     end
 
-    def with_yarn_setup
-      old_yarn_setup = Yarn::Command.yarn_setup
-      Yarn::Command.yarn_setup = true
+    def with_yarn_setup(app)
+      old_yarn_setup = app.yarn_setup
+      app.instance_variable_set(:@yarn_initialized, true)
       yield
     ensure
-      Yarn::Command.yarn_setup = old_yarn_setup
+      app.instance_variable_set(:@yarn_initialized, old_yarn_setup)
     end
   end
 end
