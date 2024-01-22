@@ -17,7 +17,7 @@ module AppProfiler
     end
 
     def view(params = {})
-      raise NotImplementedError
+      Viewer::FirefoxRemoteViewer.view(self, **params)
     end
   end
 end

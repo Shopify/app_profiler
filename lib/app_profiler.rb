@@ -29,8 +29,9 @@ module AppProfiler
 
   module Viewer
     autoload :BaseViewer, "app_profiler/viewer/base_viewer"
-    autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope_viewer"
-    autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/speedscope_remote_viewer"
+    autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope"
+    autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/remote/speedscope"
+    autoload :FirefoxRemoteViewer, "app_profiler/viewer/remote/firefox"
   end
 
   require "app_profiler/middleware"
@@ -53,8 +54,10 @@ module AppProfiler
   mattr_reader   :profile_url_formatter,
     default: DefaultProfileFormatter
 
+  mattr_accessor :gecko_viewer_package, default: "https://github.com/tenderlove/profiler#v0.0.2"
   mattr_accessor :storage, default: Storage::FileStorage
-  mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
+  mattr_accessor :viewer, default: Viewer::SpeedscopeViewer # DEPRECATED
+  mattr_accessor :speedscope_viewer, default: Viewer::SpeedscopeViewer
   mattr_accessor :middleware, default: Middleware
   mattr_accessor :server, default: Server
   mattr_accessor :upload_queue_max_length, default: 10
@@ -212,6 +215,17 @@ module AppProfiler
     def clear
       @backend.stop if @backend&.running?
       @backend = nil
+    end
+
+    # DEPRECATIONS
+    def viewer
+      ActiveSupport::Deprecation.warn("viewer is deprecated, use speedscope_viewer instead")
+      @viewer
+    end
+
+    def viewer=(viewer)
+      ActiveSupport::Deprecation.warn("viewer= is deprecated, use speedscope_viewer= instead")
+      @viewer = viewer
     end
   end
 

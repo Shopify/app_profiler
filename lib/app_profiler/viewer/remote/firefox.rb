@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-require "app_profiler/viewer/speedscope_remote_viewer/base_middleware"
-require "app_profiler/viewer/speedscope_remote_viewer/middleware"
+require "app_profiler/viewer/middleware/firefox"
 
 module AppProfiler
   module Viewer
-    class SpeedscopeRemoteViewer < BaseViewer
+    class FirefoxRemoteViewer < BaseViewer
+      NAME = "firefox"
+
       class << self
         def view(profile, params = {})
           new(profile).view(**params)
@@ -21,7 +22,7 @@ module AppProfiler
         id = Middleware.id(@profile.file)
 
         if response && response[0].to_i < 500
-          response[1]["Location"] = "/app_profiler/#{id}"
+          response[1]["Location"] = "/app_profiler/#{NAME}/viewer/#{id}"
           response[0] = 303
         else
           AppProfiler.logger.info("[Profiler] Profile available at /app_profiler/#{id}\n")
