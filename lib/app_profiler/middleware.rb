@@ -12,7 +12,6 @@ module AppProfiler
 
     def initialize(app)
       @app = app
-      @backend_lock = Mutex.new
     end
 
     def call(env, params = AppProfiler::RequestParameters.new(Rack::Request.new(env)))
@@ -33,20 +32,15 @@ module AppProfiler
 
       return yield unless before_profile(env, params_hash)
 
-      @backend_lock.synchronize do
-        if params.backend &&
-            AppProfiler.profiler_backend.name.split("::").last.downcase.gsub("backend", "") != params.backend
-          raise ArgumentError if AppProfiler.running?
-
-          orig_backend = AppProfiler.profiler_backend
-          if defined?(AppProfiler::VernierBackend) &&
-              params.backend == AppProfiler::VernierBackend::NAME
-            AppProfiler.profiler_backend = AppProfiler::VernierBackend
-          elsif params.backend == AppProfiler::StackprofBackend::NAME
-            AppProfiler.profiler_backend = AppProfiler::StackprofBackend
-          else
-            raise ArgumentError
-          end
+      if params.backend
+        orig_backend = AppProfiler.profiler_backend
+        if defined?(AppProfiler::VernierBackend) &&
+            params.backend == AppProfiler::VernierBackend::NAME
+          return yield unless (AppProfiler.backend = AppProfiler::VernierBackend)
+        elsif params.backend == AppProfiler::StackprofBackend::NAME
+          return yield unless (AppProfiler.backend = AppProfiler::StackprofBackend)
+        else
+          raise ArgumentError
         end
       end
 
@@ -65,11 +59,10 @@ module AppProfiler
 
       response
     ensure
-      if orig_backend
-        @backend_lock.synchronize do
-          AppProfiler.profiler_backend = orig_backend
-        end
-      end
+      AppProfiler.backend = orig_backend if orig_backend
+    end
+
+    def update_backend
     end
 
     def before_profile(_env, _params)
