@@ -82,7 +82,7 @@ Rails.application.config.app_profiler.profile_header = "X-Profile"
 | ignore_gc | Ignore garbage collection frames | |
 | autoredirect | Redirect request automatically to Speedscope's page after profiling. | |
 | context | Directory within the specified bucket in the selected storage where raw profile data should be written. | Only supported in (2). Defaults to `Rails.env` if not specified. |
-| backend | Profiler to use, either `stackprof` or `vernier`. Defaults to stackprof. Available only vernier is installed in the app, and Ruby version is at least 3.2.1 |
+| backend | Profiler to use, either `stackprof` or `vernier`. Defaults to stackprof. Vernier is only available when added separately in the application Gemfile, and the Ruby version is at least 3.2.1 |
 
 
 Note that the `autoredirect` feature can be turned on for all requests by doing the following:
@@ -318,7 +318,7 @@ Rails.application.config.app_profiler.middleware_action = AppProfiler::Middlewar
 
 It is possible to configure app_profiler to use the [`vernier`](https://github.com/jhawthorn/vernier) or stackprof. To use vernier, it must be added separately in the application Gemfile.
 
-The backend can be selected at dynamicall runtime using the `backend` parameter. The default backend to use when this parameter is not specified can be configured with:
+The backend can be selected dynamically at runtime using the `backend` parameter. The default backend to use when this parameter is not specified can be configured with:
 
 ```ruby
 AppProfiler.profiler_backend = AppProfiler::StackprofBackend # or AppProfiler::VernierBackend
@@ -328,7 +328,7 @@ Rails.application.config.app_profiler.profiler_backend = AppProfiler::StackprofB
 
 By default, the stackprof backend will be used.
 
-In local development, changing the backend will change whether the profile is viewed in speedscope, or firefox-profiler.
+In local development, changing the backend will change whether the profile is viewed in speedscope or firefox-profiler.
 
 ## Running tests
 
