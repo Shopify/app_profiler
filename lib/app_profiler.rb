@@ -88,6 +88,18 @@ module AppProfiler
       @backend ||= profiler_backend.new
     end
 
+    def backend=(backend)
+      return true if @backend&.is_a?(backend)
+
+      if running?
+        raise ArgumentError,
+          "cannot change backend to #{backend::NAME} while #{profiler_backend::NAME} backend is running"
+      end
+
+      clear
+      self.profiler_backend = backend
+    end
+
     def clear
       @backend.stop if @backend&.running?
       @backend = nil
