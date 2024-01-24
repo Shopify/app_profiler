@@ -24,7 +24,6 @@ module AppProfiler
 
     def profile(env, params)
       response = nil
-      orig_backend = nil
 
       return yield unless params.valid?
 
@@ -32,20 +31,10 @@ module AppProfiler
 
       return yield unless before_profile(env, params_hash)
 
-      if params.backend
-        orig_backend = AppProfiler.profiler_backend
-        if defined?(AppProfiler::VernierBackend) &&
-            params.backend == AppProfiler::VernierBackend::NAME
-          return yield unless (AppProfiler.backend = AppProfiler::VernierBackend)
-        elsif params.backend == AppProfiler::StackprofBackend::NAME
-          return yield unless (AppProfiler.backend = AppProfiler::StackprofBackend)
-        else
-          raise ArgumentError
+      profile = AppProfiler.with_backend(params.backend) do
+        AppProfiler.run(params_hash) do
+          response = yield
         end
-      end
-
-      profile = AppProfiler.run(params_hash) do
-        response = yield
       end
 
       return response unless profile && after_profile(env, profile)
@@ -58,11 +47,6 @@ module AppProfiler
       )
 
       response
-    ensure
-      AppProfiler.backend = orig_backend if orig_backend
-    end
-
-    def update_backend
     end
 
     def before_profile(_env, _params)

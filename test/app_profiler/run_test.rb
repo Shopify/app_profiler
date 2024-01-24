@@ -25,28 +25,5 @@ module AppProfiler
 
       assert_instance_of(StackprofProfile, profile)
     end
-
-    test ".backend= fails to update the backend if already profiling" do
-      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend)
-      assert(AppProfiler.backend = AppProfiler::StackprofBackend)
-      AppProfiler.start
-      assert(AppProfiler.running?)
-      assert_raises(ArgumentError) { AppProfiler.backend = AppProfiler::VernierBackend }
-    ensure
-      AppProfiler.stop
-    end
-
-    test ".backend= updates the backend if not already profiling" do
-      orig_backend = AppProfiler.profiler_backend
-      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend)
-      refute(AppProfiler.running?)
-      assert(AppProfiler.backend = AppProfiler::StackprofBackend)
-      assert_equal(AppProfiler.profiler_backend, AppProfiler::StackprofBackend)
-      refute(AppProfiler.running?)
-      assert(AppProfiler.backend = AppProfiler::VernierBackend)
-      assert_equal(AppProfiler.profiler_backend, AppProfiler::VernierBackend)
-    ensure
-      AppProfiler.backend = orig_backend
-    end
   end
 end
