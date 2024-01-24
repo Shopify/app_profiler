@@ -25,7 +25,7 @@ module AppProfiler
 
   autoload :StackprofBackend, "app_profiler/backend/stackprof"
   begin
-    autoload(:VernierBackend, "app_profiler/backend/vernier")
+    require "app_profiler/backend/vernier"
   rescue LoadError
     warn("Vernier is not supported.")
   end
