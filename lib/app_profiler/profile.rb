@@ -21,7 +21,7 @@ module AppProfiler
     end
 
     def self.from_vernier(data)
-      # FIXME: we don't delete here, that is causing a segfault in vernier. Divergent behaviour from stackprof,
+      # NB: we don't delete here, that is causing a segfault in vernier. Divergent behaviour from stackprof,
       # as the special metadata keys "id" and "context" are preserved into the metadata, but maybe that isn't so bad.
       options = INTERNAL_METADATA_KEYS.map { |key| [key, data.meta.clone[key]] }.to_h
 
