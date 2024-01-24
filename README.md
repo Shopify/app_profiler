@@ -328,6 +328,8 @@ Rails.application.config.app_profiler.backend = AppProfiler::StackprofBackend # 
 
 By default, the stackprof backend will be used.
 
+In local development, changing the backend will change whether the profile is viewed in speedscope or firefox-profiler.
+
 ## Running tests
 
 ```
