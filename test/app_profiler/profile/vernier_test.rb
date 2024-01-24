@@ -4,14 +4,6 @@ require "test_helper"
 
 module AppProfiler
   class VernierProfileTest < TestCase
-    # test ".from_vernier raises ArgumentError when mode is not present" do
-    #  error = assert_raises(ArgumentError) do
-    #    profile_without_mode = vernier_profile.tap { |data| data.data.delete(:mode) }
-    #    Profile.from_vernier(profile_without_mode)
-    #  end
-    #  assert_equal("invalid profile data", error.message)
-    # end
-
     test ".from_vernier assigns id and context metadata" do
       profile = Profile.from_vernier(vernier_profile(metadata: { id: "foo", context: "bar" }))
 
@@ -27,13 +19,6 @@ module AppProfiler
 
       assert_equal("mock", profile.id)
     end
-
-    # test ".from_vernier removes id and context metadata from profile data" do
-    #  profile = Profile.from_vernier(vernier_profile(metadata: { id: "foo", context: "bar" }))
-
-    #  assert_not_operator(profile[:metadata], :key?, :id)
-    #  assert_not_operator(profile[:metadata], :key?, :context)
-    # end
 
     test "#id" do
       profile = VernierProfile.new(vernier_profile, id: "pass")
@@ -62,12 +47,6 @@ module AppProfiler
 
       assert_equal("development", profile.context)
     end
-
-    # test "#valid? is false when mode is not present" do
-    #  profile = VernierProfile.new(vernier_profile)
-
-    #  assert_not_predicate(profile, :valid?)
-    # end
 
     test "#valid? is true when mode is present" do
       profile = VernierProfile.new(vernier_profile({ mode: :cpu }))
