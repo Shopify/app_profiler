@@ -18,7 +18,7 @@ module AppProfiler
 
     def backend
       query_param("backend") || profile_header_param("backend") ||
-        AppProfiler.profiler_backend.name.split("::").last.downcase.gsub("backend", "")
+        AppProfiler.backend::NAME
     end
 
     def valid?

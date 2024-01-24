@@ -8,12 +8,12 @@ module AppProfiler
   class VernierBackendTest < TestCase
     def setup
       AppProfiler.clear
-      @orig_backend = AppProfiler.profiler_backend
-      AppProfiler.profiler_backend = AppProfiler::VernierBackend
+      @orig_backend = AppProfiler.backend
+      AppProfiler.backend = AppProfiler::VernierBackend
     end
 
     def teardown
-      AppProfiler.profiler_backend = @orig_backend
+      AppProfiler.backend = @orig_backend
       AppProfiler.clear
     end
 

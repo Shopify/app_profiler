@@ -47,7 +47,6 @@ module AppProfiler
   mattr_accessor :context, default: nil
   mattr_reader   :profile_url_formatter,
     default: DefaultProfileFormatter
-  mattr_accessor :profiler_backend, default: AppProfiler::StackprofBackend
 
   mattr_accessor :storage, default: Storage::FileStorage
   mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
@@ -79,25 +78,41 @@ module AppProfiler
     end
 
     def profiler
-      if @backend && !@backend.is_a?(profiler_backend)
-        raise ConfigurationError if @backend.running?
-
-        clear
-      end
-
-      @backend ||= profiler_backend.new
+      @backend ||= backend.new
     end
 
-    def backend=(backend)
-      return true if @backend&.is_a?(backend)
+    def backend=(new_backend)
+      return true if backend&.is_a?(new_backend)
 
       if running?
         raise ArgumentError,
-          "cannot change backend to #{backend::NAME} while #{profiler_backend::NAME} backend is running"
+          "cannot change backend to #{new_backend::NAME} while #{backend::NAME} backend is running"
       end
 
       clear
-      self.profiler_backend = backend
+      @profiler_backend = new_backend
+    end
+
+    def backend
+      @profiler_backend ||= DefaultBackend
+    end
+
+    def with_backend(backend)
+      orig_backend = AppProfiler.backend
+
+      if backend
+        if defined?(AppProfiler::VernierBackend) &&
+            backend == AppProfiler::VernierBackend::NAME
+          return yield unless (AppProfiler.backend = AppProfiler::VernierBackend)
+        elsif backend == AppProfiler::StackprofBackend::NAME
+          return yield unless (AppProfiler.backend = AppProfiler::StackprofBackend)
+        else
+          return yield
+        end
+      end
+      yield
+    ensure
+      AppProfiler.backend = orig_backend
     end
 
     def clear
