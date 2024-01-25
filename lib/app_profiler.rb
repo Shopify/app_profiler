@@ -9,6 +9,9 @@ module AppProfiler
   class ConfigurationError < StandardError
   end
 
+  class BackendError < StandardError
+  end
+
   DefaultProfileFormatter = proc do |upload|
     "#{AppProfiler.speedscope_host}#profileURL=#{upload.url}"
   end
@@ -60,8 +63,16 @@ module AppProfiler
   mattr_reader :after_process_queue, default: nil
 
   class << self
-    def run(*args, &block)
-      profiler.run(*args, &block)
+    def run(*args, with_backend: nil, **kwargs, &block)
+      orig_backend = backend
+      begin
+        self.backend = with_backend if with_backend
+        profiler.run(*args, **kwargs, &block)
+      rescue BackendError
+        yield
+      end
+    ensure
+      AppProfiler.backend = orig_backend
     end
 
     def start(*args)
@@ -82,37 +93,38 @@ module AppProfiler
     end
 
     def backend=(new_backend)
-      return true if backend&.is_a?(new_backend)
+      new_profiler_backend = if new_backend.is_a?(String)
+        backend_for(new_backend)
+      elsif new_backend < Backend
+        new_backend
+      else
+        raise BackendError, "unsupportend backend type #{new_backend.class}"
+      end
 
       if running?
-        raise ArgumentError,
+        raise BackendError,
           "cannot change backend to #{new_backend::NAME} while #{backend::NAME} backend is running"
       end
 
+      return if @profiler_backend == new_backend
+
       clear
-      @profiler_backend = new_backend
+      @profiler_backend = new_profiler_backend
+    end
+
+    def backend_for(backend_name)
+      if defined?(AppProfiler::VernierBackend) &&
+          backend_name == AppProfiler::VernierBackend::NAME
+        AppProfiler::VernierBackend
+      elsif backend_name == AppProfiler::StackprofBackend::NAME
+        AppProfiler::StackprofBackend
+      else
+        raise BackendError, "unknown backend #{backend_name}"
+      end
     end
 
     def backend
       @profiler_backend ||= DefaultBackend
-    end
-
-    def with_backend(backend)
-      orig_backend = AppProfiler.backend
-
-      if backend
-        if defined?(AppProfiler::VernierBackend) &&
-            backend == AppProfiler::VernierBackend::NAME
-          return yield unless (AppProfiler.backend = AppProfiler::VernierBackend)
-        elsif backend == AppProfiler::StackprofBackend::NAME
-          return yield unless (AppProfiler.backend = AppProfiler::StackprofBackend)
-        else
-          return yield
-        end
-      end
-      yield
-    ensure
-      AppProfiler.backend = orig_backend
     end
 
     def clear

@@ -31,10 +31,8 @@ module AppProfiler
 
       return yield unless before_profile(env, params_hash)
 
-      profile = AppProfiler.with_backend(params.backend) do
-        AppProfiler.run(params_hash) do
-          response = yield
-        end
+      profile = AppProfiler.run(params_hash, with_backend: params.backend) do
+        response = yield
       end
 
       return response unless profile && after_profile(env, profile)
