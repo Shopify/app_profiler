@@ -64,6 +64,7 @@ module AppProfiler
 
   class << self
     def run(*args, with_backend: nil, **kwargs, &block)
+      yield unless acquire_run_lock
       orig_backend = backend
       begin
         self.backend = with_backend if with_backend
@@ -73,6 +74,7 @@ module AppProfiler
       end
     ensure
       AppProfiler.backend = orig_backend
+      release_run_lock
     end
 
     def start(*args)
@@ -95,7 +97,7 @@ module AppProfiler
     def backend=(new_backend)
       new_profiler_backend = if new_backend.is_a?(String)
         backend_for(new_backend)
-      elsif new_backend < Backend
+      elsif new_backend&.< Backend
         new_backend
       else
         raise BackendError, "unsupportend backend type #{new_backend.class}"
@@ -178,6 +180,22 @@ module AppProfiler
       return unless AppProfiler.profile_url_formatter
 
       AppProfiler.profile_url_formatter.call(upload)
+    end
+
+    private
+
+    def acquire_run_lock
+      run_lock.try_lock
+    end
+
+    def release_run_lock
+      run_lock.unlock
+    rescue ThreadError
+      logger.warn("[AppProfiler] run lock not released as it was never acquired")
+    end
+
+    def run_lock
+      @run_lock ||= Mutex.new
     end
   end
 
