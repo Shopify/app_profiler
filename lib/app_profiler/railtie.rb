@@ -45,8 +45,10 @@ module AppProfiler
 
     initializer "app_profiler.add_middleware" do |app|
       unless AppProfiler.middleware.disabled
-        app.middleware.insert_before(0, Viewer::SpeedscopeViewer::Middleware)
-        app.middleware.insert_before(0, Viewer::FirefoxViewer::Middleware)
+        if Rails.env.development? || Rails.env.test?
+          app.middleware.insert_before(0, Viewer::SpeedscopeViewer::Middleware)
+          app.middleware.insert_before(0, Viewer::FirefoxViewer::Middleware)
+        end
         app.middleware.insert_before(0, AppProfiler.middleware)
       end
     end
