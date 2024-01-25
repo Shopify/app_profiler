@@ -25,5 +25,19 @@ module AppProfiler
 
       assert_instance_of(StackprofProfile, profile)
     end
+
+    test ".run sets the backend then returns to the previous value" do
+      orig_backend = AppProfiler.backend
+      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend)
+
+      assert_equal(AppProfiler.backend, AppProfiler::StackprofBackend)
+      refute(AppProfiler.running?)
+      AppProfiler.run(with_backend: AppProfiler::VernierBackend) do
+        assert_equal(AppProfiler::VernierBackend, AppProfiler.backend)
+      end
+      assert_equal(AppProfiler.backend, AppProfiler::StackprofBackend)
+    ensure
+      AppProfiler.backend = orig_backend
+    end
   end
 end
