@@ -7,6 +7,7 @@ module AppProfiler
 
       VALID_COMMANDS = [
         ["which", "yarn"],
+        ["which", "gcloud"],
         ["yarn", "init", "--yes"],
         ["yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"],
         ["yarn", "run", "speedscope", /.*\.json/],
