@@ -30,7 +30,7 @@ module AppProfiler
     end
 
     def view(params = {})
-      Viewer::SpeedscopeViewer.view(self, **params)
+      AppProfiler.viewer.view(self, **params)
     end
   end
 end
