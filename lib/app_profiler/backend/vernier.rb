@@ -33,6 +33,7 @@ module AppProfiler
     def start(params = {})
       # Do not start the profiler if we already have a collector started somewhere else.
       return false if running?
+      return false unless acquire_run_lock
 
       @mode = params.delete(:mode) || DEFAULTS[:mode]
       raise ArgumentError unless AVAILABLE_MODES.include?(@mode)
@@ -46,6 +47,7 @@ module AppProfiler
       AppProfiler.logger.info(
         "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}"
       )
+      release_run_lock
       # This is a boolean instead of nil to be consistent with the stackprof backend behaviour
       # boolean as well.
       false
@@ -57,6 +59,8 @@ module AppProfiler
       @results = @collector&.stop
       @collector = nil
       !@results.nil?
+    ensure
+      release_run_lock
     end
 
     def results

@@ -21,6 +21,24 @@ module AppProfiler
     def running?
       raise NotImplementedError
     end
+
+    class << self
+      def run_lock
+        @run_lock ||= Mutex.new
+      end
+    end
+
+    protected
+
+    def acquire_run_lock
+      self.class.run_lock.try_lock
+    end
+
+    def release_run_lock
+      self.class.run_lock.unlock
+    rescue ThreadError
+      AppProfiler.logger.warn("[AppProfiler] run lock not released as it was never acquired")
+    end
   end
 
   autoload :StackprofBackend, "app_profiler/backend/stackprof"

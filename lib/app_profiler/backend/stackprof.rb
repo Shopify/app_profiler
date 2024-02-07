@@ -33,6 +33,7 @@ module AppProfiler
     def start(params = {})
       # Do not start the profiler if StackProf was started somewhere else.
       return false if running?
+      return false unless acquire_run_lock
 
       clear
 
@@ -41,6 +42,7 @@ module AppProfiler
       AppProfiler.logger.info(
         "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}"
       )
+      release_run_lock
       # This is a boolean instead of nil because StackProf#start returns a
       # boolean as well.
       false
@@ -48,6 +50,8 @@ module AppProfiler
 
     def stop
       ::StackProf.stop
+    ensure
+      release_run_lock
     end
 
     def results

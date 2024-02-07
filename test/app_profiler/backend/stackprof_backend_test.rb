@@ -46,7 +46,7 @@ module AppProfiler
       assert_nil(profile)
       assert_predicate(AppProfiler.profiler, :running?)
     ensure
-      StackProf.stop
+      AppProfiler.profiler.stop
     end
 
     test ".run uses cpu profile by default" do
