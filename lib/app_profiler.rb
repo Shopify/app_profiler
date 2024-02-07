@@ -64,7 +64,6 @@ module AppProfiler
 
   class << self
     def run(*args, backend: nil, **kwargs, &block)
-      yield unless acquire_run_lock
       orig_backend = self.backend
       begin
         self.backend = backend if backend
@@ -74,7 +73,6 @@ module AppProfiler
       end
     ensure
       AppProfiler.backend = orig_backend
-      release_run_lock
     end
 
     def start(*args)
@@ -180,22 +178,6 @@ module AppProfiler
       return unless AppProfiler.profile_url_formatter
 
       AppProfiler.profile_url_formatter.call(upload)
-    end
-
-    private
-
-    def acquire_run_lock
-      run_lock.try_lock
-    end
-
-    def release_run_lock
-      run_lock.unlock
-    rescue ThreadError
-      logger.warn("[AppProfiler] run lock not released as it was never acquired")
-    end
-
-    def run_lock
-      @run_lock ||= Mutex.new
     end
   end
 
