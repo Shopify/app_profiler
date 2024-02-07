@@ -65,9 +65,9 @@ module AppProfiler
   class << self
     def run(*args, backend: nil, **kwargs, &block)
       yield unless acquire_run_lock
-      orig_backend = backend
+      orig_backend = self.backend
       begin
-        self.backend = with_backend if with_backend
+        self.backend = backend if backend
         profiler.run(*args, **kwargs, &block)
       rescue BackendError
         yield
