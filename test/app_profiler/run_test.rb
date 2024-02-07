@@ -32,7 +32,7 @@ module AppProfiler
 
       assert_equal(AppProfiler.backend, AppProfiler::StackprofBackend)
       refute(AppProfiler.running?)
-      AppProfiler.run(with_backend: AppProfiler::VernierBackend) do
+      AppProfiler.run(backend: AppProfiler::VernierBackend) do
         assert_equal(AppProfiler::VernierBackend, AppProfiler.backend)
       end
       assert_equal(AppProfiler.backend, AppProfiler::StackprofBackend)
