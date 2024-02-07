@@ -5,7 +5,7 @@ require "test_helper"
 module AppProfiler
   class BackendTest < TestCase
     test ".backend= fails to update the backend if already profiling" do
-      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend)
+      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend::NAME)
       assert(AppProfiler.backend = AppProfiler::StackprofBackend)
       AppProfiler.start
       assert(AppProfiler.running?)
@@ -16,7 +16,7 @@ module AppProfiler
 
     test ".backend= updates the backend if not already profiling" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend)
+      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend::NAME)
       refute(AppProfiler.running?)
       assert(AppProfiler.backend = AppProfiler::StackprofBackend)
       assert_equal(AppProfiler.backend, AppProfiler::StackprofBackend)
@@ -29,7 +29,7 @@ module AppProfiler
 
     test ".backend= accepts a string with the backend name" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend)
+      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend::NAME)
       refute(AppProfiler.running?)
       assert(AppProfiler.backend = AppProfiler::StackprofBackend::NAME)
       assert_equal(AppProfiler.backend, AppProfiler::StackprofBackend)
@@ -42,7 +42,7 @@ module AppProfiler
 
     test ".backend= accepts a backend class" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend)
+      skip("Vernier not supported") unless defined?(AppProfiler::VernierBackend::NAME)
       refute(AppProfiler.running?)
       assert(AppProfiler.backend = AppProfiler::StackprofBackend)
       assert_equal(AppProfiler.backend, AppProfiler::StackprofBackend)
@@ -55,7 +55,7 @@ module AppProfiler
 
     test ".backend_for= provides the backend class given a string" do
       assert_equal(AppProfiler::StackprofBackend, AppProfiler.backend_for(AppProfiler::StackprofBackend::NAME))
-      return unless defined?(AppProfiler::VernierBackend)
+      return unless defined?(AppProfiler::VernierBackend::NAME)
 
       assert_equal(AppProfiler::VernierBackend, AppProfiler.backend_for(AppProfiler::VernierBackend::NAME))
     end
