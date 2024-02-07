@@ -63,7 +63,7 @@ module AppProfiler
   mattr_reader :after_process_queue, default: nil
 
   class << self
-    def run(*args, with_backend: nil, **kwargs, &block)
+    def run(*args, backend: nil, **kwargs, &block)
       yield unless acquire_run_lock
       orig_backend = backend
       begin
