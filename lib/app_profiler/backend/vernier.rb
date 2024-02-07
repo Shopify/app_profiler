@@ -1,13 +1,7 @@
 # frozen_string_literal: true
 
-begin
-  gem("vernier", ">= 0.4.0")
-  require "vernier"
-rescue LoadError
-  warn("Vernier profiling support requires the vernier gem, version 0.4.0 or later." \
-    "Please add it to your Gemfile: `gem \"vernier\", \">= 0.4.0\"`")
-  raise
-end
+gem("vernier", ">= 0.4.0")
+require "vernier"
 
 module AppProfiler
   class VernierBackend < Backend

@@ -115,7 +115,7 @@ module AppProfiler
     end
 
     def backend_for(backend_name)
-      if defined?(AppProfiler::VernierBackend) &&
+      if defined?(AppProfiler::VernierBackend::NAME) &&
           backend_name == AppProfiler::VernierBackend::NAME
         AppProfiler::VernierBackend
       elsif backend_name == AppProfiler::StackprofBackend::NAME
