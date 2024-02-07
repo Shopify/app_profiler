@@ -316,7 +316,7 @@ Rails.application.config.app_profiler.middleware_action = AppProfiler::Middlewar
 
 ## Profiler backends
 
-It is possible to configure app_profiler to use the [`vernier`](https://github.com/jhawthorn/vernier) or stackprof. To use vernier, it must be added separately in the application Gemfile.
+It is possible to configure AppProfiler to use the [`vernier`](https://github.com/jhawthorn/vernier) or [`stackprof`](https://github.com/tmm1/stackprof). To use `vernier`, it must be added separately in the application Gemfile.
 
 The backend can be selected dynamically at runtime using the `backend` parameter. The default backend to use when this parameter is not specified can be configured with:
 
