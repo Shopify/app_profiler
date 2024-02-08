@@ -5,7 +5,7 @@ require "test_helper"
 module AppProfiler
   class VernierProfileTest < TestCase
     test ".from_vernier assigns id and context metadata" do
-      profile = Profile.from_vernier(vernier_profile(metadata: { id: "foo", context: "bar" }))
+      profile = Profile.from_vernier(vernier_profile(meta: { id: "foo", context: "bar" }))
 
       assert_equal("foo", profile.id)
       assert_equal("bar", profile.context)
@@ -14,7 +14,7 @@ module AppProfiler
     test ".from_vernier assigns random id when id is not present" do
       SecureRandom.expects(:hex).returns("mock")
 
-      params_without_id = vernier_profile(vernier_params).tap { |data| data.meta.delete(:id) }
+      params_without_id = vernier_profile(vernier_params).tap { |data| data[:meta].delete(:id) }
       profile = Profile.from_vernier(params_without_id)
 
       assert_equal("mock", profile.id)
@@ -55,7 +55,7 @@ module AppProfiler
     end
 
     test "#mode" do
-      profile = VernierProfile.new(vernier_profile(metadata: { mode: "retained" }))
+      profile = VernierProfile.new(vernier_profile(meta: { mode: "retained" }))
 
       assert_equal("retained", profile.mode)
     end
@@ -103,14 +103,14 @@ module AppProfiler
     end
 
     test "#[] forwards to profile metadata" do
-      profile = VernierProfile.new(vernier_profile(metadata: { interval: 10_000 }))
+      profile = VernierProfile.new(vernier_profile(meta: { interval: 10_000 }))
 
-      assert_equal(10_000, profile[:interval])
+      assert_equal(10_000, profile[:meta][:interval])
     end
 
     test "#path raises an UnsafeFilename exception given chars not in allow list" do
       assert_raises(AppProfiler::Profile::UnsafeFilename) do
-        profile = Profile.from_vernier(vernier_profile(metadata: { id: "|`@${}", context: "bar" }))
+        profile = Profile.from_vernier(vernier_profile(meta: { id: "|`@${}", context: "bar" }))
         profile.file
       end
     end

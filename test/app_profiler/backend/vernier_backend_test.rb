@@ -60,18 +60,25 @@ module AppProfiler
       end
 
       assert_instance_of(AppProfiler::VernierProfile, profile)
-      assert_equal(:wall, profile[:mode])
+      assert_equal(:wall, profile[:meta][:mode])
       # assert_equal(1000, profile[:interval]) # TODO https://github.com/jhawthorn/vernier/issues/30
     end
 
     test ".run assigns metadata to profiles" do
-      profile = AppProfiler.profiler.run(vernier_params(metadata: { id: "wowza", context: "bar" })) do
+      profile = AppProfiler.profiler.run(
+                  vernier_params(metadata: {
+                    id: "wowza",
+                    context: "bar",
+                    extrameta: "spam",
+                  })
+                ) do
         sleep(0.1)
       end
 
       assert_instance_of(AppProfiler::VernierProfile, profile)
       assert_equal("wowza", profile.id)
       assert_equal("bar", profile.context)
+      assert_equal("spam", profile[:meta][:extrameta])
     end
 
     test ".run wall profile" do
@@ -80,7 +87,7 @@ module AppProfiler
       end
 
       assert_instance_of(AppProfiler::VernierProfile, profile)
-      assert_equal(:wall, profile[:mode])
+      assert_equal(:wall, profile[:meta][:mode])
       # assert_equal(2000, profile[:interval]) # TODO as above
     end
 
@@ -94,13 +101,10 @@ module AppProfiler
       end
 
       assert_instance_of(AppProfiler::VernierProfile, profile)
-      assert_equal(:retained, profile[:mode])
+      assert_equal(:retained, profile[:meta][:mode])
 
-      weights = []
-      profile.data.each_sample do |_, weight|
-        weights << weight
-      end
-      assert_operator(weights.size, :>=, objects)
+      num_samples = profile[:threads].flat_map { _1[:samples] }.sum { |s| s[:length] }
+      assert_operator(num_samples, :>=, objects)
     end
 
     test ".run works for supported modes" do
@@ -133,7 +137,7 @@ module AppProfiler
       profile = AppProfiler.profiler.results
 
       assert_instance_of(AppProfiler::VernierProfile, profile)
-      assert_equal(:wall, profile[:mode])
+      assert_equal(:wall, profile[:meta][:mode])
       # assert_equal(1000, profile[:interval])
     end
 
@@ -155,7 +159,7 @@ module AppProfiler
       profile = AppProfiler.profiler.results
 
       assert_instance_of(AppProfiler::VernierProfile, profile)
-      assert_equal(:wall, profile[:mode])
+      assert_equal(:wall, profile[:meta][:mode])
       # assert_equal(2000, profile[:interval])
     end
 

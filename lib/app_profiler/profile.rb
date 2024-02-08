@@ -11,6 +11,8 @@ module AppProfiler
 
     attr_reader :id, :context
 
+    delegate :[], to: :@data
+
     # This function should not be called if `StackProf.results` returns nil.
     def self.from_stackprof(data)
       options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:metadata]&.delete(key)] }.to_h
@@ -21,9 +23,7 @@ module AppProfiler
     end
 
     def self.from_vernier(data)
-      # NB: we don't delete here, that is causing a segfault in vernier. Divergent behaviour from stackprof,
-      # as the special metadata keys "id" and "context" are preserved into the metadata, but maybe that isn't so bad.
-      options = INTERNAL_METADATA_KEYS.map { |key| [key, data.meta.clone[key]] }.to_h
+      options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:meta]&.delete(key)] }.to_h
 
       VernierProfile.new(data, **options).tap do |profile|
         raise ArgumentError, "invalid profile data" unless profile.valid?
@@ -61,16 +61,19 @@ module AppProfiler
       AppProfiler.storage.enqueue_upload(self)
     end
 
+    def valid?
+      mode.present?
+    end
+
     def file
-      raise NotImplementedError
+      @file ||= path.tap do |p|
+        p.dirname.mkpath
+        p.write(JSON.dump(@data))
+      end
     end
 
     def to_h
-      raise NotImplementedError
-    end
-
-    def valid?
-      raise NotImplementedError
+      @data
     end
 
     def mode

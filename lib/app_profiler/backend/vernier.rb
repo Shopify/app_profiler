@@ -69,12 +69,15 @@ module AppProfiler
 
       return unless vernier_profile
 
-      vernier_profile.meta[:mode] = @mode # TODO: https://github.com/jhawthorn/vernier/issues/30
-      vernier_profile.meta.merge!(@metadata) if @metadata
+      # HACK: - "data" is private, but we want to avoid serializing to JSON then
+      # parsing back from JSON by just directly getting the hash
+      data = ::Vernier::Output::Firefox.new(vernier_profile).send(:data)
+      data[:meta][:mode] = @mode # TODO: https://github.com/jhawthorn/vernier/issues/30
+      data[:meta].merge!(@metadata) if @metadata
       @mode = nil
       @metadata = nil
 
-      AppProfiler::Profile.from_vernier(vernier_profile)
+      AppProfiler::Profile.from_vernier(data)
     rescue => error
       AppProfiler.logger.info(
         "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"
