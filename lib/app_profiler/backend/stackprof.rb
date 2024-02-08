@@ -59,7 +59,7 @@ module AppProfiler
 
       return unless stackprof_profile
 
-      AppProfiler::Profile.from_stackprof(stackprof_profile)
+      AppProfiler::AbstractProfile.from_stackprof(stackprof_profile)
     rescue => error
       AppProfiler.logger.info(
         "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"
