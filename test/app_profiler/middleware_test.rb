@@ -310,7 +310,7 @@ module AppProfiler
     test "#after_profile called with env and profile data" do
       request_env = mock_request_env(path: "/?profile=cpu")
       AppProfiler.middleware.any_instance.expects(:after_profile).with do |env, profile|
-        request_env == env && profile.is_a?(AppProfiler::Profile)
+        request_env == env && profile.is_a?(AppProfiler::AbstractProfile)
       end.returns(false)
       middleware = AppProfiler::Middleware.new(app_env)
       middleware.call(request_env)
@@ -329,7 +329,7 @@ module AppProfiler
           end.returns(true)
 
           AppProfiler.middleware.any_instance.expects(:after_profile).with do |env, profile|
-            return false unless request_env == env && profile.is_a?(AppProfiler::Profile)
+            return false unless request_env == env && profile.is_a?(AppProfiler::AbstractProfile)
 
             profile[:metadata][:test_key] == "test_value"
           end.returns(true)

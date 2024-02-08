@@ -4,7 +4,7 @@ module AppProfiler
   autoload :StackprofProfile, "app_profiler/profile/stackprof"
   autoload :VernierProfile, "app_profiler/profile/vernier"
 
-  class Profile
+  class AbstractProfile
     INTERNAL_METADATA_KEYS = [:id, :context]
     private_constant :INTERNAL_METADATA_KEYS
     class UnsafeFilename < StandardError; end
@@ -103,4 +103,7 @@ module AppProfiler
       AppProfiler.profile_root.join(filename)
     end
   end
+
+  Profile = AbstractProfile
+  deprecate_constant :Profile
 end

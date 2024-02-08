@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module AppProfiler
-  class VernierProfile < Profile
+  class VernierProfile < AbstractProfile
     FILE_EXTENSION = ".gecko.json"
 
     def mode

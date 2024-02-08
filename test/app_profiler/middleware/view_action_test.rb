@@ -6,7 +6,7 @@ module AppProfiler
   class Middleware
     class ViewActionTest < AppProfiler::TestCase
       setup do
-        @profile = Profile.new(stackprof_profile)
+        @profile = StackprofProfile.new(stackprof_profile)
         @response = [200, {}, ["OK"]]
       end
 

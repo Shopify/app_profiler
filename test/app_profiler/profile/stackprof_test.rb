@@ -7,13 +7,13 @@ module AppProfiler
     test ".from_stackprof raises ArgumentError when mode is not present" do
       error = assert_raises(ArgumentError) do
         profile_without_mode = stackprof_profile.tap { |data| data.delete(:mode) }
-        Profile.from_stackprof(profile_without_mode)
+        AbstractProfile.from_stackprof(profile_without_mode)
       end
       assert_equal("invalid profile data", error.message)
     end
 
     test ".from_stackprof assigns id and context metadata" do
-      profile = Profile.from_stackprof(stackprof_profile(metadata: { id: "foo", context: "bar" }))
+      profile = AbstractProfile.from_stackprof(stackprof_profile(metadata: { id: "foo", context: "bar" }))
 
       assert_equal("foo", profile.id)
       assert_equal("bar", profile.context)
@@ -23,13 +23,13 @@ module AppProfiler
       SecureRandom.expects(:hex).returns("mock")
 
       params_without_id = stackprof_profile.tap { |data| data[:metadata].delete(:id) }
-      profile = Profile.from_stackprof(params_without_id)
+      profile = AbstractProfile.from_stackprof(params_without_id)
 
       assert_equal("mock", profile.id)
     end
 
     test ".from_stackprof removes id and context metadata from profile data" do
-      profile = Profile.from_stackprof(stackprof_profile(metadata: { id: "foo", context: "bar" }))
+      profile = AbstractProfile.from_stackprof(stackprof_profile(metadata: { id: "foo", context: "bar" }))
 
       assert_not_operator(profile[:metadata], :key?, :id)
       assert_not_operator(profile[:metadata], :key?, :context)
@@ -131,8 +131,8 @@ module AppProfiler
     end
 
     test "#path raises an UnsafeFilename exception given chars not in allow list" do
-      assert_raises(AppProfiler::Profile::UnsafeFilename) do
-        profile = Profile.from_stackprof(stackprof_profile(metadata: { id: "|`@${}", context: "bar" }))
+      assert_raises(AppProfiler::AbstractProfile::UnsafeFilename) do
+        profile = AbstractProfile.from_stackprof(stackprof_profile(metadata: { id: "|`@${}", context: "bar" }))
         profile.file
       end
     end
