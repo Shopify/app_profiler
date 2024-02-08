@@ -321,9 +321,9 @@ It is possible to configure AppProfiler to use the [`vernier`](https://github.co
 The backend can be selected dynamically at runtime using the `backend` parameter. The default backend to use when this parameter is not specified can be configured with:
 
 ```ruby
-AppProfiler.profiler_backend = AppProfiler::StackprofBackend # or AppProfiler::VernierBackend
+AppProfiler.backend = AppProfiler::StackprofBackend # or AppProfiler::VernierBackend
 # OR
-Rails.application.config.app_profiler.profiler_backend = AppProfiler::StackprofBackend # or AppProfiler::VernierBackend
+Rails.application.config.app_profiler.backend = AppProfiler::StackprofBackend # or AppProfiler::VernierBackend
 ```
 
 By default, the stackprof backend will be used.
