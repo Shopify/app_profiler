@@ -287,6 +287,11 @@ report.view # opens the profile locally in speedscope or firefox profiler, as ap
 
 Profile files can be found locally in your rails app at `tmp/app_profiler/*.json`.
 
+**Note** In development, if using the SpeedscopeRemoteViewer for stackprof
+or if using Vernier, a route for `/app_profiler` will be added to the application.
+If using Vernier, a route for `/from-url` is also added. These will be handled
+in middlewares, before any application routing logic. There is a small chance
+that these could shadow existing routes in the application.
 
 ## Storage backends
 
