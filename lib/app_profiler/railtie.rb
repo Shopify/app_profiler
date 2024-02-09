@@ -11,6 +11,8 @@ module AppProfiler
       AppProfiler.logger = app.config.app_profiler.logger || Rails.logger
       AppProfiler.root = app.config.app_profiler.root || Rails.root
       AppProfiler.storage = app.config.app_profiler.storage || Storage::FileStorage
+      AppProfiler.viewer = app.config.app_profiler.viewer || Viewer::SpeedscopeViewer
+      AppProfiler.speedscope_viewer = app.config.app_profiler.speedscope_viewer || AppProfiler.viewer
       AppProfiler.storage.bucket_name = app.config.app_profiler.storage_bucket_name || "profiles"
       AppProfiler.storage.credentials = app.config.app_profiler.storage_credentials || {}
       AppProfiler.middleware = app.config.app_profiler.middleware || Middleware

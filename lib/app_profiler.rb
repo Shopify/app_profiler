@@ -54,6 +54,8 @@ module AppProfiler
 
   mattr_accessor :gecko_viewer_package, default: "https://github.com/tenderlove/profiler#v0.0.2"
   mattr_accessor :storage, default: Storage::FileStorage
+  mattr_accessor :viewer, default: Viewer::SpeedscopeViewer # DEPRECATED
+  mattr_accessor :speedscope_viewer, default: Viewer::SpeedscopeViewer
   mattr_accessor :middleware, default: Middleware
   mattr_accessor :server, default: Server
   mattr_accessor :upload_queue_max_length, default: 10
@@ -179,6 +181,17 @@ module AppProfiler
       return unless AppProfiler.profile_url_formatter
 
       AppProfiler.profile_url_formatter.call(upload)
+    end
+
+    # DEPRECATIONS
+    def viewer
+      ActiveSupport::Deprecation.warn("viewer is deprecated, use speedscope_viewer instead")
+      @viewer
+    end
+
+    def viewer=(viewer)
+      ActiveSupport::Deprecation.warn("viewer= is deprecated, use speedscope_viewer= instead")
+      @viewer = viewer
     end
   end
 
