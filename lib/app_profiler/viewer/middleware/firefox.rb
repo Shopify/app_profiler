@@ -5,7 +5,7 @@ require "app_profiler/yarn/with_firefox_profiler"
 
 module AppProfiler
   module Viewer
-    class FirefoxViewer < BaseViewer
+    class FirefoxRemoteViewer < BaseViewer
       class Middleware < BaseMiddleware
         include Yarn::WithFirefoxProfile
 

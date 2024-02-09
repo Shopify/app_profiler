@@ -4,7 +4,7 @@ require "app_profiler/viewer/middleware/firefox"
 
 module AppProfiler
   module Viewer
-    class FirefoxViewer < BaseViewer
+    class FirefoxRemoteViewer < BaseViewer
       NAME = "firefox"
 
       class << self

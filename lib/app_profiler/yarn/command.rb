@@ -38,6 +38,10 @@ module AppProfiler
         @yarn_initialized || false
       end
 
+      def yarn_setup=(state)
+        @yarn_initialized = state
+      end
+
       private
 
       def ensure_command_valid(command)

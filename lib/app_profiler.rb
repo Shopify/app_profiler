@@ -29,7 +29,8 @@ module AppProfiler
   module Viewer
     autoload :BaseViewer, "app_profiler/viewer/base_viewer"
     autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope"
-    autoload :FirefoxViewer, "app_profiler/viewer/firefox"
+    autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/remote/speedscope"
+    autoload :FirefoxRemoteViewer, "app_profiler/viewer/remote/firefox"
   end
 
   require "app_profiler/middleware"
@@ -51,7 +52,7 @@ module AppProfiler
   mattr_reader   :profile_url_formatter,
     default: DefaultProfileFormatter
 
-  mattr_accessor :gecko_viewer_package, default: "https://github.com/firefox-devtools/profiler"
+  mattr_accessor :gecko_viewer_package, default: "https://github.com/tenderlove/profiler#v0.0.2"
   mattr_accessor :storage, default: Storage::FileStorage
   mattr_accessor :middleware, default: Middleware
   mattr_accessor :server, default: Server

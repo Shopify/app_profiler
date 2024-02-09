@@ -92,9 +92,9 @@ module AppProfiler
               content << "<h1>Profiles</h1>"
               profile_files.each do |file|
                 viewer = if file.to_s.end_with?(AppProfiler::VernierProfile::FILE_EXTENSION)
-                  AppProfiler::Viewer::FirefoxViewer::NAME
+                  AppProfiler::Viewer::FirefoxRemoteViewer::NAME
                 else
-                  AppProfiler::Viewer::SpeedscopeViewer::NAME
+                  AppProfiler::Viewer::SpeedscopeRemoteViewer::NAME
                 end
                 content << <<~HTML
                   <p>

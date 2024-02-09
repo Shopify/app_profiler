@@ -25,9 +25,7 @@ module AppProfiler
 
         viewer.view
 
-        assert_predicate(Yarn::Command, :yarn_setup)
-      ensure
-        Yarn::Command.yarn_setup = false
+        assert_predicate(viewer, :yarn_setup)
       end
 
       test "#view doesn't init when package.json exists" do
@@ -45,9 +43,8 @@ module AppProfiler
 
         viewer.view
 
-        assert_predicate(Yarn::Command, :yarn_setup)
+        assert_predicate(viewer, :yarn_setup)
       ensure
-        Yarn::Command.yarn_setup = false
         AppProfiler.root.rmtree
       end
 
@@ -64,21 +61,19 @@ module AppProfiler
 
         viewer.view
 
-        assert_predicate(Yarn::Command, :yarn_setup)
+        assert_predicate(viewer, :yarn_setup)
       ensure
-        Yarn::Command.yarn_setup = false
         AppProfiler.root.rmtree
       end
 
       test "#view only opens profile in speedscope if yarn is already setup" do
         profile = AbstractProfile.from_stackprof(stackprof_profile)
 
-        with_yarn_setup do
-          viewer = SpeedscopeViewer.new(profile)
-          viewer.expects(:system).with("yarn", "run", "speedscope", profile.file.to_s).returns(true)
+        viewer = SpeedscopeViewer.new(profile)
+        viewer.yarn_setup = true
+        viewer.expects(:system).with("yarn", "run", "speedscope", profile.file.to_s).returns(true)
 
-          viewer.view
-        end
+        viewer.view
       end
 
       test "#view raises YarnError when yarn command fails" do

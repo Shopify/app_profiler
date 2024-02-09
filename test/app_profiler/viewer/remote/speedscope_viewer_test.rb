@@ -35,7 +35,7 @@ module AppProfiler
         viewer.view(response: response)
 
         assert_equal(303, response[0])
-        assert_equal("/app_profiler/#{id}", response[1]["Location"])
+        assert_equal("/app_profiler/speedscope/viewer/#{id}", response[1]["Location"])
       end
     end
   end
