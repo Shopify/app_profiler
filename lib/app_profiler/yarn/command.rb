@@ -5,8 +5,6 @@ module AppProfiler
     module Command
       class YarnError < StandardError; end
 
-      GECKO_VIEWER_PACKAGE = AppProfiler.gecko_viewer_package
-
       VALID_COMMANDS = [
         ["which", "yarn"],
         ["yarn", "init", "--yes"],
@@ -18,7 +16,6 @@ module AppProfiler
       ]
 
       private_constant(:VALID_COMMANDS)
-      private_constant(:GECKO_VIEWER_PACKAGE)
 
       def yarn(command, *options)
         setup_yarn unless yarn_setup
