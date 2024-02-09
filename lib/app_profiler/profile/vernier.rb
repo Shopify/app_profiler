@@ -13,7 +13,7 @@ module AppProfiler
     end
 
     def view(params = {})
-      Viewer::FirefoxViewer.view(self, **params)
+      Viewer::FirefoxRemoteViewer.view(self, **params)
     end
   end
 end
