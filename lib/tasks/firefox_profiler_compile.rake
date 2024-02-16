@@ -10,11 +10,16 @@ require "app_profiler/yarn/with_firefox_profiler"
 
 # The bundle is already compiled, so we can ignore most of the source contents
 PACKAGE_INCLUDE = [
-  %r{^\.circleci/config\.yml$},
-  %r{^bin/pre-install\.js$},
   /^package\.json$/,
   /^dist/,
 ].freeze
+
+# Hack to make the package.json more portable by removing some constraints
+# contains arrays of diggable hash keys
+DELETE_KEYS = [
+  ["engines"],
+  ["scripts", "preinstall"],
+]
 
 class CompileShim
   include AppProfiler::Yarn::WithFirefoxProfile
@@ -45,13 +50,38 @@ def package_directory(source_dir, output)
             if File.directory?(file)
               tar.mkdir(file, mode)
             else
-              tar.add_file_simple(file, mode, File.size(file)) do |tar_file|
-                IO.copy_stream(File.open(file, "rb"), tar_file)
+              fp = File.open(file, "rb")
+              fp = prune_keys(fp) if file == "package.json"
+              tar.add_file_simple(file, mode, fp.size) do |tar_file|
+                IO.copy_stream(fp, tar_file)
               end
+              fp.close
             end
           end
         end
       end
     end
   end
+end
+
+def prune_keys(orig_fp)
+  package_contents = JSON.parse(orig_fp.read)
+  orig_fp.close
+  DELETE_KEYS.each do |keys|
+    next unless package_contents.dig(*keys)
+
+    to_delete = keys.pop
+    if keys.empty?
+      package_contents.delete(to_delete)
+    else
+      nested_hash = package_contents.dig(*keys)
+      nested_hash.delete(to_delete)
+    end
+  end
+  tmp = Tempfile.new("relaxed_package.json")
+  tmp.unlink
+  tmp.write(JSON.dump(package_contents))
+  tmp.flush
+  tmp.rewind
+  tmp
 end
