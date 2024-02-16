@@ -82,7 +82,7 @@ Rails.application.config.app_profiler.profile_header = "X-Profile"
 | ignore_gc | Ignore garbage collection frames | |
 | autoredirect | Redirect request automatically to Speedscope's page after profiling. | |
 | context | Directory within the specified bucket in the selected storage where raw profile data should be written. | Only supported in (2). Defaults to `Rails.env` if not specified. |
-| backend | Profiler to use, either `stackprof` or `vernier`. Defaults to `stackprof`. Note that Vernier requires Ruby 3.2.1+ |
+| backend | Profiler to use, either `stackprof` or `vernier`. Defaults to `stackprof`. Note that Vernier requires Ruby 3.2.1+. |
 
 
 Note that the `autoredirect` feature can be turned on for all requests by doing the following:
