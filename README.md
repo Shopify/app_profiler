@@ -76,7 +76,7 @@ Rails.application.config.app_profiler.profile_header = "X-Profile"
 
 | Key | Value | Notes |
 | --- | ----- | ----- |
-| profile/mode | Supported profiling modes: `cpu`, `wall`, `object` for stackprof. | Use `profile` in (1), and `mode` in (2). Vernier backend only supports `wall` and `retained` at present time|
+| profile/mode | Supported profiling modes: `cpu`, `wall`, `object` for stackprof. | Use `profile` in (1), and `mode` in (2). Vernier backend only supports `wall` and `retained` at present time. |
 | async | Upload profile in a background thread. When this is set, profile redirect headers are not present in the response.
 | interval | Sampling interval in microseconds. | |
 | ignore_gc | Ignore garbage collection frames | |
