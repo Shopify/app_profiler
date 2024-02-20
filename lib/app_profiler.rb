@@ -32,6 +32,11 @@ module AppProfiler
     autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/speedscope_remote_viewer"
   end
 
+  module Backend
+    autoload :Stackprof, "app_profiler/backend/stackprof"
+    autoload :Vernier, "app_profiler/backend/vernier"
+  end
+
   require "app_profiler/middleware"
   require "app_profiler/parameters"
   require "app_profiler/request_parameters"
@@ -95,7 +100,7 @@ module AppProfiler
     def backend=(new_backend)
       new_profiler_backend = if new_backend.is_a?(String)
         backend_for(new_backend)
-      elsif new_backend&.< Backend
+      elsif new_backend&.< Backend::Base
         new_backend
       else
         raise BackendError, "unsupportend backend type #{new_backend.class}"
@@ -113,18 +118,18 @@ module AppProfiler
     end
 
     def backend_for(backend_name)
-      if defined?(AppProfiler::VernierBackend::NAME) &&
-          backend_name == AppProfiler::VernierBackend::NAME
-        AppProfiler::VernierBackend
-      elsif backend_name == AppProfiler::StackprofBackend::NAME
-        AppProfiler::StackprofBackend
+      if defined?(AppProfiler::Backend::Vernier::NAME) &&
+          backend_name == AppProfiler::Backend::Vernier::NAME
+        AppProfiler::Backend::Vernier
+      elsif backend_name == AppProfiler::Backend::Stackprof::NAME
+        AppProfiler::Backend::Stackprof
       else
         raise BackendError, "unknown backend #{backend_name}"
       end
     end
 
     def backend
-      @profiler_backend ||= DefaultBackend
+      @profiler_backend ||= Backend::Stackprof
     end
 
     def clear

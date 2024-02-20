@@ -20,7 +20,7 @@ module AppProfiler
       end
     end
 
-    AppProfiler::StackprofBackend::AVAILABLE_MODES.each do |mode|
+    AppProfiler::Backend::Stackprof::AVAILABLE_MODES.each do |mode|
       test "profile mode #{mode} is supported by stackprof backend" do
         assert_profiles_dumped do
           assert_profiles_uploaded do
@@ -31,8 +31,8 @@ module AppProfiler
       end
     end
 
-    if defined?(AppProfiler::VernierBackend::NAME)
-      AppProfiler::VernierBackend::AVAILABLE_MODES.each do |mode|
+    if defined?(AppProfiler::Backend::Vernier::NAME)
+      AppProfiler::Backend::Vernier::AVAILABLE_MODES.each do |mode|
         test "profile mode #{mode} is supported by vernier backend" do
           assert_profiles_dumped do
             assert_profiles_uploaded do
@@ -44,7 +44,7 @@ module AppProfiler
       end
     end
 
-    if defined?(AppProfiler::VernierBackend::NAME)
+    if defined?(AppProfiler::Backend::Vernier::NAME)
       test "the backend can be toggled between requests" do
         assert_profiles_dumped(3) do
           assert_profiles_uploaded do
@@ -182,7 +182,7 @@ module AppProfiler
       end
     end
 
-    AppProfiler::StackprofBackend::AVAILABLE_MODES.each do |mode|
+    AppProfiler::Backend::Stackprof::AVAILABLE_MODES.each do |mode|
       test "profile mode #{mode} through headers is supported" do
         assert_profiles_dumped do
           assert_profiles_uploaded do
@@ -194,8 +194,8 @@ module AppProfiler
       end
     end
 
-    if defined?(AppProfiler::VernierBackend::NAME)
-      AppProfiler::VernierBackend::AVAILABLE_MODES.each do |mode|
+    if defined?(AppProfiler::Backend::Vernier::NAME)
+      AppProfiler::Backend::Vernier::AVAILABLE_MODES.each do |mode|
         test "profile mode #{mode} is supported through headers by vernier backend" do
           assert_profiles_dumped do
             assert_profiles_uploaded do
