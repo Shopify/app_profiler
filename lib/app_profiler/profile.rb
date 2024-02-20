@@ -104,6 +104,6 @@ module AppProfiler
     end
   end
 
-  Profile = AbstractProfile
-  deprecate_constant :Profile
+  include ActiveSupport::Deprecation::DeprecatedConstantAccessor
+  deprecate_constant "Profile", "AppProfiler::AbstractProfile", deprecator: ActiveSupport::Deprecation.new
 end
