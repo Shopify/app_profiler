@@ -28,7 +28,7 @@ module AppProfiler
 
     test ".run sets the backend then returns to the previous value" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless defined?(AppProfiler::Backend::Vernier::NAME)
+      skip("Vernier not supported") unless AppProfiler.vernier_supported?
 
       assert_equal(AppProfiler.backend, AppProfiler::Backend::Stackprof)
       refute(AppProfiler.running?)

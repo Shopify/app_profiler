@@ -118,7 +118,7 @@ module AppProfiler
     end
 
     def backend_for(backend_name)
-      if defined?(AppProfiler::Backend::Vernier::NAME) &&
+      if vernier_supported? &&
           backend_name == AppProfiler::Backend::Vernier::NAME
         AppProfiler::Backend::Vernier
       elsif backend_name == AppProfiler::Backend::Stackprof::NAME
@@ -130,6 +130,10 @@ module AppProfiler
 
     def backend
       @profiler_backend ||= Backend::Stackprof
+    end
+
+    def vernier_supported?
+      defined?(AppProfiler::Backend::Vernier::NAME)
     end
 
     def clear

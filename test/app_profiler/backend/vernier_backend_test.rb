@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-return unless defined?(AppProfiler::Backend::Vernier::NAME)
+return unless AppProfiler.vernier_supported?
 
 module AppProfiler
   module Backend
