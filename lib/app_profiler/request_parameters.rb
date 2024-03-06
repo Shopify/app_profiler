@@ -51,6 +51,7 @@ module AppProfiler
         mode: mode.to_sym,
         interval: interval.to_i,
         ignore_gc: !!ignore_gc,
+        backend: backend,
         metadata: {
           id: request_id,
           context: context,

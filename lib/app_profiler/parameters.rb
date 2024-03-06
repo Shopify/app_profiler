@@ -15,7 +15,7 @@ module AppProfiler
       @interval = [interval&.to_i || DEFAULT_INTERVALS.fetch(@mode.to_s), MIN_INTERVALS.fetch(@mode.to_s)].max
       @ignore_gc = !!ignore_gc
       @autoredirect = autoredirect
-      @backend = backend
+      @backend = backend || AppProfiler::Backend::StackprofBackend::NAME
       @metadata = { context: AppProfiler.context }.merge(metadata)
       @async = async
     end
@@ -30,6 +30,7 @@ module AppProfiler
         interval: @interval,
         ignore_gc: @ignore_gc,
         metadata: @metadata,
+        backend: @backend,
       }
     end
   end
