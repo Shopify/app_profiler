@@ -39,7 +39,7 @@ module AppProfiler
 
         clear
 
-        ::StackProf.start(**DEFAULTS, **params)
+        StackProf.start(**DEFAULTS, **params)
       rescue => error
         AppProfiler.logger.info(
           "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}"
@@ -51,7 +51,7 @@ module AppProfiler
       end
 
       def stop
-        ::StackProf.stop
+        StackProf.stop
       ensure
         release_run_lock
       end
@@ -70,13 +70,13 @@ module AppProfiler
       end
 
       def running?
-        ::StackProf.running?
+        StackProf.running?
       end
 
       private
 
       def backend_results
-        ::StackProf.results
+        StackProf.results
       end
 
       # Clears the previous profiling session.
