@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-gem("vernier", ">= 0.4.0")
+gem("vernier", ">= 0.5.0")
 require "vernier"
 
 module AppProfiler
