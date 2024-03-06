@@ -6,11 +6,11 @@ return unless AppProfiler.vernier_supported?
 
 module AppProfiler
   module Backend
-    class VernierTest < TestCase
+    class VernierBackendTest < TestCase
       def setup
         AppProfiler.clear
         @orig_backend = AppProfiler.backend
-        AppProfiler.backend = AppProfiler::Backend::Vernier
+        AppProfiler.backend = :vernier
       end
 
       def teardown
@@ -166,10 +166,10 @@ module AppProfiler
 
       test ".stop" do
         AppProfiler.start
-        AppProfiler::Backend::Vernier.any_instance.expects(:stop)
+        AppProfiler::Backend::VernierBackend.any_instance.expects(:stop)
         AppProfiler.stop
       ensure
-        AppProfiler::Backend::Vernier.any_instance.unstub(:stop)
+        AppProfiler::Backend::VernierBackend.any_instance.unstub(:stop)
         AppProfiler.stop
       end
 

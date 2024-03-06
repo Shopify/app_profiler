@@ -33,8 +33,8 @@ module AppProfiler
   end
 
   module Backend
-    autoload :Stackprof, "app_profiler/backend/stackprof"
-    autoload :Vernier, "app_profiler/backend/vernier"
+    autoload :StackprofBackend, "app_profiler/backend/stackprof_backend"
+    autoload :VernierBackend, "app_profiler/backend/vernier_backend"
   end
 
   require "app_profiler/middleware"
@@ -94,24 +94,19 @@ module AppProfiler
     end
 
     def profiler
-      @backend ||= backend.new
+      backend
+      @backend ||= @profiler_backend.new
     end
 
     def backend=(new_backend)
-      new_profiler_backend = if new_backend.is_a?(String)
-        backend_for(new_backend)
-      elsif new_backend&.< Backend::Base
-        new_backend
-      else
-        raise BackendError, "unsupportend backend type #{new_backend.class}"
-      end
+      new_profiler_backend = backend_for(new_backend)
 
       if running?
         raise BackendError,
-          "cannot change backend to #{new_backend::NAME} while #{backend::NAME} backend is running"
+          "cannot change backend to #{new_backend} while #{backend} backend is running"
       end
 
-      return if @profiler_backend == new_backend
+      return if @profiler_backend == new_profiler_backend
 
       clear
       @profiler_backend = new_profiler_backend
@@ -119,21 +114,22 @@ module AppProfiler
 
     def backend_for(backend_name)
       if vernier_supported? &&
-          backend_name == AppProfiler::Backend::Vernier::NAME
-        AppProfiler::Backend::Vernier
-      elsif backend_name == AppProfiler::Backend::Stackprof::NAME
-        AppProfiler::Backend::Stackprof
+          backend_name == AppProfiler::Backend::VernierBackend::NAME
+        AppProfiler::Backend::VernierBackend
+      elsif backend_name == AppProfiler::Backend::StackprofBackend::NAME
+        AppProfiler::Backend::StackprofBackend
       else
         raise BackendError, "unknown backend #{backend_name}"
       end
     end
 
     def backend
-      @profiler_backend ||= Backend::Stackprof
+      @profiler_backend ||= Backend::StackprofBackend
+      @profiler_backend::NAME
     end
 
     def vernier_supported?
-      defined?(AppProfiler::Backend::Vernier::NAME)
+      defined?(AppProfiler::Backend::VernierBackend::NAME)
     end
 
     def clear

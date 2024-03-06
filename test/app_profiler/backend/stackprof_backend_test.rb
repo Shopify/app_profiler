@@ -4,9 +4,9 @@ require "test_helper"
 
 module AppProfiler
   module Backend
-    class StackprofTest < TestCase
+    class StackprofBackendTest < TestCase
       def setup
-        AppProfiler.backend = AppProfiler::Backend::Stackprof
+        AppProfiler.backend = :stackprof
       end
 
       def teardown

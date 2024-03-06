@@ -17,8 +17,9 @@ module AppProfiler
     end
 
     def backend
-      query_param("backend") || profile_header_param("backend") ||
-        AppProfiler.backend::NAME
+      backend = query_param("backend") || profile_header_param("backend") ||
+        AppProfiler.backend
+      backend.to_sym
     end
 
     def valid?
@@ -26,14 +27,14 @@ module AppProfiler
         return false
       end
 
-      return false if backend != AppProfiler::Backend::Stackprof::NAME && !AppProfiler.vernier_supported?
+      return false if backend != AppProfiler::Backend::StackprofBackend::NAME && !AppProfiler.vernier_supported?
 
-      if AppProfiler.vernier_supported? && backend == AppProfiler::Backend::Vernier::NAME &&
-          !AppProfiler::Backend::Vernier::AVAILABLE_MODES.include?(mode.to_sym)
+      if AppProfiler.vernier_supported? && backend == AppProfiler::Backend::VernierBackend::NAME &&
+          !AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.include?(mode.to_sym)
         AppProfiler.logger.info("[AppProfiler] unsupported profiling mode=#{mode} for backend #{backend}")
         return false
-      elsif backend == AppProfiler::Backend::Stackprof::NAME &&
-          !AppProfiler::Backend::Stackprof::AVAILABLE_MODES.include?(mode.to_sym)
+      elsif backend == AppProfiler::Backend::StackprofBackend::NAME &&
+          !AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.include?(mode.to_sym)
         AppProfiler.logger.info("[AppProfiler] unsupported profiling mode=#{mode} for backend #{backend}")
         return false
       end

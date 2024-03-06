@@ -2,7 +2,7 @@
 
 module AppProfiler
   class StackprofProfile < AbstractProfile
-    FILE_EXTENSION = ".stackprof.json"
+    FILE_EXTENSION = ".json"
 
     def mode
       @data[:mode]

@@ -4,8 +4,9 @@ require "stackprof"
 
 module AppProfiler
   module Backend
-    class Stackprof < Base
-      NAME = "stackprof"
+    class StackprofBackend < Base
+      NAME = :stackprof
+
       DEFAULTS = {
         mode: :cpu,
         raw: true,

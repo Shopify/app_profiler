@@ -20,7 +20,7 @@ module AppProfiler
       end
     end
 
-    AppProfiler::Backend::Stackprof::AVAILABLE_MODES.each do |mode|
+    AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.each do |mode|
       test "profile mode #{mode} is supported by stackprof backend" do
         assert_profiles_dumped do
           assert_profiles_uploaded do
@@ -32,7 +32,7 @@ module AppProfiler
     end
 
     if AppProfiler.vernier_supported?
-      AppProfiler::Backend::Vernier::AVAILABLE_MODES.each do |mode|
+      AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.each do |mode|
         test "profile mode #{mode} is supported by vernier backend" do
           assert_profiles_dumped do
             assert_profiles_uploaded do
@@ -62,8 +62,11 @@ module AppProfiler
             middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
           end
 
-          assert_equal(2, tmp_profiles.count { |p| p.to_s =~ /#{AppProfiler::StackprofProfile::FILE_EXTENSION}$/ })
-          assert_equal(1, tmp_profiles.count { |p| p.to_s =~ /#{AppProfiler::VernierProfile::FILE_EXTENSION}$/ })
+          json_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::StackprofProfile::FILE_EXTENSION}$/ }
+          vernier_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::VernierProfile::FILE_EXTENSION}$/ }
+          stackprof_profiles = json_profiles - vernier_profiles
+          assert_equal(2, stackprof_profiles.size)
+          assert_equal(1, vernier_profiles.size)
         end
       end
     end
@@ -182,7 +185,7 @@ module AppProfiler
       end
     end
 
-    AppProfiler::Backend::Stackprof::AVAILABLE_MODES.each do |mode|
+    AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.each do |mode|
       test "profile mode #{mode} through headers is supported" do
         assert_profiles_dumped do
           assert_profiles_uploaded do
@@ -195,7 +198,7 @@ module AppProfiler
     end
 
     if AppProfiler.vernier_supported?
-      AppProfiler::Backend::Vernier::AVAILABLE_MODES.each do |mode|
+      AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.each do |mode|
         test "profile mode #{mode} is supported through headers by vernier backend" do
           assert_profiles_dumped do
             assert_profiles_uploaded do

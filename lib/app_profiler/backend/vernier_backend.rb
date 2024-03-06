@@ -5,8 +5,8 @@ require "vernier"
 
 module AppProfiler
   module Backend
-    class Vernier < Base
-      NAME = "vernier"
+    class VernierBackend < Base
+      NAME = :vernier
 
       DEFAULTS = {
         mode: :wall,
