@@ -73,7 +73,10 @@ module AppProfiler
       begin
         self.backend = backend if backend
         profiler.run(*args, **kwargs, &block)
-      rescue BackendError
+      rescue BackendError => e
+        logger.error(
+          "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}"
+        )
         yield
       end
     ensure
