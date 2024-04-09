@@ -40,7 +40,7 @@ module AppProfiler
       AppProfiler.profile_enqueue_success = app.config.app_profiler.profile_enqueue_success
       AppProfiler.profile_enqueue_failure = app.config.app_profiler.profile_enqueue_failure
       AppProfiler.after_process_queue = app.config.app_profiler.after_process_queue
-      AppProfiler.backend = app.config.app_profiler.profiler_backend || AppProfiler::DefaultBackend
+      AppProfiler.backend = app.config.app_profiler.profiler_backend || :stackprof
     end
 
     initializer "app_profiler.add_middleware" do |app|
