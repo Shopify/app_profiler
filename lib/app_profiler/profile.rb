@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "active_support/deprecation/constant_accessor"
+
 module AppProfiler
   autoload :StackprofProfile, "app_profiler/profile/stackprof"
   autoload :VernierProfile, "app_profiler/profile/vernier"
