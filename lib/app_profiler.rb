@@ -102,6 +102,8 @@ module AppProfiler
     end
 
     def backend=(new_backend)
+      return if new_backend == backend
+
       new_profiler_backend = backend_for(new_backend)
 
       if running?
