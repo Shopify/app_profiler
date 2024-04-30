@@ -6,8 +6,6 @@ require "vernier"
 module AppProfiler
   module Backend
     class VernierBackend < BaseBackend
-      NAME = :vernier
-
       DEFAULTS = {
         mode: :wall,
       }.freeze
@@ -16,6 +14,10 @@ module AppProfiler
         :wall,
         :retained,
       ].freeze
+
+      def self.name
+        :vernier
+      end
 
       def run(params = {})
         started = start(params)

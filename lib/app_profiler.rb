@@ -114,9 +114,9 @@ module AppProfiler
 
     def backend_for(backend_name)
       if vernier_supported? &&
-          backend_name == AppProfiler::Backend::VernierBackend::NAME
+          backend_name == AppProfiler::Backend::VernierBackend.name
         AppProfiler::Backend::VernierBackend
-      elsif backend_name == AppProfiler::Backend::StackprofBackend::NAME
+      elsif backend_name == AppProfiler::Backend::StackprofBackend.name
         AppProfiler::Backend::StackprofBackend
       else
         raise BackendError, "unknown backend #{backend_name}"
@@ -125,11 +125,11 @@ module AppProfiler
 
     def backend
       @profiler_backend ||= Backend::StackprofBackend
-      @profiler_backend::NAME
+      @profiler_backend.name
     end
 
     def vernier_supported?
-      defined?(AppProfiler::Backend::VernierBackend::NAME)
+      defined?(AppProfiler::Backend::VernierBackend.name)
     end
 
     def clear

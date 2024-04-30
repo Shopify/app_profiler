@@ -5,8 +5,6 @@ require "stackprof"
 module AppProfiler
   module Backend
     class StackprofBackend < BaseBackend
-      NAME = :stackprof
-
       DEFAULTS = {
         mode: :cpu,
         raw: true,
@@ -17,6 +15,10 @@ module AppProfiler
         :cpu,
         :object,
       ].freeze
+
+      def self.name
+        :stackprof
+      end
 
       def run(params = {})
         started = start(params)

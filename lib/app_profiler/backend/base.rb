@@ -6,6 +6,10 @@ module AppProfiler
     autoload :VernierBackend, "app_profiler/backend/vernier_backend"
 
     class BaseBackend
+      def self.name
+        raise NotImplementedError
+      end
+
       def run(params = {}, &block)
         raise NotImplementedError
       end

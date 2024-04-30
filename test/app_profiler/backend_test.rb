@@ -6,10 +6,10 @@ module AppProfiler
   class BackendTest < TestCase
     test ".backend= fails to update the backend if already profiling" do
       skip("Vernier not supported") unless AppProfiler.vernier_supported?
-      assert(AppProfiler.backend = AppProfiler::Backend::StackprofBackend::NAME)
+      assert(AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name)
       AppProfiler.start
       assert(AppProfiler.running?)
-      assert_raises(BackendError) { AppProfiler.backend = AppProfiler::Backend::VernierBackend::NAME }
+      assert_raises(BackendError) { AppProfiler.backend = AppProfiler::Backend::VernierBackend.name }
     ensure
       AppProfiler.stop
     end
@@ -18,11 +18,11 @@ module AppProfiler
       orig_backend = AppProfiler.backend
       skip("Vernier not supported") unless AppProfiler.vernier_supported?
       refute(AppProfiler.running?)
-      assert(AppProfiler.backend = AppProfiler::Backend::StackprofBackend::NAME)
-      assert_equal(AppProfiler.backend, AppProfiler::Backend::StackprofBackend::NAME)
+      assert(AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name)
+      assert_equal(AppProfiler.backend, AppProfiler::Backend::StackprofBackend.name)
       refute(AppProfiler.running?)
-      assert(AppProfiler.backend = AppProfiler::Backend::VernierBackend::NAME)
-      assert_equal(AppProfiler.backend, AppProfiler::Backend::VernierBackend::NAME)
+      assert(AppProfiler.backend = AppProfiler::Backend::VernierBackend.name)
+      assert_equal(AppProfiler.backend, AppProfiler::Backend::VernierBackend.name)
     ensure
       AppProfiler.backend = orig_backend
     end
@@ -42,11 +42,11 @@ module AppProfiler
 
     test ".backend_for= provides the backend class given a string" do
       assert_equal(AppProfiler::Backend::StackprofBackend,
-        AppProfiler.backend_for(AppProfiler::Backend::StackprofBackend::NAME))
+        AppProfiler.backend_for(AppProfiler::Backend::StackprofBackend.name))
       return unless AppProfiler.vernier_supported?
 
       assert_equal(AppProfiler::Backend::VernierBackend,
-        AppProfiler.backend_for(AppProfiler::Backend::VernierBackend::NAME))
+        AppProfiler.backend_for(AppProfiler::Backend::VernierBackend.name))
     end
 
     test ".backend_for= raises if an unknown backend is requested" do

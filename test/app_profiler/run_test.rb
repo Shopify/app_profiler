@@ -30,12 +30,12 @@ module AppProfiler
       orig_backend = AppProfiler.backend
       skip("Vernier not supported") unless AppProfiler.vernier_supported?
 
-      assert_equal(AppProfiler::Backend::StackprofBackend::NAME, AppProfiler.backend)
+      assert_equal(AppProfiler::Backend::StackprofBackend.name, AppProfiler.backend)
       refute(AppProfiler.running?)
-      AppProfiler.run(backend: AppProfiler::Backend::VernierBackend::NAME) do
-        assert_equal(AppProfiler::Backend::VernierBackend::NAME, AppProfiler.backend)
+      AppProfiler.run(backend: AppProfiler::Backend::VernierBackend.name) do
+        assert_equal(AppProfiler::Backend::VernierBackend.name, AppProfiler.backend)
       end
-      assert_equal(AppProfiler.backend, AppProfiler::Backend::StackprofBackend::NAME)
+      assert_equal(AppProfiler.backend, AppProfiler::Backend::StackprofBackend.name)
     ensure
       AppProfiler.backend = orig_backend
     end
