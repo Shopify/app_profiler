@@ -78,7 +78,7 @@ module AppProfiler
         @mode = nil
         @metadata = nil
 
-        AppProfiler::AbstractProfile.from_vernier(data)
+        BaseProfile.from_vernier(data)
       rescue => error
         AppProfiler.logger.info(
           "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"

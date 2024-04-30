@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module AppProfiler
-  class StackprofProfile < AbstractProfile
+  class StackprofProfile < BaseProfile
     FILE_EXTENSION = ".json"
 
     def mode

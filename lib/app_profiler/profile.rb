@@ -6,7 +6,7 @@ module AppProfiler
   autoload :StackprofProfile, "app_profiler/profile/stackprof"
   autoload :VernierProfile, "app_profiler/profile/vernier"
 
-  class AbstractProfile
+  class BaseProfile
     INTERNAL_METADATA_KEYS = [:id, :context]
     private_constant :INTERNAL_METADATA_KEYS
     class UnsafeFilename < StandardError; end
@@ -107,5 +107,5 @@ module AppProfiler
   end
 
   include ActiveSupport::Deprecation::DeprecatedConstantAccessor
-  deprecate_constant "Profile", "AppProfiler::AbstractProfile", deprecator: ActiveSupport::Deprecation.new
+  deprecate_constant "Profile", "AppProfiler::BaseProfile", deprecator: ActiveSupport::Deprecation.new
 end

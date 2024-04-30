@@ -87,7 +87,7 @@ module AppProfiler
           AppProfiler.upload_queue_max_length.times do
             GoogleCloudStorage.enqueue_upload(profile_from_stackprof)
           end
-          dropped_profile = AbstractProfile.from_stackprof(profile_from_stackprof)
+          dropped_profile = BaseProfile.from_stackprof(profile_from_stackprof)
           AppProfiler.logger.expects(:info).with { |value| value =~ /upload queue is full/ }
 
           @called = false
@@ -124,7 +124,7 @@ module AppProfiler
       end
 
       def profile_from_stackprof
-        AbstractProfile.from_stackprof(stackprof_profile(metadata: { id: "bar" }))
+        BaseProfile.from_stackprof(stackprof_profile(metadata: { id: "bar" }))
       end
 
       def json_test_file
