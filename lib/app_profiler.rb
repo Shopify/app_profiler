@@ -32,16 +32,11 @@ module AppProfiler
     autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/speedscope_remote_viewer"
   end
 
-  module Backend
-    autoload :StackprofBackend, "app_profiler/backend/stackprof_backend"
-    autoload :VernierBackend, "app_profiler/backend/vernier_backend"
-  end
-
   require "app_profiler/middleware"
   require "app_profiler/parameters"
   require "app_profiler/request_parameters"
   require "app_profiler/profile"
-  require "app_profiler/backend"
+  require "app_profiler/backend/base"
   require "app_profiler/server"
 
   mattr_accessor :logger, default: Logger.new($stdout)

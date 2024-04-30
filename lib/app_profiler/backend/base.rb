@@ -2,7 +2,10 @@
 
 module AppProfiler
   module Backend
-    class Base
+    autoload :StackprofBackend, "app_profiler/backend/stackprof_backend"
+    autoload :VernierBackend, "app_profiler/backend/vernier_backend"
+
+    class BaseBackend
       def run(params = {}, &block)
         raise NotImplementedError
       end

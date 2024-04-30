@@ -4,7 +4,7 @@ require "stackprof"
 
 module AppProfiler
   module Backend
-    class StackprofBackend < Base
+    class StackprofBackend < BaseBackend
       NAME = :stackprof
 
       DEFAULTS = {
