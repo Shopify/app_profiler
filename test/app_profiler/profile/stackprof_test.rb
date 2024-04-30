@@ -84,7 +84,12 @@ module AppProfiler
     test "#view" do
       profile = StackprofProfile.new(stackprof_profile)
 
-      Viewer::SpeedscopeViewer.expects(:view).with(profile)
+      if RUBY_VERSION.start_with?("2.7")
+        # HACK: this older ruby requires an explicit splat of the empty params hash
+        Viewer::SpeedscopeViewer.expects(:view).with(profile, **{})
+      else
+        Viewer::SpeedscopeViewer.expects(:view).with(profile)
+      end
 
       profile.view
     end
