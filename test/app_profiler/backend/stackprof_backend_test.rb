@@ -9,10 +9,6 @@ module AppProfiler
         AppProfiler.backend = :stackprof
       end
 
-      def teardown
-        AppProfiler.clear
-      end
-
       test ".run prints error when failed" do
         AppProfiler.logger.expects(:info).with { |value| value =~ /failed to start the profiler/ }
         profile = AppProfiler.run(mode: :unsupported) do

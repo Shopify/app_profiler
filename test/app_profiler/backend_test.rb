@@ -52,5 +52,13 @@ module AppProfiler
     test ".backend_for= raises if an unknown backend is requested" do
       assert_raises(BackendError) { AppProfiler.backend_for("not a real backend") }
     end
+
+    test ".clear stops the backend before discarding its reference to it" do
+      profiler = AppProfiler.profiler
+      refute(profiler.running?)
+      AppProfiler.start
+      AppProfiler.send(:clear)
+      refute(profiler.running?)
+    end
   end
 end

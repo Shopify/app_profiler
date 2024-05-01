@@ -8,14 +8,12 @@ module AppProfiler
   module Backend
     class VernierBackendTest < TestCase
       def setup
-        AppProfiler.clear
         @orig_backend = AppProfiler.backend
         AppProfiler.backend = :vernier
       end
 
       def teardown
         AppProfiler.backend = @orig_backend
-        AppProfiler.clear
       end
 
       test ".run prints error when failed" do

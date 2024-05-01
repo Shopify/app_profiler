@@ -132,11 +132,6 @@ module AppProfiler
       defined?(AppProfiler::Backend::VernierBackend.name)
     end
 
-    def clear
-      @backend.stop if @backend&.running?
-      @backend = nil
-    end
-
     def profile_header=(profile_header)
       @@profile_header = profile_header # rubocop:disable Style/ClassVars
       @@request_profile_header = nil    # rubocop:disable Style/ClassVars
@@ -183,6 +178,13 @@ module AppProfiler
       return unless AppProfiler.profile_url_formatter
 
       AppProfiler.profile_url_formatter.call(upload)
+    end
+
+    private
+
+    def clear
+      @backend.stop if @backend&.running?
+      @backend = nil
     end
   end
 
