@@ -16,17 +16,30 @@ module AppProfiler
       query_param("async")
     end
 
+    def backend
+      backend = query_param("backend") || profile_header_param("backend") ||
+        AppProfiler.backend
+      backend.to_sym
+    end
+
     def valid?
       if mode.blank?
         return false
       end
 
-      unless Parameters::MODES.include?(mode)
-        AppProfiler.logger.info("[Profiler] unsupported profiling mode=#{mode}")
+      return false if backend != AppProfiler::Backend::StackprofBackend.name && !AppProfiler.vernier_supported?
+
+      if AppProfiler.vernier_supported? && backend == AppProfiler::Backend::VernierBackend.name &&
+          !AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.include?(mode.to_sym)
+        AppProfiler.logger.info("[AppProfiler] unsupported profiling mode=#{mode} for backend #{backend}")
+        return false
+      elsif backend == AppProfiler::Backend::StackprofBackend.name &&
+          !AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.include?(mode.to_sym)
+        AppProfiler.logger.info("[AppProfiler] unsupported profiling mode=#{mode} for backend #{backend}")
         return false
       end
 
-      if interval.to_i < Parameters::MIN_INTERVALS[mode]
+      if interval.to_i < Parameters::MIN_INTERVALS[mode.to_s]
         return false
       end
 
@@ -38,6 +51,7 @@ module AppProfiler
         mode: mode.to_sym,
         interval: interval.to_i,
         ignore_gc: !!ignore_gc,
+        backend: backend,
         metadata: {
           id: request_id,
           context: context,
@@ -56,7 +70,7 @@ module AppProfiler
     end
 
     def interval
-      query_param("interval") || profile_header_param("interval") || Parameters::DEFAULT_INTERVALS[mode]
+      query_param("interval") || profile_header_param("interval") || Parameters::DEFAULT_INTERVALS[mode.to_s]
     end
 
     def request_id

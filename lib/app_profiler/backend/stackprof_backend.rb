@@ -3,13 +3,23 @@
 require "stackprof"
 
 module AppProfiler
-  module Profiler
-    DEFAULTS = {
-      mode: :cpu,
-      raw: true,
-    }.freeze
+  module Backend
+    class StackprofBackend < BaseBackend
+      DEFAULTS = {
+        mode: :cpu,
+        raw: true,
+      }.freeze
 
-    class << self
+      AVAILABLE_MODES = [
+        :wall,
+        :cpu,
+        :object,
+      ].freeze
+
+      def self.name
+        :stackprof
+      end
+
       def run(params = {})
         started = start(params)
 
@@ -27,6 +37,7 @@ module AppProfiler
       def start(params = {})
         # Do not start the profiler if StackProf was started somewhere else.
         return false if running?
+        return false unless acquire_run_lock
 
         clear
 
@@ -35,6 +46,7 @@ module AppProfiler
         AppProfiler.logger.info(
           "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}"
         )
+        release_run_lock
         # This is a boolean instead of nil because StackProf#start returns a
         # boolean as well.
         false
@@ -42,14 +54,16 @@ module AppProfiler
 
       def stop
         StackProf.stop
+      ensure
+        release_run_lock
       end
 
       def results
-        stackprof_profile = stackprof_results
+        stackprof_profile = backend_results
 
         return unless stackprof_profile
 
-        Profile.from_stackprof(stackprof_profile)
+        BaseProfile.from_stackprof(stackprof_profile)
       rescue => error
         AppProfiler.logger.info(
           "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"
@@ -57,9 +71,13 @@ module AppProfiler
         nil
       end
 
+      def running?
+        StackProf.running?
+      end
+
       private
 
-      def stackprof_results
+      def backend_results
         StackProf.results
       end
 
@@ -73,14 +91,8 @@ module AppProfiler
       # Ref: https://github.com/tmm1/stackprof/blob/0ded6c/ext/stackprof/stackprof.c#L118-L123
       #
       def clear
-        stackprof_results
-      end
-
-      def running?
-        StackProf.running?
+        backend_results
       end
     end
   end
-
-  private_constant :Profiler
 end

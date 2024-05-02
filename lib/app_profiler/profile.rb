@@ -1,40 +1,43 @@
 # frozen_string_literal: true
 
+require "active_support/deprecation/constant_accessor"
+
 module AppProfiler
-  class Profile
+  autoload :StackprofProfile, "app_profiler/profile/stackprof"
+  autoload :VernierProfile, "app_profiler/profile/vernier"
+
+  class BaseProfile
     INTERNAL_METADATA_KEYS = [:id, :context]
     private_constant :INTERNAL_METADATA_KEYS
     class UnsafeFilename < StandardError; end
 
-    delegate    :[], to: :@data
     attr_reader :id, :context
+
+    delegate :[], to: :@data
 
     # This function should not be called if `StackProf.results` returns nil.
     def self.from_stackprof(data)
       options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:metadata]&.delete(key)] }.to_h
 
-      new(data, **options).tap do |profile|
+      StackprofProfile.new(data, **options).tap do |profile|
         raise ArgumentError, "invalid profile data" unless profile.valid?
       end
     end
 
-    # `data` is assumed to be a Hash.
+    def self.from_vernier(data)
+      options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:meta]&.delete(key)] }.to_h
+
+      VernierProfile.new(data, **options).tap do |profile|
+        raise ArgumentError, "invalid profile data" unless profile.valid?
+      end
+    end
+
+    # `data` is assumed to be a Hash for Stackprof,
+    # a vernier "result" object for vernier
     def initialize(data, id: nil, context: nil)
       @id      = id.presence || SecureRandom.hex
       @context = context
       @data    = data
-    end
-
-    def valid?
-      mode.present?
-    end
-
-    def mode
-      @data[:mode]
-    end
-
-    def view(params = {})
-      AppProfiler.viewer.view(self, **params)
     end
 
     def upload
@@ -60,6 +63,10 @@ module AppProfiler
       AppProfiler.storage.enqueue_upload(self)
     end
 
+    def valid?
+      mode.present?
+    end
+
     def file
       @file ||= path.tap do |p|
         p.dirname.mkpath
@@ -71,6 +78,18 @@ module AppProfiler
       @data
     end
 
+    def mode
+      raise NotImplementedError
+    end
+
+    def format
+      raise NotImplementedError
+    end
+
+    def view(params = {})
+      raise NotImplementedError
+    end
+
     private
 
     def path
@@ -79,11 +98,14 @@ module AppProfiler
         mode,
         id,
         Socket.gethostname,
-      ].compact.join("-") << ".json"
+      ].compact.join("-") << format
 
       raise UnsafeFilename if /[^0-9A-Za-z.\-\_]/.match?(filename)
 
       AppProfiler.profile_root.join(filename)
     end
   end
+
+  include ActiveSupport::Deprecation::DeprecatedConstantAccessor
+  deprecate_constant "Profile", "AppProfiler::BaseProfile", deprecator: ActiveSupport::Deprecation.new
 end

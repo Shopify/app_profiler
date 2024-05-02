@@ -9,6 +9,9 @@ module AppProfiler
   class ConfigurationError < StandardError
   end
 
+  class BackendError < StandardError
+  end
+
   DefaultProfileFormatter = proc do |upload|
     "#{AppProfiler.speedscope_host}#profileURL=#{upload.url}"
   end
@@ -32,8 +35,8 @@ module AppProfiler
   require "app_profiler/middleware"
   require "app_profiler/parameters"
   require "app_profiler/request_parameters"
-  require "app_profiler/profiler"
   require "app_profiler/profile"
+  require "app_profiler/backend"
   require "app_profiler/server"
 
   mattr_accessor :logger, default: Logger.new($stdout)
@@ -60,17 +63,73 @@ module AppProfiler
   mattr_reader :after_process_queue, default: nil
 
   class << self
-    def run(*args, &block)
-      Profiler.run(*args, &block)
+    def run(*args, backend: nil, **kwargs, &block)
+      orig_backend = self.backend
+      begin
+        self.backend = backend if backend
+        profiler.run(*args, **kwargs, &block)
+      rescue BackendError => e
+        logger.error(
+          "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}"
+        )
+        yield
+      end
+    ensure
+      AppProfiler.backend = orig_backend
     end
 
     def start(*args)
-      Profiler.start(*args)
+      profiler.start(*args)
     end
 
     def stop
-      Profiler.stop
-      Profiler.results
+      profiler.stop
+      profiler.results
+    end
+
+    def running?
+      @backend&.running?
+    end
+
+    def profiler
+      backend
+      @backend ||= @profiler_backend.new
+    end
+
+    def backend=(new_backend)
+      return if new_backend == backend
+
+      new_profiler_backend = backend_for(new_backend)
+
+      if running?
+        raise BackendError,
+          "cannot change backend to #{new_backend} while #{backend} backend is running"
+      end
+
+      return if @profiler_backend == new_profiler_backend
+
+      clear
+      @profiler_backend = new_profiler_backend
+    end
+
+    def backend_for(backend_name)
+      if vernier_supported? &&
+          backend_name == AppProfiler::Backend::VernierBackend.name
+        AppProfiler::Backend::VernierBackend
+      elsif backend_name == AppProfiler::Backend::StackprofBackend.name
+        AppProfiler::Backend::StackprofBackend
+      else
+        raise BackendError, "unknown backend #{backend_name}"
+      end
+    end
+
+    def backend
+      @profiler_backend ||= Backend::StackprofBackend
+      @profiler_backend.name
+    end
+
+    def vernier_supported?
+      defined?(AppProfiler::Backend::VernierBackend.name)
     end
 
     def profile_header=(profile_header)
@@ -119,6 +178,13 @@ module AppProfiler
       return unless AppProfiler.profile_url_formatter
 
       AppProfiler.profile_url_formatter.call(upload)
+    end
+
+    private
+
+    def clear
+      @backend.stop if @backend&.running?
+      @backend = nil
     end
   end
 

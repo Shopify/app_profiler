@@ -9,7 +9,7 @@ module AppProfiler
         end
 
         def cleanup
-          profile = Profiler.results
+          profile = AppProfiler.profiler.results
           call(profile) if profile
         end
       end

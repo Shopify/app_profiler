@@ -20,13 +20,53 @@ module AppProfiler
       end
     end
 
-    AppProfiler::Parameters::MODES.each do |mode|
-      test "profile mode #{mode} is supported" do
+    AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.each do |mode|
+      test "profile mode #{mode} is supported by stackprof backend" do
         assert_profiles_dumped do
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
             middleware.call(mock_request_env(path: "/?profile=#{mode}"))
           end
+        end
+      end
+    end
+
+    if AppProfiler.vernier_supported?
+      AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.each do |mode|
+        test "profile mode #{mode} is supported by vernier backend" do
+          assert_profiles_dumped do
+            assert_profiles_uploaded do
+              middleware = AppProfiler::Middleware.new(app_env)
+              middleware.call(mock_request_env(path: "/?profile=#{mode}&backend=vernier"))
+            end
+          end
+        end
+      end
+    end
+
+    if AppProfiler.vernier_supported?
+      test "the backend can be toggled between requests" do
+        assert_profiles_dumped(3) do
+          assert_profiles_uploaded do
+            middleware = AppProfiler::Middleware.new(app_env)
+            middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+          end
+
+          assert_profiles_uploaded do
+            middleware = AppProfiler::Middleware.new(app_env)
+            middleware.call(mock_request_env(path: "/?profile=wall&backend=vernier"))
+          end
+
+          assert_profiles_uploaded do
+            middleware = AppProfiler::Middleware.new(app_env)
+            middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+          end
+
+          json_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::StackprofProfile::FILE_EXTENSION}$/ }
+          vernier_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::VernierProfile::FILE_EXTENSION}$/ }
+          stackprof_profiles = json_profiles - vernier_profiles
+          assert_equal(2, stackprof_profiles.size)
+          assert_equal(1, vernier_profiles.size)
         end
       end
     end
@@ -145,13 +185,27 @@ module AppProfiler
       end
     end
 
-    AppProfiler::Parameters::MODES.each do |mode|
+    AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.each do |mode|
       test "profile mode #{mode} through headers is supported" do
         assert_profiles_dumped do
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
             opt = { AppProfiler.request_profile_header => "mode=#{mode}" }
             middleware.call(mock_request_env(opt: opt))
+          end
+        end
+      end
+    end
+
+    if AppProfiler.vernier_supported?
+      AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.each do |mode|
+        test "profile mode #{mode} is supported through headers by vernier backend" do
+          assert_profiles_dumped do
+            assert_profiles_uploaded do
+              middleware = AppProfiler::Middleware.new(app_env)
+              opt = { AppProfiler.request_profile_header => "mode=#{mode};backend=vernier" }
+              middleware.call(mock_request_env(opt: opt))
+            end
           end
         end
       end
@@ -259,7 +313,7 @@ module AppProfiler
     test "#after_profile called with env and profile data" do
       request_env = mock_request_env(path: "/?profile=cpu")
       AppProfiler.middleware.any_instance.expects(:after_profile).with do |env, profile|
-        request_env == env && profile.is_a?(AppProfiler::Profile)
+        request_env == env && profile.is_a?(AppProfiler::BaseProfile)
       end.returns(false)
       middleware = AppProfiler::Middleware.new(app_env)
       middleware.call(request_env)
@@ -278,7 +332,7 @@ module AppProfiler
           end.returns(true)
 
           AppProfiler.middleware.any_instance.expects(:after_profile).with do |env, profile|
-            return false unless request_env == env && profile.is_a?(AppProfiler::Profile)
+            return false unless request_env == env && profile.is_a?(AppProfiler::BaseProfile)
 
             profile[:metadata][:test_key] == "test_value"
           end.returns(true)

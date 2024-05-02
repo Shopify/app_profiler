@@ -19,8 +19,8 @@ module AppProfiler
 
     test "#valid? returns false when interval is less than allowed" do
       AppProfiler.logger.expects(:info).never
-      AppProfiler::Parameters::MIN_INTERVALS.each do |mode, interval|
-        interval -= 1
+      AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.each do |mode|
+        interval = AppProfiler::Parameters::MIN_INTERVALS[mode.to_s] - 1
         params = request_params(headers: {
           AppProfiler.request_profile_header => "mode=#{mode};interval=#{interval}",
         })
@@ -50,14 +50,16 @@ module AppProfiler
     end
 
     test "#to_h return correct hash when request parameters are ok" do
-      AppProfiler::Parameters::DEFAULT_INTERVALS.each do |mode, interval|
+      AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.each do |mode|
+        interval = AppProfiler::Parameters::DEFAULT_INTERVALS[mode.to_s]
         params = request_params(headers: {
           AppProfiler.request_profile_header => "mode=#{mode};interval=#{interval};context=test;ignore_gc=1",
           "HTTP_X_REQUEST_ID" => "123",
         })
 
         assert_equal(
-          { mode: mode.to_sym, interval: interval.to_i, ignore_gc: true, metadata: { id: "123", context: "test" } },
+          { mode: mode.to_sym, interval: interval.to_i, backend: :stackprof, ignore_gc: true,
+            metadata: { id: "123", context: "test" }, },
           params.to_h
         )
         assert_predicate(params, :valid?)
