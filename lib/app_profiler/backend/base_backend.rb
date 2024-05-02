@@ -2,9 +2,6 @@
 
 module AppProfiler
   module Backend
-    autoload :StackprofBackend, "app_profiler/backend/stackprof_backend"
-    autoload :VernierBackend, "app_profiler/backend/vernier_backend"
-
     class BaseBackend
       def self.name
         raise NotImplementedError

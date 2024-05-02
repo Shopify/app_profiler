@@ -36,7 +36,7 @@ module AppProfiler
   require "app_profiler/parameters"
   require "app_profiler/request_parameters"
   require "app_profiler/profile"
-  require "app_profiler/backend/base"
+  require "app_profiler/backend"
   require "app_profiler/server"
 
   mattr_accessor :logger, default: Logger.new($stdout)
