@@ -31,7 +31,7 @@ module AppProfiler
 
       return yield unless before_profile(env, params_hash)
 
-      profile = AppProfiler.run(params_hash) do
+      profile = AppProfiler.run(**params_hash) do
         response = yield
       end
 
