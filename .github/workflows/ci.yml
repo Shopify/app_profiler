@@ -17,6 +17,8 @@ jobs:
             gemfile: Gemfile.legacy-rubies
           - version: "3.2"
             gemfile: Gemfile
+          - version: "3.3"
+            gemfile: Gemfile
     env: # $BUNDLE_GEMFILE must be set at the job level, so it is set for all steps
       BUNDLE_GEMFILE: ${{ matrix.ruby.gemfile }}
     steps:
@@ -35,10 +37,10 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Ruby 3.2
+    - name: Set up Ruby 3.3
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: "3.2"
+        ruby-version: "3.3"
     - name: Build
       run: |
         gem install bundler
