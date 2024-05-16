@@ -282,11 +282,16 @@ report = AppProfiler.run(mode: :cpu) do
   # ...
 end
 
-report.view # opens the profile locally in speedscope.
+report.view # opens the profile locally in speedscope or firefox profiler, as appropriate
 ```
 
 Profile files can be found locally in your rails app at `tmp/app_profiler/*.json`.
 
+**Note** In development, if using the SpeedscopeRemoteViewer for stackprof
+or if using Vernier, a route for `/app_profiler` will be added to the application.
+If using Vernier, a route for `/from-url` is also added. These will be handled
+in middlewares, before any application routing logic. There is a small chance
+that these could shadow existing routes in the application.
 
 ## Storage backends
 
@@ -327,6 +332,8 @@ Rails.application.config.app_profiler.backend = AppProfiler::StackprofBackend # 
 ```
 
 By default, the stackprof backend will be used.
+
+In local development, changing the backend will change whether the profile is viewed in speedscope or firefox-profiler.
 
 ## Running tests
 
