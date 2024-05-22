@@ -21,8 +21,12 @@ module AppProfiler
         id = Middleware.id(@profile.file)
 
         if response && response[0].to_i < 500
-          response[1]["Location"] = "/app_profiler/#{id}"
-          response[0] = 303
+          if autoredirect
+            response[0] = 303
+            response[1]["Location"] = "/app_profiler/#{id}"
+          elsif AppProfiler.profile_header
+            response[1][AppProfiler.profile_header] = "/app_profiler/#{id}"
+          end
         else
           AppProfiler.logger.info("[Profiler] Profile available at /app_profiler/#{id}\n")
         end
