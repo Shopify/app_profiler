@@ -200,5 +200,8 @@ DEPENDENCIES
   rubocop-shopify
   vernier (~> 0.7.0)
 
+RUBY VERSION
+   ruby 3.3.1p55
+
 BUNDLED WITH
    2.4.18
