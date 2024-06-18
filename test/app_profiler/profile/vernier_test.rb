@@ -123,7 +123,7 @@ module AppProfiler
     end
 
     test "#file uses default prefix format when no custom profile_file_prefix block is provided" do
-      travel_to Time.zone.local(2022, 10, 06, 12, 11, 10) do
+      travel_to Time.zone.local(2022, 10, 0o6, 12, 11, 10) do
         profile = VernierProfile.new(vernier_profile)
         assert_match(/^20221006-121110/, File.basename(profile.file.to_s))
       end

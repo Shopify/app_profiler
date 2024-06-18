@@ -280,7 +280,7 @@ module AppProfiler
         @listen_thread = nil
 
         @logger.info(
-          "[AppProfiler::Server] listening on addr=#{@transport.socket.addr}"
+          "[AppProfiler::Server] listening on addr=#{@transport.socket.addr}",
         )
         @pid = Process.pid
       end
@@ -342,7 +342,7 @@ module AppProfiler
                 end
               rescue => e
                 @logger.error(
-                  "[AppProfiler::Server] exception #{e} responding to request #{request}: #{e.message}"
+                  "[AppProfiler::Server] exception #{e} responding to request #{request}: #{e.message}",
                 )
               ensure
                 session.close

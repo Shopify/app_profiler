@@ -3,10 +3,6 @@
 module AppProfiler
   module Backend
     class BaseBackend
-      def self.name
-        raise NotImplementedError
-      end
-
       def run(params = {}, &block)
         raise NotImplementedError
       end
@@ -30,6 +26,10 @@ module AppProfiler
       class << self
         def run_lock
           @run_lock ||= Mutex.new
+        end
+
+        def name
+          raise NotImplementedError
         end
       end
 

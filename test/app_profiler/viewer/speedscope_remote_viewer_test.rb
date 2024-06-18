@@ -19,7 +19,7 @@ module AppProfiler
         id = SpeedscopeRemoteViewer::Middleware.id(profile.file)
 
         AppProfiler.logger.expects(:info).with(
-          "[Profiler] Profile available at /app_profiler/#{id}\n"
+          "[Profiler] Profile available at /app_profiler/#{id}\n",
         )
 
         viewer.view

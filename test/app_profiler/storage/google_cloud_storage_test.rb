@@ -35,7 +35,7 @@ module AppProfiler
       test "directory includes context" do
         assert_equal(
           GoogleCloudStorage.send(:gcs_filename, stub(context: "context", file: Pathname.new("foo"))),
-          "context/foo"
+          "context/foo",
         )
       end
 

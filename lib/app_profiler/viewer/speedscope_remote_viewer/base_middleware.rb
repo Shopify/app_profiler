@@ -56,8 +56,10 @@ module AppProfiler
 
         private_constant(:Sanitizer)
 
-        def self.id(file)
-          file.basename.to_s.delete_suffix(".json")
+        class << self
+          def id(file)
+            file.basename.to_s.delete_suffix(".json")
+          end
         end
 
         def initialize(app)
@@ -125,7 +127,7 @@ module AppProfiler
                   </p>
                 HTML
               end
-            end
+            end,
           )
         end
 

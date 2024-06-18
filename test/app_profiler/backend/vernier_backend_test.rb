@@ -69,7 +69,7 @@ module AppProfiler
             id: "wowza",
             context: "bar",
             extrameta: "spam",
-          })
+          }),
         ) do
           sleep(0.1)
         end

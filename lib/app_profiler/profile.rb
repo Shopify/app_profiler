@@ -15,20 +15,22 @@ module AppProfiler
 
     delegate :[], to: :@data
 
-    # This function should not be called if `StackProf.results` returns nil.
-    def self.from_stackprof(data)
-      options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:metadata]&.delete(key)] }.to_h
+    class << self
+      # This function should not be called if `StackProf.results` returns nil.
+      def from_stackprof(data)
+        options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:metadata]&.delete(key)] }.to_h
 
-      StackprofProfile.new(data, **options).tap do |profile|
-        raise ArgumentError, "invalid profile data" unless profile.valid?
+        StackprofProfile.new(data, **options).tap do |profile|
+          raise ArgumentError, "invalid profile data" unless profile.valid?
+        end
       end
-    end
 
-    def self.from_vernier(data)
-      options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:meta]&.delete(key)] }.to_h
+      def from_vernier(data)
+        options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:meta]&.delete(key)] }.to_h
 
-      VernierProfile.new(data, **options).tap do |profile|
-        raise ArgumentError, "invalid profile data" unless profile.valid?
+        VernierProfile.new(data, **options).tap do |profile|
+          raise ArgumentError, "invalid profile data" unless profile.valid?
+        end
       end
     end
 
@@ -44,7 +46,7 @@ module AppProfiler
       AppProfiler.storage.upload(self).tap do |upload|
         if upload && defined?(upload.url)
           AppProfiler.logger.info(
-            <<~INFO.squish
+            <<~INFO.squish,
               [Profiler] data uploaded:
               profile_url=#{upload.url}
               profile_viewer_url=#{AppProfiler.profile_url(upload)}
@@ -54,7 +56,7 @@ module AppProfiler
       end
     rescue => error
       AppProfiler.logger.info(
-        "[Profiler] failed to upload profile error_class=#{error.class} error_message=#{error.message}"
+        "[Profiler] failed to upload profile error_class=#{error.class} error_message=#{error.message}",
       )
       nil
     end

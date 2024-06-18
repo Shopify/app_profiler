@@ -12,7 +12,7 @@ module AppProfiler
         def initialize(app)
           super
           @speedscope = Rack::File.new(
-            File.join(AppProfiler.root, "node_modules/speedscope/dist/release")
+            File.join(AppProfiler.root, "node_modules/speedscope/dist/release"),
           )
         end
 
@@ -33,7 +33,7 @@ module AppProfiler
           end || raise(ArgumentError)
 
           render(
-            <<~HTML
+            <<~HTML,
               <script type="text/javascript">
                 var graph = #{profile.read};
                 var json = JSON.stringify(graph);
