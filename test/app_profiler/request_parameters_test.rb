@@ -58,8 +58,13 @@ module AppProfiler
         })
 
         assert_equal(
-          { mode: mode.to_sym, interval: interval.to_i, backend: :stackprof, ignore_gc: true,
-            metadata: { id: "123", context: "test" }, },
+          {
+            mode: mode.to_sym,
+            interval: interval.to_i,
+            backend: :stackprof,
+            ignore_gc: true,
+            metadata: { id: "123", context: "test" },
+          },
           params.to_h
         )
         assert_predicate(params, :valid?)

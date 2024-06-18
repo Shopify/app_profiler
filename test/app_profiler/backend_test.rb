@@ -41,12 +41,16 @@ module AppProfiler
     end
 
     test ".backend_for= provides the backend class given a string" do
-      assert_equal(AppProfiler::Backend::StackprofBackend,
-        AppProfiler.backend_for(AppProfiler::Backend::StackprofBackend.name))
+      assert_equal(
+        AppProfiler::Backend::StackprofBackend,
+        AppProfiler.backend_for(AppProfiler::Backend::StackprofBackend.name)
+      )
       return unless AppProfiler.vernier_supported?
 
-      assert_equal(AppProfiler::Backend::VernierBackend,
-        AppProfiler.backend_for(AppProfiler::Backend::VernierBackend.name))
+      assert_equal(
+        AppProfiler::Backend::VernierBackend,
+        AppProfiler.backend_for(AppProfiler::Backend::VernierBackend.name)
+      )
     end
 
     test ".backend_for= raises if an unknown backend is requested" do

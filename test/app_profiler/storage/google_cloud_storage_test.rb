@@ -76,7 +76,6 @@ module AppProfiler
           GoogleCloudStorage.send(:process_queue)
           assert_equal(1, @num_success)
           assert_equal(0, @num_failures)
-
         ensure
           AppProfiler.profile_enqueue_success = nil
         end

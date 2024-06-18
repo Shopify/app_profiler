@@ -65,12 +65,12 @@ module AppProfiler
 
       test ".run assigns metadata to profiles" do
         profile = AppProfiler.profiler.run(
-                    vernier_params(metadata: {
-                      id: "wowza",
-                      context: "bar",
-                      extrameta: "spam",
-                    })
-                  ) do
+          vernier_params(metadata: {
+            id: "wowza",
+            context: "bar",
+            extrameta: "spam",
+          })
+        ) do
           sleep(0.1)
         end
 
