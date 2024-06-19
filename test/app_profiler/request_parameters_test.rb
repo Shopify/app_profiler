@@ -58,9 +58,14 @@ module AppProfiler
         })
 
         assert_equal(
-          { mode: mode.to_sym, interval: interval.to_i, backend: :stackprof, ignore_gc: true,
-            metadata: { id: "123", context: "test" }, },
-          params.to_h
+          {
+            mode: mode.to_sym,
+            interval: interval.to_i,
+            backend: :stackprof,
+            ignore_gc: true,
+            metadata: { id: "123", context: "test" },
+          },
+          params.to_h,
         )
         assert_predicate(params, :valid?)
       end
@@ -74,7 +79,7 @@ module AppProfiler
 
     def mock_request(headers, path: "/")
       Rack::Request.new(
-        Rack::MockRequest.env_for("https://example.com#{path}", headers)
+        Rack::MockRequest.env_for("https://example.com#{path}", headers),
       )
     end
   end

@@ -16,8 +16,10 @@ module AppProfiler
         :object,
       ].freeze
 
-      def self.name
-        :stackprof
+      class << self
+        def name
+          :stackprof
+        end
       end
 
       def run(params = {})
@@ -44,7 +46,7 @@ module AppProfiler
         StackProf.start(**DEFAULTS, **params)
       rescue => error
         AppProfiler.logger.info(
-          "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}"
+          "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}",
         )
         release_run_lock
         # This is a boolean instead of nil because StackProf#start returns a
@@ -66,7 +68,7 @@ module AppProfiler
         BaseProfile.from_stackprof(stackprof_profile)
       rescue => error
         AppProfiler.logger.info(
-          "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"
+          "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}",
         )
         nil
       end

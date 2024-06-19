@@ -15,8 +15,10 @@ module AppProfiler
         :retained,
       ].freeze
 
-      def self.name
-        :vernier
+      class << self
+        def name
+          :vernier
+        end
       end
 
       def run(params = {})
@@ -48,7 +50,7 @@ module AppProfiler
         @collector.start
       rescue => error
         AppProfiler.logger.info(
-          "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}"
+          "[Profiler] failed to start the profiler error_class=#{error.class} error_message=#{error.message}",
         )
         release_run_lock
         # This is a boolean instead of nil to be consistent with the stackprof backend behaviour
@@ -83,7 +85,7 @@ module AppProfiler
         BaseProfile.from_vernier(data)
       rescue => error
         AppProfiler.logger.info(
-          "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}"
+          "[Profiler] failed to obtain the profile error_class=#{error.class} error_message=#{error.message}",
         )
         nil
       end

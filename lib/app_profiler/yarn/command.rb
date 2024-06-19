@@ -49,7 +49,7 @@ module AppProfiler
         exec("which", "yarn", silent: true) do
           raise(
             YarnError,
-            <<~MSG.squish
+            <<~MSG.squish,
               `yarn` command not found.
               Please install `yarn` or make it available in PATH.
             MSG

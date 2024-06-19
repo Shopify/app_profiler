@@ -70,7 +70,7 @@ module AppProfiler
         profiler.run(*args, **kwargs, &block)
       rescue BackendError => e
         logger.error(
-          "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}"
+          "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}",
         )
         yield
       end

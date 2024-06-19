@@ -8,7 +8,7 @@ module AppProfiler
       class MiddlewareTest < TestCase
         setup do
           @app = Middleware.new(
-            proc { [200, { "Content-Type" => "text/plain" }, ["Hello world!"]] }
+            proc { [200, { "Content-Type" => "text/plain" }, ["Hello world!"]] },
           )
         end
 
@@ -71,7 +71,7 @@ module AppProfiler
           assert_match(
             %r{'Flamegraph for .*'\);\n</script>},
             html[-200..-1],
-            message: "The generated HTML was incomplete"
+            message: "The generated HTML was incomplete",
           )
         end
 

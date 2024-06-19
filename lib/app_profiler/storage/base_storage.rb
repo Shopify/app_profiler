@@ -6,12 +6,14 @@ module AppProfiler
       class_attribute :bucket_name, default: "profiles"
       class_attribute :credentials, default: {}
 
-      def self.upload(_profile)
-        raise NotImplementedError
-      end
+      class << self
+        def upload(_profile)
+          raise NotImplementedError
+        end
 
-      def self.enqueue_upload(_profile)
-        raise NotImplementedError
+        def enqueue_upload(_profile)
+          raise NotImplementedError
+        end
       end
     end
   end

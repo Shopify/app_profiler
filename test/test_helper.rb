@@ -76,8 +76,11 @@ module AppProfiler
     end
 
     def vernier_profile(params = {})
-      { meta: { product: "Ruby/Vernier", mode: "wall", markerSchema: [], sampleUnits: {}, categories: [] }, libs: [],
-        threads: [], }.deep_merge(params)
+      {
+        meta: { product: "Ruby/Vernier", mode: "wall", markerSchema: [], sampleUnits: {}, categories: [] },
+        libs: [],
+        threads: [],
+      }.deep_merge(params)
     end
 
     def vernier_params(params = {})

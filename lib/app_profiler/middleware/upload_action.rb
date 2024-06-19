@@ -14,7 +14,7 @@ module AppProfiler
             append_headers(
               response,
               upload: profile_upload,
-              autoredirect: autoredirect.nil? ? AppProfiler.autoredirect : autoredirect
+              autoredirect: autoredirect.nil? ? AppProfiler.autoredirect : autoredirect,
             ) if response
           end
         end
