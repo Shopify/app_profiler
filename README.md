@@ -150,6 +150,14 @@ The custom middleware can then be configured like the following:
 Rails.application.config.app_profiler.middleware = AppProfilerAuthorizedMiddleware
 ```
 
+Profile's custom metadata can be passed on to the uploaded [GCS object](https://cloud.google.com/storage/docs/metadata) using:
+
+```ruby
+AppProfiler.forward_metadata_on_upload = true
+# OR
+Rails.application.config.app_profiler.forward_metadata_on_upload = true
+```
+
 ## Profile Server
 
 This option allows for profiles to be passively collected via an HTTP endpoint,

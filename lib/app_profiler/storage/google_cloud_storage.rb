@@ -15,6 +15,10 @@ module AppProfiler
         def upload(profile, _params = {})
           file = profile.file.open
 
+          metadata = if AppProfiler.forward_metadata_on_upload && profile.metadata.present?
+            profile.metadata
+          end
+
           ActiveSupport::Notifications.instrument(
             "gcs_upload.app_profiler",
             file_size: file.size,
@@ -24,6 +28,7 @@ module AppProfiler
               gcs_filename(profile),
               content_type: "application/json",
               content_encoding: "gzip",
+              metadata: metadata,
             )
           ensure
             profile.file.unlink
