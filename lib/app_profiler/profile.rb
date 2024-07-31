@@ -80,6 +80,10 @@ module AppProfiler
       @data
     end
 
+    def metadata
+      @data[:metadata]
+    end
+
     def mode
       raise NotImplementedError
     end

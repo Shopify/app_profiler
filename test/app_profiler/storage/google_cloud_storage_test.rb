@@ -22,6 +22,16 @@ module AppProfiler
         end
       end
 
+      test "sets metadata when forward_metadata_on_upload" do
+        with_forward_metadata_on_upload do
+          profile = profile_from_stackprof
+          with_mock_gcs_bucket(profile) do
+            uploaded_file = GoogleCloudStorage.upload(profile)
+            assert_equal(uploaded_file.url, TEST_FILE_URL)
+          end
+        end
+      end
+
       test "gzipped encoding" do
         file = json_test_file.open
         reader = GoogleCloudStorage.send(:gzipped_reader, file)
@@ -114,6 +124,14 @@ module AppProfiler
 
       private
 
+      def with_forward_metadata_on_upload
+        old_forward_metadata_on_upload = AppProfiler.forward_metadata_on_upload
+        AppProfiler.forward_metadata_on_upload = true
+        yield
+      ensure
+        AppProfiler.forward_metadata_on_upload = old_forward_metadata_on_upload
+      end
+
       def with_stubbed_process_queue_thread
         # Stub out the thread creation, so that tests are not flaky.
         GoogleCloudStorage.stubs(:process_queue_thread)
@@ -123,7 +141,7 @@ module AppProfiler
       end
 
       def profile_from_stackprof
-        BaseProfile.from_stackprof(stackprof_profile(metadata: { id: "bar" }))
+        BaseProfile.from_stackprof(stackprof_profile(metadata: { id: "bar", controller: "foo" }))
       end
 
       def json_test_file
@@ -135,11 +153,16 @@ module AppProfiler
         file.stubs(:url).returns(TEST_FILE_URL)
 
         bucket = Google::Cloud::Storage::Bucket.new
+        metadata = if AppProfiler.forward_metadata_on_upload && profile.metadata.present?
+          profile.metadata
+        end
+
         bucket.expects(:create_file).once.with do |input, filename, data|
           assert_equal(Zlib::GzipReader.new(input).read, profile.file.open.read)
           assert_equal(filename, GoogleCloudStorage.send(:gcs_filename, profile))
           assert_equal(data[:content_type], "application/json")
           assert_equal(data[:content_encoding], "gzip")
+          assert_equal(data[:metadata], metadata)
         end.returns(file)
 
         GoogleCloudStorage.stubs(:bucket).returns(bucket)
