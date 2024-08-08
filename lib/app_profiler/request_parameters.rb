@@ -8,6 +8,10 @@ module AppProfiler
       @request = request
     end
 
+    def path
+      query_param("path")
+    end
+
     def autoredirect
       query_param("autoredirect") || profile_header_param("autoredirect")
     end

@@ -4,6 +4,7 @@ require "rack"
 require "app_profiler/middleware/base_action"
 require "app_profiler/middleware/upload_action"
 require "app_profiler/middleware/view_action"
+require "app_profiler/sampler/config"
 
 module AppProfiler
   class Middleware
@@ -24,11 +25,9 @@ module AppProfiler
 
     def profile(env, params)
       response = nil
+      params_hash = profile_params(params)
 
-      return yield unless params.valid?
-
-      params_hash = params.to_h
-
+      return yield unless params_hash
       return yield unless before_profile(env, params_hash)
 
       profile = AppProfiler.run(**params_hash) do
@@ -45,6 +44,14 @@ module AppProfiler
       )
 
       response
+    end
+
+    def profile_params(params)
+      return params.to_h if params.valid?
+
+      return unless AppProfiler.profile_sampler_enabled
+
+      AppProfiler::Sampler.profile_params(params, AppProfiler.profile_sampler_config)
     end
 
     def before_profile(_env, _params)

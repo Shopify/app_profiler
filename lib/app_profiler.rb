@@ -62,6 +62,8 @@ module AppProfiler
   mattr_reader :profile_enqueue_failure, default: nil
   mattr_reader :after_process_queue, default: nil
   mattr_accessor :forward_metadata_on_upload, default: false
+  mattr_accessor :profile_sampler_enabled, default: false
+  mattr_accessor :profile_sampler_config
 
   class << self
     def run(*args, backend: nil, **kwargs, &block)
