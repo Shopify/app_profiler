@@ -184,22 +184,22 @@ module AppProfiler
       AppProfiler.profile_url_formatter.call(upload)
     end
 
+    # DEPRECATIONS
+    def viewer
+      ActiveSupport::Deprecation.new.warn("viewer is deprecated, use speedscope_viewer instead")
+      @viewer
+    end
+
+    def viewer=(viewer)
+      ActiveSupport::Deprecation.new.warn("viewer= is deprecated, use speedscope_viewer= instead")
+      @viewer = viewer
+    end
+
     private
 
     def clear
       @backend.stop if @backend&.running?
       @backend = nil
-    end
-
-    # DEPRECATIONS
-    def viewer
-      ActiveSupport::Deprecation.warn("viewer is deprecated, use speedscope_viewer instead")
-      @viewer
-    end
-
-    def viewer=(viewer)
-      ActiveSupport::Deprecation.warn("viewer= is deprecated, use speedscope_viewer= instead")
-      @viewer = viewer
     end
   end
 
