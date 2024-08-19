@@ -15,5 +15,9 @@ module AppProfiler
     def view(params = {})
       AppProfiler.viewer.view(self, **params)
     end
+
+    def metadata
+      @data[:metadata]
+    end
   end
 end

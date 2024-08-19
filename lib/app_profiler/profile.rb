@@ -81,7 +81,7 @@ module AppProfiler
     end
 
     def metadata
-      @data[:metadata]
+      raise NotImplementedError
     end
 
     def mode

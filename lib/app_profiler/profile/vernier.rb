@@ -15,5 +15,9 @@ module AppProfiler
     def view(params = {})
       raise NotImplementedError
     end
+
+    def metadata
+      @data[:meta]
+    end
   end
 end
