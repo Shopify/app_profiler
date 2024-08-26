@@ -42,6 +42,9 @@ module AppProfiler
       AppProfiler.after_process_queue = app.config.app_profiler.after_process_queue
       AppProfiler.backend = app.config.app_profiler.profiler_backend || :stackprof
       AppProfiler.forward_metadata_on_upload = app.config.app_profiler.forward_metadata_on_upload || false
+      AppProfiler.profile_sampler_enabled = app.config.app_profiler.profile_sampler_enabled || false
+      AppProfiler.profile_sampler_config = app.config.app_profiler.profile_sampler_config ||
+        AppProfiler::Sampler::Config.new
     end
 
     initializer "app_profiler.add_middleware" do |app|

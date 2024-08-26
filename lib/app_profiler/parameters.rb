@@ -7,7 +7,7 @@ module AppProfiler
     DEFAULT_INTERVALS = { "cpu" => 1000, "wall" => 1000, "object" => 2000, "retained" => 0 }.freeze
     MIN_INTERVALS = { "cpu" => 200, "wall" => 200, "object" => 400, "retained" => 0 }.freeze
 
-    attr_reader :autoredirect, :async, :backend
+    attr_reader :mode, :autoredirect, :async, :backend
 
     def initialize(mode: :wall, interval: nil, ignore_gc: false, autoredirect: false,
       async: false, backend: nil, metadata: {})
@@ -31,6 +31,7 @@ module AppProfiler
         ignore_gc: @ignore_gc,
         metadata: @metadata,
         backend: @backend,
+        async: @async,
       }
     end
   end

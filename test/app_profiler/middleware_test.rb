@@ -371,7 +371,51 @@ module AppProfiler
       end
     end
 
+    test "request is sampled" do
+      with_profile_sampler_enabled do
+        with_google_cloud_storage do
+          AppProfiler.profile_sampler_config = AppProfiler::Sampler::Config.new(
+            sample_rate: 1.0,
+            paths: ["/"],
+          )
+
+          assert_profiles_dumped(0) do
+            middleware = AppProfiler::Middleware.new(app_env)
+            response = middleware.call(mock_request_env(path: "/"))
+            assert(response[1]["X-Profile-Async"])
+          end
+        end
+      end
+    end
+
+    test "request is not sampled when sampler is not enabled" do
+      with_google_cloud_storage do
+        AppProfiler.profile_sampler_config = AppProfiler::Sampler::Config.new(sample_rate: 1.0)
+        assert_profiles_dumped(0) do
+          middleware = AppProfiler::Middleware.new(app_env)
+          response = middleware.call(mock_request_env(path: "/"))
+          assert_nil(response[1]["X-Profile-Async"])
+        end
+      end
+    end
+
     private
+
+    def with_profile_sampler_enabled
+      old_status = AppProfiler.profile_sampler_enabled
+      AppProfiler.profile_sampler_enabled = true
+      yield
+    ensure
+      AppProfiler.profile_sampler_enabled = old_status
+    end
+
+    def with_google_cloud_storage
+      old_storage = AppProfiler.storage
+      AppProfiler.storage = AppProfiler::Storage::GoogleCloudStorage
+      yield
+    ensure
+      AppProfiler.storage = old_storage
+    end
 
     def app_env
       ->(_) { [200, {}, ["OK"]] }

@@ -336,6 +336,76 @@ Rails.application.config.app_profiler.backend = AppProfiler::StackprofBackend # 
 
 By default, the stackprof backend will be used.
 
+
+## Profile Sampling
+
+The `AppProfiler` middleware can be configured to sample a percentage of requests for profiling. This can be useful for profiling a subset of requests in production without profiling every request.
+
+To enable profile sampling:
+
+```ruby
+AppProfiler.profile_sampler_enabled = true
+# OR
+Rails.application.config.app_profiler.profile_sampler_enabled = true
+```
+
+Both backends, StackProf and Vernier, can be configured separately.
+
+These can be overridden like:
+
+```ruby
+AppProfiler.profile_sampler_config = AppProfiler::Sampler::Config.new(
+  sample_rate: 0.5,
+  paths: ["/foo"],
+  backends_probability: { stackprof: 0.5, vernier: 0.5 },
+  backend_configs: {
+    stackprof: AppProfiler::Sampler::StackprofConfig.new,
+    vernier: AppProfiler::Sampler::VernierConfig.new,
+)
+
+# OR
+
+Rails.application.config.app_profiler = AppProfiler::Sampler::Config.new(
+  sample_rate: 0.5,
+  paths: ["/foo"],
+  backends_probability: { stackprof: 0.5, vernier: 0.5 },
+  backend_configs: {
+    stackprof: AppProfiler::Sampler::StackprofConfig.new,
+    vernier: AppProfiler::Sampler::VernierConfig.new,
+)
+
+```
+
+All the configuration parameters are optional and have default values. The default values are:
+
+```ruby
+
+| Sampler Config                      | Default         |
+| --------                            | -------         |
+| sample_rate (0.0 - 1.0)             | 0.001 (0.1 %)   |
+| paths                               | ['/']           |
+| stackprof_probability               | 1.0             |
+| vernier_probability                 | 0.0             |
+
+| StackprofConfig                     | Default |
+| --------                            | ------- |
+| wall_interval                       | 5000    |
+| cpu_interval                        | 5000    |
+| object_interval                     | 1000    |
+| wall_mode_probability               | 0.8     |
+| cpu_mode_probability                | 0.1     |
+| object_mode_probability             | 0.1     |
+
+| VernierConfig                       | Default |
+| --------                            | ------- |
+| wall_interval                       | 5000    |
+| retained_interval                   | 5000    |
+| wall_mode_probability               | 1.0     |
+| retained_mode_probability           | 0.0     |
+```
+
+Apps do not need have to configure anything if they are happy with the default values.
+
 ## Running tests
 
 ```
