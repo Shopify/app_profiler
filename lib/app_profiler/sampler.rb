@@ -22,10 +22,10 @@ module AppProfiler
       end
 
       def get_profile_params(config)
-        backend_name = select_random(config.backends_probability, Kernel.rand)
+        backend_name = select_random(config.backends_probability)
         backend_config = config.get_backend_config(backend_name)
 
-        mode = select_random(backend_config.modes_probability, Kernel.rand)
+        mode = select_random(backend_config.modes_probability)
         interval = backend_config.interval_for(mode)
 
         AppProfiler::Parameters.new(
@@ -41,7 +41,8 @@ module AppProfiler
       # it will return :c
       # Assumes all probabilities sum to 1
 
-      def select_random(options, random)
+      def select_random(options)
+        random = Kernel.rand
         current = 0
         options = options.sort_by do |_, probability|
           probability
