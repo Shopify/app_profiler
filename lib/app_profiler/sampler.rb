@@ -5,16 +5,15 @@ module AppProfiler
   module Sampler
     class << self
       def profile_params(request, config)
-        random = Kernel.rand
-        return unless sample?(random, config, request)
+        return unless sample?(config, request)
 
-        get_profile_params(config, random)
+        get_profile_params(config)
       end
 
       private
 
-      def sample?(random, config, request)
-        return false if random > config.sample_rate
+      def sample?(config, request)
+        return false if Kernel.rand > config.sample_rate
 
         path = request.path
         return false unless config.paths.any? { |p| path.match?(p) }
@@ -22,11 +21,11 @@ module AppProfiler
         true
       end
 
-      def get_profile_params(config, random)
-        backend_name = select_random(config.backends_probability, random)
+      def get_profile_params(config)
+        backend_name = select_random(config.backends_probability)
         backend_config = config.get_backend_config(backend_name)
 
-        mode = select_random(backend_config.modes_probability, random)
+        mode = select_random(backend_config.modes_probability)
         interval = backend_config.interval_for(mode)
 
         AppProfiler::Parameters.new(
@@ -42,7 +41,8 @@ module AppProfiler
       # it will return :c
       # Assumes all probabilities sum to 1
 
-      def select_random(options, random)
+      def select_random(options)
+        random = Kernel.rand
         current = 0
         options = options.sort_by do |_, probability|
           probability
