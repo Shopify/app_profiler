@@ -5,18 +5,21 @@ module AppProfiler
   module Sampler
     class << self
       def profile_params(request, config)
-        return unless sample?(config, request)
+        profile_params_for(request.path, config)
+      end
+
+      def profile_params_for(target, config)
+        return unless sample?(config, target)
 
         get_profile_params(config)
       end
 
       private
 
-      def sample?(config, request)
+      def sample?(config, target)
         return false if Kernel.rand > config.sample_rate
 
-        path = request.path
-        return false unless config.paths.any? { |p| path.match?(p) }
+        return false unless config.targets.any? { |t| target.match?(t) }
 
         true
       end

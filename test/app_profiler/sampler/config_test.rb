@@ -21,10 +21,15 @@ module AppProfiler
       test "default config" do
         config = Config.new
         assert_equal(Config::SAMPLE_RATE, config.sample_rate)
-        assert_equal(Config::PATHS, config.paths)
+        assert_equal(Config::TARGETS, config.targets)
         assert_equal(Config::BACKEND_PROBABILITES, config.backends_probability)
         assert_not_nil(config.get_backend_config(:stackprof))
         assert_nil(config.get_backend_config(:vernier))
+      end
+
+      test "allows passing paths" do
+        config = Config.new(paths: ["/"])
+        assert_equal(["/"], config.targets)
       end
     end
   end

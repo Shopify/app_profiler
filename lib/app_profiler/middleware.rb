@@ -50,7 +50,6 @@ module AppProfiler
 
     def profile_params(params)
       return params if params.valid?
-
       return unless AppProfiler.profile_sampler_enabled
 
       AppProfiler::Sampler.profile_params(params, AppProfiler.profile_sampler_config)

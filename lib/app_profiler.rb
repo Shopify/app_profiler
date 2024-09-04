@@ -63,7 +63,7 @@ module AppProfiler
   mattr_reader :profile_enqueue_failure, default: nil
   mattr_reader :after_process_queue, default: nil
   mattr_accessor :forward_metadata_on_upload, default: false
-  mattr_accessor :profile_sampler_enabled, default: false
+
   mattr_accessor :profile_sampler_config
 
   class << self
@@ -114,6 +114,28 @@ module AppProfiler
 
       clear
       @profiler_backend = new_profiler_backend
+    end
+
+    def profile_sampler_enabled=(value)
+      if value.is_a?(Proc)
+        raise ArgumentError,
+          "profile_sampler_enabled must be a proc or a lambda that accepts no argument" if value.arity != 0
+      else
+        raise ArgumentError, "Must be TrueClass or FalseClass" unless [TrueClass, FalseClass].include?(value.class)
+      end
+
+      @profile_sampler_enabled = value
+    end
+
+    def profile_sampler_enabled
+      return false unless defined?(@profile_sampler_enabled)
+
+      @profile_sampler_enabled.is_a?(Proc) ? @profile_sampler_enabled.call : @profile_sampler_enabled
+    rescue => e
+      logger.error(
+        "[AppProfiler.profile_sampler_enabled] exception: #{e}, message: #{e.message}",
+      )
+      false
     end
 
     def backend_for(backend_name)
