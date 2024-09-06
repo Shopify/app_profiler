@@ -48,7 +48,7 @@ module AppProfiler
         Kernel.stubs(:rand).returns(0.1)
         config = Config.new(
           sample_rate: 1.0,
-          paths: ["/foo"],
+          targets: ["/foo"],
         )
 
         request = RequestParameters.new(Rack::Request.new({ "PATH_INFO" => "/foo" }))

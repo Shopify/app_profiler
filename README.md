@@ -341,13 +341,20 @@ By default, the stackprof backend will be used.
 
 The `AppProfiler` middleware can be configured to sample a percentage of requests for profiling. This can be useful for profiling a subset of requests in production without profiling every request.
 
-To enable profile sampling:
+To enable profile sampling, you can either set `profile_sampler_enabled` to `true` or provide your own custom `Proc`:
 
 ```ruby
 AppProfiler.profile_sampler_enabled = true
 # OR
 Rails.application.config.app_profiler.profile_sampler_enabled = true
 ```
+
+```ruby
+AppProfiler.profile_sampler_enabled = -> { sampler_enabled? }
+# OR
+Rails.application.config.app_profiler.profile_sampler_enabled = -> { sampler_enabled? }
+```
+
 
 Both backends, StackProf and Vernier, can be configured separately.
 
@@ -356,7 +363,7 @@ These can be overridden like:
 ```ruby
 AppProfiler.profile_sampler_config = AppProfiler::Sampler::Config.new(
   sample_rate: 0.5,
-  paths: ["/foo"],
+  targets: ["/foo"],
   backends_probability: { stackprof: 0.5, vernier: 0.5 },
   backend_configs: {
     stackprof: AppProfiler::Sampler::StackprofConfig.new,
@@ -367,7 +374,7 @@ AppProfiler.profile_sampler_config = AppProfiler::Sampler::Config.new(
 
 Rails.application.config.app_profiler = AppProfiler::Sampler::Config.new(
   sample_rate: 0.5,
-  paths: ["/foo"],
+  targets: ["/foo"],
   backends_probability: { stackprof: 0.5, vernier: 0.5 },
   backend_configs: {
     stackprof: AppProfiler::Sampler::StackprofConfig.new,
@@ -380,12 +387,12 @@ All the configuration parameters are optional and have default values. The defau
 
 ```ruby
 
-| Sampler Config                      | Default         |
-| --------                            | -------         |
-| sample_rate (0.0 - 1.0)             | 0.001 (0.1 %)   |
-| paths                               | ['/']           |
-| stackprof_probability               | 1.0             |
-| vernier_probability                 | 0.0             |
+| Sampler Config                                         | Default         |
+| --------                                               | -------         |
+| sample_rate (0.0 - 1.0)                                | 0.001 (0.1 %)   |
+| targets (request paths, job_names etc )                | ['/']           |
+| stackprof_probability                                  | 1.0             |
+| vernier_probability                                    | 0.0             |
 
 | StackprofConfig                     | Default |
 | --------                            | ------- |
