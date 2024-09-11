@@ -3,6 +3,7 @@
 require "app_profiler/sampler/config"
 module AppProfiler
   module Sampler
+    @excluded_cache = {}
     class << self
       def profile_params(request, config)
         profile_params_for(request.path, config)
@@ -18,6 +19,12 @@ module AppProfiler
 
       def sample?(config, target)
         return false if Kernel.rand > config.sample_rate
+        return false if @excluded_cache[target]
+
+        if config.exclude_targets.any? { |t| target.match?(t) }
+          @excluded_cache[target] = true
+          return false
+        end
 
         return false unless config.targets.any? { |t| target.match?(t) }
 
