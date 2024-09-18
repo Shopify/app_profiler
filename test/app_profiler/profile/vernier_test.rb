@@ -105,7 +105,7 @@ module AppProfiler
     test "#[] forwards to profile metadata" do
       profile = VernierProfile.new(vernier_profile(meta: { interval: 10_000 }))
 
-      assert_equal(10_000, profile[:meta][:interval])
+      assert_equal(10_000, profile.metadata[:interval])
     end
 
     test "#path raises an UnsafeFilename exception given chars not in allow list" do
