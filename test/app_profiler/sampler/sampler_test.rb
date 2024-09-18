@@ -58,6 +58,18 @@ module AppProfiler
         assert_nil(Sampler.profile_params(request, config))
       end
 
+      test "exclude_targets are respected" do
+        Kernel.stubs(:rand).returns(0.1)
+        config = Config.new(
+          sample_rate: 1.0,
+          targets: ["/foo"],
+          exclude_targets: ["/foo/bar"],
+        )
+
+        request = RequestParameters.new(Rack::Request.new({ "PATH_INFO" => "/foo/bar" }))
+        assert_nil(Sampler.profile_params(request, config))
+      end
+
       test "mixed backend probabilities" do
         skip("Vernier not supported") unless AppProfiler.vernier_supported?
 

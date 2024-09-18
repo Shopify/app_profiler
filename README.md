@@ -391,6 +391,7 @@ All the configuration parameters are optional and have default values. The defau
 | --------                                               | -------         |
 | sample_rate (0.0 - 1.0)                                | 0.001 (0.1 %)   |
 | targets (request paths, job_names etc )                | ['/']           |
+| exclude_targets (request paths, job_names etc )        | ['/ping']       |
 | stackprof_probability                                  | 1.0             |
 | vernier_probability                                    | 0.0             |
 
