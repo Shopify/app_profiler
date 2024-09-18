@@ -8,6 +8,10 @@ module AppProfiler
       @data[:mode]
     end
 
+    def metadata
+      @data[:metadata]
+    end
+
     def format
       FILE_EXTENSION
     end

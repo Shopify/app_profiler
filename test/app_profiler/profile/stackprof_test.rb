@@ -31,8 +31,8 @@ module AppProfiler
     test ".from_stackprof removes id and context metadata from profile data" do
       profile = BaseProfile.from_stackprof(stackprof_profile(metadata: { id: "foo", context: "bar" }))
 
-      assert_not_operator(profile[:metadata], :key?, :id)
-      assert_not_operator(profile[:metadata], :key?, :context)
+      assert_not_operator(profile.metadata, :key?, :id)
+      assert_not_operator(profile.metadata, :key?, :context)
     end
 
     test "#id" do

@@ -334,7 +334,7 @@ module AppProfiler
           AppProfiler.middleware.any_instance.expects(:after_profile).with do |env, profile|
             return false unless request_env == env && profile.is_a?(AppProfiler::BaseProfile)
 
-            profile[:metadata][:test_key] == "test_value"
+            profile.metadata[:test_key] == "test_value"
           end.returns(true)
 
           middleware = AppProfiler::Middleware.new(app_env)
