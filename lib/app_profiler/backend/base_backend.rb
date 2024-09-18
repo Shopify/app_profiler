@@ -40,7 +40,7 @@ module AppProfiler
       end
 
       def release_run_lock
-        self.class.run_lock.unlock
+        self.class.run_lock.unlock if self.class.run_lock.locked?
       rescue ThreadError
         AppProfiler.logger.warn("[AppProfiler] run lock not released as it was never acquired")
       end
