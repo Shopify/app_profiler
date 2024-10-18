@@ -29,6 +29,13 @@ module AppProfiler
       end
     end
 
+    test "#valid? returns false when backend is not supported" do
+      AppProfiler.logger.expects(:info).with { |value| value =~ /unsupported backend='not-a-real-backend'/ }
+      params = request_params(headers: { AppProfiler.request_profile_header => "mode=cpu;backend=not-a-real-backend" })
+
+      assert_not_predicate(params, :valid?)
+    end
+
     test "#context is AppProfiler.context by default" do
       with_context("test-context") do
         AppProfiler.logger.expects(:info).never
