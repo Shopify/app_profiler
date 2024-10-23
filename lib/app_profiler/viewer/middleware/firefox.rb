@@ -6,7 +6,7 @@ require "app_profiler/yarn/with_firefox_profiler"
 module AppProfiler
   module Viewer
     class FirefoxRemoteViewer < BaseViewer
-      class Middleware < BaseMiddleware
+      class Middleware < AppProfiler::Viewer::BaseMiddleware
         include Yarn::WithFirefoxProfile
 
         def initialize(app)

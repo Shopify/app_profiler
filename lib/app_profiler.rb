@@ -30,6 +30,7 @@ module AppProfiler
   module Viewer
     autoload :BaseViewer, "app_profiler/viewer/base_viewer"
     autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope"
+    autoload :BaseMiddleware, "app_profiler/viewer/middleware/base"
     autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/remote/speedscope"
     autoload :FirefoxRemoteViewer, "app_profiler/viewer/remote/firefox"
   end
