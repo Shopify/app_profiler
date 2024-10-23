@@ -290,7 +290,7 @@ report = AppProfiler.run(mode: :cpu) do
   # ...
 end
 
-report.view # opens the profile locally in speedscope or firefox profiler, as appropriate
+report.view # opens the profile locally in speedscope by default
 ```
 
 Profile files can be found locally in your rails app at `tmp/app_profiler/*.json`.
