@@ -12,7 +12,7 @@ module AppProfiler
         def initialize(app)
           super
           @speedscope = Rack::File.new(
-            File.join(AppProfiler.root, "node_modules/speedscope/dist/release")
+            File.join(AppProfiler.root, "node_modules/speedscope/dist/release"),
           )
         end
 

@@ -12,7 +12,7 @@ module AppProfiler
         def initialize(app)
           super
           @firefox_profiler = Rack::File.new(
-            File.join(AppProfiler.root, "node_modules/firefox-profiler/dist")
+            File.join(AppProfiler.root, "node_modules/firefox-profiler/dist"),
           )
         end
 

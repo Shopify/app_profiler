@@ -8,7 +8,7 @@ module AppProfiler
       class MiddlewareTest < TestCase
         setup do
           @app = Middleware.new(
-            proc { [200, { "Content-Type" => "text/plain" }, ["Hello world!"]] }
+            proc { [200, { "Content-Type" => "text/plain" }, ["Hello world!"]] },
           )
         end
 

@@ -19,17 +19,57 @@ module AppProfiler
       class BaseMiddleware
         class Sanitizer < Rails::HTML::Sanitizer.best_supported_vendor.safe_list_sanitizer
           self.allowed_tags = Set.new([
-            "strong", "em", "b", "i", "p", "code", "pre", "tt", "samp", "kbd", "var", "sub",
-            "sup", "dfn", "cite", "big", "small", "address", "hr", "br", "div", "span", "h1",
-            "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "dl", "dt", "dd", "abbr", "acronym",
-            "a", "img", "blockquote", "del", "ins", "script",
+            "strong",
+            "em",
+            "b",
+            "i",
+            "p",
+            "code",
+            "pre",
+            "tt",
+            "samp",
+            "kbd",
+            "var",
+            "sub",
+            "sup",
+            "dfn",
+            "cite",
+            "big",
+            "small",
+            "address",
+            "hr",
+            "br",
+            "div",
+            "span",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "ul",
+            "ol",
+            "li",
+            "dl",
+            "dt",
+            "dd",
+            "abbr",
+            "acronym",
+            "a",
+            "img",
+            "blockquote",
+            "del",
+            "ins",
+            "script",
           ])
         end
 
         private_constant(:Sanitizer)
 
-        def self.id(file)
-          file.basename.to_s
+        class << self
+          def id(file)
+            file.basename.to_s
+          end
         end
 
         def initialize(app)
@@ -104,7 +144,7 @@ module AppProfiler
                   </p>
                 HTML
               end
-            end
+            end,
           )
         end
       end

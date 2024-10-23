@@ -39,18 +39,27 @@ module AppProfiler
 
         patch_firefox_profiler(dir)
         yarn("--cwd", "#{dir}/firefox-profiler", "build-prod")
-        patch_file("#{dir}/firefox-profiler/dist/index.html", 'href="locales/en-US/app.ftl"',
-          'href="/app_profiler/firefox/viewer/locales/en-US/app.ftl"')
+        patch_file(
+          "#{dir}/firefox-profiler/dist/index.html",
+          'href="locales/en-US/app.ftl"',
+          'href="/app_profiler/firefox/viewer/locales/en-US/app.ftl"',
+        )
 
         yarn("add", "--dev", "#{dir}/firefox-profiler")
       end
 
       def patch_firefox_profiler(dir)
         # Patch the publicPath so that the app can be "mounted" at the right location
-        patch_file("#{dir}/firefox-profiler/webpack.config.js", "publicPath: '/'",
-          "publicPath: '/app_profiler/firefox/viewer/'")
-        patch_file("#{dir}/firefox-profiler/src/app-logic/l10n.js", "fetch(`/locales/",
-          "fetch(`/app_profiler/firefox/viewer/locales/")
+        patch_file(
+          "#{dir}/firefox-profiler/webpack.config.js",
+          "publicPath: '/'",
+          "publicPath: '/app_profiler/firefox/viewer/'",
+        )
+        patch_file(
+          "#{dir}/firefox-profiler/src/app-logic/l10n.js",
+          "fetch(`/locales/",
+          "fetch(`/app_profiler/firefox/viewer/locales/",
+        )
       end
 
       def patch_file(file, find, replace)
