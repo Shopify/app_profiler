@@ -30,6 +30,7 @@ module AppProfiler
   module Viewer
     autoload :BaseViewer, "app_profiler/viewer/base_viewer"
     autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope"
+    autoload :FirefoxViewer, "app_profiler/viewer/firefox"
     autoload :BaseMiddleware, "app_profiler/viewer/middleware/base"
     autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/remote/speedscope"
     autoload :FirefoxRemoteViewer, "app_profiler/viewer/remote/firefox"
@@ -57,8 +58,8 @@ module AppProfiler
 
   mattr_accessor :gecko_viewer_package, default: "https://github.com/tenderlove/profiler#v0.0.2"
   mattr_accessor :storage, default: Storage::FileStorage
-  mattr_accessor :viewer, default: Viewer::SpeedscopeViewer # DEPRECATED
-  mattr_accessor :speedscope_viewer, default: Viewer::SpeedscopeViewer
+  mattr_accessor :stackprof_viewer, default: Viewer::SpeedscopeViewer
+  mattr_accessor :vernier_viewer, default: Viewer::FirefoxViewer
   mattr_accessor :middleware, default: Middleware
   mattr_accessor :server, default: Server
   mattr_accessor :upload_queue_max_length, default: 10
@@ -72,6 +73,10 @@ module AppProfiler
   mattr_accessor :profile_sampler_config
 
   class << self
+    def deprecator # :nodoc:
+      @deprecator ||= ActiveSupport::Deprecation.new("in future releases", "app_profiler")
+    end
+
     def run(*args, backend: nil, **kwargs, &block)
       orig_backend = self.backend
       begin
@@ -211,22 +216,21 @@ module AppProfiler
       AppProfiler.profile_url_formatter.call(upload)
     end
 
+    def viewer
+      deprecator.warn("AppProfiler.viewer is deprecated, please use speedscope_viewer instead.")
+      stackprof_viewer
+    end
+
+    def viewer=(viewer)
+      deprecator.warn("AppProfiler.viewer= is deprecated, please use speedscope_viewer= instead.")
+      self.stackprof_viewer = viewer
+    end
+
     private
 
     def clear
       @backend.stop if @backend&.running?
       @backend = nil
-    end
-
-    # DEPRECATIONS
-    def viewer
-      ActiveSupport::Deprecation.warn("viewer is deprecated, use speedscope_viewer instead")
-      @viewer
-    end
-
-    def viewer=(viewer)
-      ActiveSupport::Deprecation.warn("viewer= is deprecated, use speedscope_viewer= instead")
-      @viewer = viewer
     end
   end
 

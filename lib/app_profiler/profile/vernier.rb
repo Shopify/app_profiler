@@ -17,7 +17,7 @@ module AppProfiler
     end
 
     def view(params = {})
-      Viewer::FirefoxRemoteViewer.view(self, **params)
+      AppProfiler.vernier_viewer.view(self, **params)
     end
   end
 end

@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require "app_profiler/exec"
+
 module AppProfiler
   module Yarn
     module Command
+      include Exec
+
       class YarnError < StandardError; end
 
       VALID_COMMANDS = [
@@ -14,8 +18,11 @@ module AppProfiler
         ["yarn", "--cwd", %r{.*/firefox-profiler}],
         ["yarn", "--cwd", %r{.*/firefox-profiler}, "build-prod"],
       ]
-
       private_constant(:VALID_COMMANDS)
+
+      def valid_commands
+        VALID_COMMANDS
+      end
 
       def yarn(command, *options)
         setup_yarn unless yarn_setup
@@ -41,22 +48,6 @@ module AppProfiler
 
       private
 
-      def ensure_command_valid(command)
-        unless valid_command?(command)
-          raise YarnError, "Illegal command: #{command.join(" ")}."
-        end
-      end
-
-      def valid_command?(command)
-        VALID_COMMANDS.any? do |valid_command|
-          next unless valid_command.size == command.size
-
-          valid_command.zip(command).all? do |valid_part, part|
-            part.match?(valid_part)
-          end
-        end
-      end
-
       def ensure_yarn_installed
         exec("which", "yarn", silent: true) do
           raise(
@@ -72,16 +63,6 @@ module AppProfiler
 
       def package_json_exists?
         AppProfiler.root.join("package.json").exist?
-      end
-
-      def exec(*command, silent: false)
-        ensure_command_valid(command)
-
-        if silent
-          system(*command, out: File::NULL).tap { |return_code| yield unless return_code }
-        else
-          system(*command).tap { |return_code| yield unless return_code }
-        end
       end
     end
   end

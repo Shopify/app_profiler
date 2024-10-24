@@ -11,8 +11,8 @@ module AppProfiler
       AppProfiler.logger = app.config.app_profiler.logger || Rails.logger
       AppProfiler.root = app.config.app_profiler.root || Rails.root
       AppProfiler.storage = app.config.app_profiler.storage || Storage::FileStorage
-      AppProfiler.viewer = app.config.app_profiler.viewer || Viewer::SpeedscopeRemoteViewer
-      AppProfiler.speedscope_viewer = app.config.app_profiler.speedscope_viewer || AppProfiler.viewer
+      AppProfiler.stackprof_viewer = app.config.app_profiler.speedscope_viewer || AppProfiler::Viewer::SpeedscopeViewer
+      AppProfiler.vernier_viewer = app.config.app_profiler.vernier_viewer || AppProfiler::Viewer::FirefoxViewer
       AppProfiler.storage.bucket_name = app.config.app_profiler.storage_bucket_name || "profiles"
       AppProfiler.storage.credentials = app.config.app_profiler.storage_credentials || {}
       AppProfiler.middleware = app.config.app_profiler.middleware || Middleware
@@ -49,13 +49,21 @@ module AppProfiler
       AppProfiler.gecko_viewer_package = app.config.app_profiler.gecko_viewer_package || "https://github.com/firefox-devtools/profiler"
     end
 
+    if Rails.gem_version >= Gem::Version.new("7.1.0.alpha")
+      initializer "app_profiler.register_deprecator" do |app|
+        app.deprecators[:vitess_rails] = AppProfiler.deprecator
+      end
+    end
+
     initializer "app_profiler.add_middleware" do |app|
       unless AppProfiler.middleware.disabled
         if Rails.env.development? || Rails.env.test?
-          if AppProfiler.speedscope_viewer == Viewer::SpeedscopeRemoteViewer
+          if AppProfiler.stackprof_viewer == Viewer::SpeedscopeRemoteViewer
             app.middleware.insert_before(0, Viewer::SpeedscopeRemoteViewer::Middleware)
           end
-          app.middleware.insert_before(0, Viewer::FirefoxRemoteViewer::Middleware)
+          if AppProfiler.vernier_viewer == Viewer::FirefoxRemoteViewer
+            app.middleware.insert_before(0, Viewer::FirefoxRemoteViewer::Middleware)
+          end
         end
         app.middleware.insert_before(0, AppProfiler.middleware)
       end
