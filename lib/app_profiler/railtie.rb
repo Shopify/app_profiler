@@ -11,7 +11,8 @@ module AppProfiler
       AppProfiler.logger = app.config.app_profiler.logger || Rails.logger
       AppProfiler.root = app.config.app_profiler.root || Rails.root
       AppProfiler.storage = app.config.app_profiler.storage || Storage::FileStorage
-      AppProfiler.viewer = app.config.app_profiler.viewer || Viewer::SpeedscopeViewer
+      AppProfiler.viewer = app.config.app_profiler.viewer || Viewer::SpeedscopeRemoteViewer
+      AppProfiler.speedscope_viewer = app.config.app_profiler.speedscope_viewer || AppProfiler.viewer
       AppProfiler.storage.bucket_name = app.config.app_profiler.storage_bucket_name || "profiles"
       AppProfiler.storage.credentials = app.config.app_profiler.storage_credentials || {}
       AppProfiler.middleware = app.config.app_profiler.middleware || Middleware
@@ -45,12 +46,16 @@ module AppProfiler
       AppProfiler.profile_sampler_enabled = app.config.app_profiler.profile_sampler_enabled || false
       AppProfiler.profile_sampler_config = app.config.app_profiler.profile_sampler_config ||
         AppProfiler::Sampler::Config.new
+      AppProfiler.gecko_viewer_package = app.config.app_profiler.gecko_viewer_package || "https://github.com/firefox-devtools/profiler"
     end
 
     initializer "app_profiler.add_middleware" do |app|
       unless AppProfiler.middleware.disabled
-        if AppProfiler.viewer == Viewer::SpeedscopeRemoteViewer
-          app.middleware.insert_before(0, Viewer::SpeedscopeRemoteViewer::Middleware)
+        if Rails.env.development? || Rails.env.test?
+          if AppProfiler.speedscope_viewer == Viewer::SpeedscopeRemoteViewer
+            app.middleware.insert_before(0, Viewer::SpeedscopeRemoteViewer::Middleware)
+          end
+          app.middleware.insert_before(0, Viewer::FirefoxRemoteViewer::Middleware)
         end
         app.middleware.insert_before(0, AppProfiler.middleware)
       end

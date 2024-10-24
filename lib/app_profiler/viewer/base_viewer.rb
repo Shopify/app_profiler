@@ -8,10 +8,6 @@ module AppProfiler
           new(profile).view(**params)
         end
       end
-
-      def view(_params = {})
-        raise NotImplementedError
-      end
     end
   end
 end
