@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "app_profiler/sampler/config"
+
 module AppProfiler
   module Sampler
     @excluded_cache = {}

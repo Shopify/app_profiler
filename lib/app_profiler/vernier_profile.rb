@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 module AppProfiler
-  class StackprofProfile < BaseProfile
-    FILE_EXTENSION = ".json"
+  class VernierProfile < BaseProfile
+    FILE_EXTENSION = ".vernier.json"
 
     def mode
-      @data[:mode]
+      @data[:meta][:mode]
     end
 
     def metadata
-      @data[:metadata]
+      @data[:meta]
     end
 
     def format
@@ -17,7 +17,7 @@ module AppProfiler
     end
 
     def view(params = {})
-      AppProfiler.viewer.view(self, **params)
+      AppProfiler.vernier_viewer.view(self, **params)
     end
   end
 end

@@ -5,3 +5,6 @@ require: rubocop-performance
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
+
+AllCops:
+    SuggestExtensions: false

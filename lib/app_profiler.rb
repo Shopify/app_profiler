@@ -30,16 +30,20 @@ module AppProfiler
   module Viewer
     autoload :BaseViewer, "app_profiler/viewer/base_viewer"
     autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope_viewer"
+    autoload :BaseMiddleware, "app_profiler/viewer/base_middleware"
     autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/speedscope_remote_viewer"
+    autoload :FirefoxRemoteViewer, "app_profiler/viewer/firefox_remote_viewer"
   end
 
-  require "app_profiler/middleware"
-  require "app_profiler/parameters"
-  require "app_profiler/request_parameters"
-  require "app_profiler/profile"
-  require "app_profiler/backend"
-  require "app_profiler/server"
-  require "app_profiler/sampler"
+  autoload(:Middleware, "app_profiler/middleware")
+  autoload(:Parameters, "app_profiler/parameters")
+  autoload(:RequestParameters, "app_profiler/request_parameters")
+  autoload(:BaseProfile, "app_profiler/base_profile")
+  autoload :StackprofProfile, "app_profiler/stackprof_profile"
+  autoload :VernierProfile, "app_profiler/vernier_profile"
+  autoload(:Backend, "app_profiler/backend")
+  autoload(:Server, "app_profiler/server")
+  autoload(:Sampler, "app_profiler/sampler")
 
   mattr_accessor :logger, default: Logger.new($stdout)
   mattr_accessor :root
@@ -50,11 +54,10 @@ module AppProfiler
   mattr_reader   :profile_header, default: "X-Profile"
   mattr_accessor :profile_async_header, default: "X-Profile-Async"
   mattr_accessor :context, default: nil
-  mattr_reader   :profile_url_formatter,
-    default: DefaultProfileFormatter
-
+  mattr_reader   :profile_url_formatter, default: DefaultProfileFormatter
   mattr_accessor :storage, default: Storage::FileStorage
-  mattr_accessor :viewer, default: Viewer::SpeedscopeViewer
+  mattr_writer :stackprof_viewer, default: nil
+  mattr_writer :vernier_viewer, default: nil
   mattr_accessor :middleware, default: Middleware
   mattr_accessor :server, default: Server
   mattr_accessor :upload_queue_max_length, default: 10
@@ -68,6 +71,10 @@ module AppProfiler
   mattr_accessor :profile_sampler_config
 
   class << self
+    def deprecator # :nodoc:
+      @deprecator ||= ActiveSupport::Deprecation.new("in future releases", "app_profiler")
+    end
+
     def run(*args, backend: nil, **kwargs, &block)
       orig_backend = self.backend
       begin
@@ -115,6 +122,14 @@ module AppProfiler
 
       clear
       @profiler_backend = new_profiler_backend
+    end
+
+    def stackprof_viewer
+      @@stackprof_viewer ||= Viewer::SpeedscopeViewer # rubocop:disable Style/ClassVars
+    end
+
+    def vernier_viewer
+      @@vernier_viewer ||= Viewer::FirefoxRemoteViewer # rubocop:disable Style/ClassVars
     end
 
     def profile_sampler_enabled=(value)
@@ -205,6 +220,16 @@ module AppProfiler
       return unless AppProfiler.profile_url_formatter
 
       AppProfiler.profile_url_formatter.call(upload)
+    end
+
+    def viewer
+      deprecator.warn("AppProfiler.viewer is deprecated, please use stackprof_viewer instead.")
+      stackprof_viewer
+    end
+
+    def viewer=(viewer)
+      deprecator.warn("AppProfiler.viewer= is deprecated, please use stackprof_viewer= instead.")
+      self.stackprof_viewer = viewer
     end
 
     private

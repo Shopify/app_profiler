@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 module AppProfiler
-  class VernierProfile < BaseProfile
-    FILE_EXTENSION = ".gecko.json"
+  class StackprofProfile < BaseProfile
+    FILE_EXTENSION = ".stackprof.json"
 
     def mode
-      @data[:meta][:mode]
+      @data[:mode]
     end
 
     def metadata
-      @data[:meta]
+      @data[:metadata]
     end
 
     def format
@@ -17,7 +17,7 @@ module AppProfiler
     end
 
     def view(params = {})
-      raise NotImplementedError
+      AppProfiler.stackprof_viewer.view(self, **params)
     end
   end
 end

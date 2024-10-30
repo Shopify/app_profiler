@@ -11,7 +11,12 @@ module AppProfiler
       AppProfiler.logger = app.config.app_profiler.logger || Rails.logger
       AppProfiler.root = app.config.app_profiler.root || Rails.root
       AppProfiler.storage = app.config.app_profiler.storage || Storage::FileStorage
-      AppProfiler.viewer = app.config.app_profiler.viewer || Viewer::SpeedscopeViewer
+      if app.config.app_profiler.stackprof_viewer
+        AppProfiler.stackprof_viewer = app.config.app_profiler.stackprof_viewer
+      end
+      if app.config.app_profiler.vernier_viewer
+        AppProfiler.vernier_viewer = app.config.app_profiler.vernier_viewer
+      end
       AppProfiler.storage.bucket_name = app.config.app_profiler.storage_bucket_name || "profiles"
       AppProfiler.storage.credentials = app.config.app_profiler.storage_credentials || {}
       AppProfiler.middleware = app.config.app_profiler.middleware || Middleware
@@ -49,8 +54,8 @@ module AppProfiler
 
     initializer "app_profiler.add_middleware" do |app|
       unless AppProfiler.middleware.disabled
-        if AppProfiler.viewer == Viewer::SpeedscopeRemoteViewer
-          app.middleware.insert_before(0, Viewer::SpeedscopeRemoteViewer::Middleware)
+        if (Rails.env.development? || Rails.env.test?) && AppProfiler.stackprof_viewer.remote?
+          app.middleware.insert_before(0, AppProfiler.viewer::Middleware)
         end
         app.middleware.insert_before(0, AppProfiler.middleware)
       end

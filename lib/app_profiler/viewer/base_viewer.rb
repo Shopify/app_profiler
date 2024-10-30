@@ -7,10 +7,10 @@ module AppProfiler
         def view(profile, params = {})
           new(profile).view(**params)
         end
-      end
 
-      def view(_params = {})
-        raise NotImplementedError
+        def remote?
+          false
+        end
       end
     end
   end

@@ -2,6 +2,7 @@
 
 require "app_profiler/sampler/stackprof_config"
 require "app_profiler/sampler/vernier_config"
+
 module AppProfiler
   module Sampler
     class Config
@@ -27,7 +28,7 @@ module AppProfiler
 
         raise ArgumentError, "mode probabilities must sum to 1" unless backends_probability.values.sum == 1.0
 
-        ActiveSupport::Deprecation.new.warn("passing paths is deprecated, use targets instead") if paths
+        AppProfiler.deprecator.warn("passing paths is deprecated, use targets instead") if paths
 
         @sample_rate = sample_rate
         @targets = paths || targets

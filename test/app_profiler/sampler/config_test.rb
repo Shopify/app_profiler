@@ -28,8 +28,10 @@ module AppProfiler
       end
 
       test "allows passing paths" do
-        config = Config.new(paths: ["/"])
-        assert_equal(["/"], config.targets)
+        assert_deprecated(/passing paths is deprecated/, AppProfiler.deprecator) do
+          config = Config.new(paths: ["/"])
+          assert_equal(["/"], config.targets)
+        end
       end
     end
   end

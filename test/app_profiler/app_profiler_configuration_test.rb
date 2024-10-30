@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+
 module AppProfiler
   class ConfigurationTest < TestCase
     test "unexpected handler profile_enqueue_success raises ArgumentError " do

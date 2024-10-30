@@ -3,9 +3,6 @@
 require "active_support/deprecation/constant_accessor"
 
 module AppProfiler
-  autoload :StackprofProfile, "app_profiler/profile/stackprof"
-  autoload :VernierProfile, "app_profiler/profile/vernier"
-
   class BaseProfile
     INTERNAL_METADATA_KEYS = [:id, :context]
     private_constant :INTERNAL_METADATA_KEYS
@@ -111,7 +108,4 @@ module AppProfiler
       AppProfiler.profile_root.join(filename)
     end
   end
-
-  include ActiveSupport::Deprecation::DeprecatedConstantAccessor
-  deprecate_constant "Profile", "AppProfiler::BaseProfile", deprecator: ActiveSupport::Deprecation.new
 end
