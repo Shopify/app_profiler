@@ -65,19 +65,19 @@ module AppProfiler
         end
 
         test "#call viewer sets up yarn" do
-          @app.expects(:system).with("which", "yarn", out: File::NULL).returns(true)
-          @app.expects(:system).with("yarn", "init", "--yes").returns(true)
+          @app.expects(:system).with({}, "which", "yarn", out: File::NULL).returns(true)
+          @app.expects(:system).with({}, "yarn", "init", "--yes").returns(true)
 
           url = "https://github.com/tenderlove/profiler"
           branch = "v0.0.2"
-          @app.expects(:system).with("git", "clone", url, "firefox-profiler", "--branch=#{branch}").returns(true)
+          @app.expects(:system).with({}, "git", "clone", url, "firefox-profiler", "--branch=#{branch}").returns(true)
 
           File.expects(:read).returns("{}")
           File.expects(:write).returns(true)
 
           dir = "./tmp"
 
-          @app.expects(:system).with("yarn", "--cwd", "#{dir}/firefox-profiler").returns(true)
+          @app.expects(:system).with({}, "yarn", "--cwd", "#{dir}/firefox-profiler").returns(true)
 
           File.expects(:read).with("#{dir}/firefox-profiler/webpack.config.js").returns("")
           File.expects(:write).with("#{dir}/firefox-profiler/webpack.config.js", "").returns(true)
@@ -85,12 +85,12 @@ module AppProfiler
           File.expects(:read).with("#{dir}/firefox-profiler/src/app-logic/l10n.js").returns("")
           File.expects(:write).with("#{dir}/firefox-profiler/src/app-logic/l10n.js", "").returns(true)
 
-          @app.expects(:system).with("yarn", "--cwd", "#{dir}/firefox-profiler", "build-prod").returns(true)
+          @app.expects(:system).with({}, "yarn", "--cwd", "#{dir}/firefox-profiler", "build-prod").returns(true)
 
           File.expects(:read).with("#{dir}/firefox-profiler/dist/index.html").returns("")
           File.expects(:write).with("#{dir}/firefox-profiler/dist/index.html", "").returns(true)
 
-          @app.expects(:system).with("yarn", "add", "--dev", "#{dir}/firefox-profiler").returns(true)
+          @app.expects(:system).with({}, "yarn", "add", "--dev", "#{dir}/firefox-profiler").returns(true)
           @app.call({ "PATH_INFO" => "/app_profiler/firefox/viewer/index.html" })
 
           assert_predicate(@app, :yarn_setup)

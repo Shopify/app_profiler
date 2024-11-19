@@ -16,12 +16,17 @@ module AppProfiler
         profile = BaseProfile.from_stackprof(stackprof_profile)
 
         viewer = SpeedscopeViewer.new(profile)
-        viewer.expects(:system).with("which", "yarn", out: File::NULL).returns(true)
-        viewer.expects(:system).with("yarn", "init", "--yes").returns(true)
+        viewer.expects(:system).with({}, "which", "yarn", out: File::NULL).returns(true)
+        viewer.expects(:system).with({}, "yarn", "init", "--yes").returns(true)
         viewer.expects(:system).with(
-          "yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"
+          {},
+          "yarn",
+          "add",
+          "speedscope",
+          "--dev",
+          "--ignore-workspace-root-check",
         ).returns(true)
-        viewer.expects(:system).with("yarn", "run", "speedscope", profile.file.to_s).returns(true)
+        viewer.expects(:system).with({}, "yarn", "run", "speedscope", profile.file.to_s).returns(true)
 
         viewer.view
 
@@ -35,11 +40,16 @@ module AppProfiler
         AppProfiler.root.join("package.json").write("{}")
 
         viewer = SpeedscopeViewer.new(profile)
-        viewer.expects(:system).with("which", "yarn", out: File::NULL).returns(true)
+        viewer.expects(:system).with({}, "which", "yarn", out: File::NULL).returns(true)
         viewer.expects(:system).with(
-          "yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"
+          {},
+          "yarn",
+          "add",
+          "speedscope",
+          "--dev",
+          "--ignore-workspace-root-check",
         ).returns(true)
-        viewer.expects(:system).with("yarn", "run", "speedscope", profile.file.to_s).returns(true)
+        viewer.expects(:system).with({}, "yarn", "run", "speedscope", profile.file.to_s).returns(true)
 
         viewer.view
 
@@ -55,9 +65,9 @@ module AppProfiler
         AppProfiler.root.join("node_modules/speedscope").mkpath
 
         viewer = SpeedscopeViewer.new(profile)
-        viewer.expects(:system).with("which", "yarn", out: File::NULL).returns(true)
-        viewer.expects(:system).with("yarn", "init", "--yes").returns(true)
-        viewer.expects(:system).with("yarn", "run", "speedscope", profile.file.to_s).returns(true)
+        viewer.expects(:system).with({}, "which", "yarn", out: File::NULL).returns(true)
+        viewer.expects(:system).with({}, "yarn", "init", "--yes").returns(true)
+        viewer.expects(:system).with({}, "yarn", "run", "speedscope", profile.file.to_s).returns(true)
 
         viewer.view
 
@@ -71,7 +81,7 @@ module AppProfiler
 
         viewer = SpeedscopeViewer.new(profile)
         viewer.yarn_setup = true
-        viewer.expects(:system).with("yarn", "run", "speedscope", profile.file.to_s).returns(true)
+        viewer.expects(:system).with({}, "yarn", "run", "speedscope", profile.file.to_s).returns(true)
 
         viewer.view
       end
