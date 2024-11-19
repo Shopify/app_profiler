@@ -8,12 +8,12 @@ module AppProfiler
   module Backend
     class VernierBackendTest < TestCase
       def setup
-        @orig_backend = AppProfiler.backend
+        @original_backend = AppProfiler.backend
         AppProfiler.backend = :vernier
       end
 
       def teardown
-        AppProfiler.backend = @orig_backend
+        AppProfiler.backend = @original_backend
       end
 
       test ".run prints error when failed" do
@@ -60,7 +60,7 @@ module AppProfiler
 
         assert_instance_of(AppProfiler::VernierProfile, profile)
         assert_equal(:wall, profile[:meta][:mode])
-        # assert_equal(1000, profile[:interval]) # TODO https://github.com/jhawthorn/vernier/issues/30
+        assert_equal(1, profile[:meta][:interval])
       end
 
       test ".run assigns metadata to profiles" do
@@ -163,12 +163,11 @@ module AppProfiler
       end
 
       test ".stop" do
-        AppProfiler.start
-        AppProfiler::Backend::VernierBackend.any_instance.expects(:stop)
-        AppProfiler.stop
-      ensure
-        AppProfiler::Backend::VernierBackend.any_instance.unstub(:stop)
-        AppProfiler.stop
+        Vernier::Collector.any_instance.expects(:start)
+        Vernier::Collector.any_instance.expects(:stop)
+
+        AppProfiler.profiler.start
+        AppProfiler.profiler.stop
       end
 
       test ".results prints error when failed" do

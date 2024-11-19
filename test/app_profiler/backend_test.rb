@@ -40,7 +40,7 @@ module AppProfiler
       AppProfiler.backend = orig_backend
     end
 
-    test ".backend_for= provides the backend class given a string" do
+    test ".backend_for provides the backend class given a string" do
       assert_equal(
         AppProfiler::Backend::StackprofBackend,
         AppProfiler.backend_for(AppProfiler::Backend::StackprofBackend.name),
@@ -53,7 +53,7 @@ module AppProfiler
       )
     end
 
-    test ".backend_for= raises if an unknown backend is requested" do
+    test ".backend_for raises if an unknown backend is requested" do
       assert_raises(BackendError) { AppProfiler.backend_for("not a real backend") }
     end
 
