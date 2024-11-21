@@ -50,12 +50,6 @@ module AppProfiler
           end
         end
 
-        def reset_queue # for testing
-          init_queue
-          @process_queue_thread&.kill
-          @process_queue_thread = nil
-        end
-
         private
 
         def mutex

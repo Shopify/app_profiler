@@ -9,9 +9,7 @@ module AppProfiler
       TEST_BUCKET_NAME = "app-profile-test"
       TEST_FILE_URL = "https://www.example.com/uploaded.json"
 
-      def teardown
-        GoogleCloudStorage.reset_queue
-      end
+      teardown(:reset_process_queue_thread)
 
       test "upload file" do
         profile = profile_from_stackprof
@@ -114,9 +112,8 @@ module AppProfiler
       end
 
       test "process_queue_thread is alive after first upload" do
-        th = GoogleCloudStorage.instance_variable_get(:@process_queue_thread)
+        reset_process_queue_thread
 
-        refute(th&.alive?)
         GoogleCloudStorage.enqueue_upload(profile_from_stackprof)
         th = GoogleCloudStorage.instance_variable_get(:@process_queue_thread)
         assert(th.alive?)
