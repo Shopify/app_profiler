@@ -6,13 +6,21 @@ module AppProfiler
       include Command
 
       PACKAGE = "https://github.com/tenderlove/profiler#v0.0.2"
-      private_constant(:PACKAGE)
+      VALID_COMMANDS = [
+        *VALID_COMMANDS,
+        ["git", "clone", "https://github.com/tenderlove/profiler", "firefox-profiler", "--branch=v0.0.2"],
+      ]
+      private_constant(:PACKAGE, :VALID_COMMANDS)
 
       def setup_yarn
         super
         return if firefox_profiler_added?
 
         fetch_firefox_profiler
+      end
+
+      def valid_commands
+        VALID_COMMANDS
       end
 
       private
@@ -29,7 +37,7 @@ module AppProfiler
         Dir.chdir(dir) do
           clone_args = ["git", "clone", repo, "firefox-profiler"]
           clone_args.push("--branch=#{branch}") unless branch.nil? || branch&.empty?
-          system(*clone_args)
+          exec(*clone_args)
           package_contents = File.read("firefox-profiler/package.json")
           package_json = JSON.parse(package_contents)
           package_json["name"] ||= "firefox-profiler"

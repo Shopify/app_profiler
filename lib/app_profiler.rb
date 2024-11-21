@@ -30,6 +30,7 @@ module AppProfiler
   module Viewer
     autoload :BaseViewer, "app_profiler/viewer/base_viewer"
     autoload :SpeedscopeViewer, "app_profiler/viewer/speedscope_viewer"
+    autoload :FirefoxViewer, "app_profiler/viewer/firefox_viewer"
     autoload :BaseMiddleware, "app_profiler/viewer/base_middleware"
     autoload :SpeedscopeRemoteViewer, "app_profiler/viewer/speedscope_remote_viewer"
     autoload :FirefoxRemoteViewer, "app_profiler/viewer/firefox_remote_viewer"
@@ -125,7 +126,7 @@ module AppProfiler
     end
 
     def vernier_viewer
-      @@vernier_viewer ||= Viewer::FirefoxRemoteViewer # rubocop:disable Style/ClassVars
+      @@vernier_viewer ||= Viewer::FirefoxViewer # rubocop:disable Style/ClassVars
     end
 
     def profile_sampler_enabled=(value)

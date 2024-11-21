@@ -17,28 +17,33 @@ module AppProfiler
 
       test "#yarn allows add speedscope" do
         expects(:system).with(
-          "yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"
+          {},
+          "yarn",
+          "add",
+          "speedscope",
+          "--dev",
+          "--ignore-workspace-root-check",
         ).returns(true)
 
         yarn("add", "speedscope", "--dev", "--ignore-workspace-root-check")
       end
 
       test "#yarn allows init" do
-        expects(:system).with("yarn", "init", "--yes").returns(true)
+        expects(:system).with({}, "yarn", "init", "--yes").returns(true)
 
         yarn("init", "--yes")
       end
 
       test "#yarn allows run" do
-        expects(:system).with("yarn", "run", "speedscope", "\"profile.json\"").returns(true)
+        expects(:system).with({}, "yarn", "run", "speedscope", "\"profile.json\"").returns(true)
 
         yarn("run", "speedscope", "\"profile.json\"")
       end
 
       test "#yarn disallows run" do
-        expects(:system).with("yarn", "hack").never
+        expects(:system).with({}, "yarn", "hack").never
 
-        error = assert_raises(Command::YarnError) do
+        error = assert_raises(ArgumentError) do
           yarn("hack")
         end
 

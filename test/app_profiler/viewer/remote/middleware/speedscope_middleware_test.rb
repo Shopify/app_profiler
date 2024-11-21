@@ -65,10 +65,15 @@ module AppProfiler
         end
 
         test "#call viewer sets up yarn" do
-          @app.expects(:system).with("which", "yarn", out: File::NULL).returns(true)
-          @app.expects(:system).with("yarn", "init", "--yes").returns(true)
+          @app.expects(:system).with({}, "which", "yarn", out: File::NULL).returns(true)
+          @app.expects(:system).with({}, "yarn", "init", "--yes").returns(true)
           @app.expects(:system).with(
-            "yarn", "add", "speedscope", "--dev", "--ignore-workspace-root-check"
+            {},
+            "yarn",
+            "add",
+            "speedscope",
+            "--dev",
+            "--ignore-workspace-root-check",
           ).returns(true)
 
           @app.call({ "PATH_INFO" => "/app_profiler/speedscope/viewer/index.html" })
