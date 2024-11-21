@@ -76,49 +76,45 @@ module AppProfiler
     end
 
     def run(*args, backend: nil, **kwargs, &block)
-      orig_backend = self.backend
-      begin
-        self.backend = backend if backend
-        profiler.run(*args, **kwargs, &block)
-      rescue BackendError => e
-        logger.error(
-          "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}",
-        )
-        yield
+      if backend
+        original_backend = self.backend
+        self.backend = backend
       end
+      profiler.run(*args, **kwargs, &block)
+    rescue BackendError => e
+      logger.error(
+        "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}",
+      )
+      yield
     ensure
-      AppProfiler.backend = orig_backend
+      self.backend = original_backend if backend
     end
 
-    def start(*args)
-      profiler.start(*args)
+    def start(*args, backend: nil, **kwargs)
+      self.backend = backend if backend
+      profiler.start(*args, **kwargs)
     end
 
     def stop
       profiler.stop
-      profiler.results
+      profiler.results.tap { clear }
     end
 
     def running?
-      @backend&.running?
+      @profiler&.running?
     end
 
     def profiler
-      backend
-      @backend ||= @profiler_backend.new
+      @profiler ||= profiler_backend.new
     end
 
     def backend=(new_backend)
-      return if new_backend == backend
-
-      new_profiler_backend = backend_for(new_backend)
+      return if (new_profiler_backend = backend_for(new_backend)) == profiler_backend
 
       if running?
         raise BackendError,
           "cannot change backend to #{new_backend} while #{backend} backend is running"
       end
-
-      return if @profiler_backend == new_profiler_backend
 
       clear
       @profiler_backend = new_profiler_backend
@@ -156,22 +152,21 @@ module AppProfiler
 
     def backend_for(backend_name)
       if vernier_supported? &&
-          backend_name == AppProfiler::Backend::VernierBackend.name
+          backend_name&.to_sym == AppProfiler::Backend::VernierBackend.name
         AppProfiler::Backend::VernierBackend
-      elsif backend_name == AppProfiler::Backend::StackprofBackend.name
+      elsif backend_name&.to_sym == AppProfiler::Backend::StackprofBackend.name
         AppProfiler::Backend::StackprofBackend
       else
-        raise BackendError, "unknown backend #{backend_name}"
+        raise BackendError, "unknown backend #{backend_name.inspect}"
       end
     end
 
     def backend
-      @profiler_backend ||= Backend::StackprofBackend
-      @profiler_backend.name
+      profiler_backend.name
     end
 
     def vernier_supported?
-      defined?(AppProfiler::Backend::VernierBackend.name)
+      RUBY_VERSION >= "3.2.1"
     end
 
     def profile_header=(profile_header)
@@ -234,9 +229,14 @@ module AppProfiler
 
     private
 
+    def profiler_backend
+      @profiler_backend ||= Backend::StackprofBackend
+    end
+
     def clear
-      @backend.stop if @backend&.running?
-      @backend = nil
+      profiler.stop if running?
+      @profiler = nil
+      @profiler_backend = nil
     end
   end
 

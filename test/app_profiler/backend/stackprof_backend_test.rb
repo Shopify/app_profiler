@@ -6,7 +6,12 @@ module AppProfiler
   module Backend
     class StackprofBackendTest < TestCase
       def setup
+        @original_backend = AppProfiler.backend
         AppProfiler.backend = :stackprof
+      end
+
+      def teardown
+        AppProfiler.backend = @original_backend
       end
 
       test ".run prints error when failed" do

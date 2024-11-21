@@ -45,7 +45,7 @@ module AppProfiler
       AppProfiler.profile_enqueue_success = app.config.app_profiler.profile_enqueue_success
       AppProfiler.profile_enqueue_failure = app.config.app_profiler.profile_enqueue_failure
       AppProfiler.after_process_queue = app.config.app_profiler.after_process_queue
-      AppProfiler.backend = app.config.app_profiler.profiler_backend || :stackprof
+      AppProfiler.backend = app.config.app_profiler.profiler_backend || :stackprof unless AppProfiler.running?
       AppProfiler.forward_metadata_on_upload = app.config.app_profiler.forward_metadata_on_upload || false
       AppProfiler.profile_sampler_enabled = app.config.app_profiler.profile_sampler_enabled || false
       AppProfiler.profile_sampler_config = app.config.app_profiler.profile_sampler_config ||
