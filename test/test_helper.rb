@@ -94,5 +94,11 @@ module AppProfiler
     ensure
       app.instance_variable_set(:@yarn_initialized, old_yarn_setup)
     end
+
+    def reset_process_queue_thread
+      Storage::GoogleCloudStorage.send(:init_queue)
+      Storage::GoogleCloudStorage.instance_variable_get(:@process_queue_thread)&.kill
+      Storage::GoogleCloudStorage.instance_variable_set(:@process_queue_thread, nil)
+    end
   end
 end
