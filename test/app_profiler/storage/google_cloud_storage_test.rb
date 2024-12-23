@@ -119,6 +119,22 @@ module AppProfiler
         assert(th.alive?)
       end
 
+      test "process_queue_thread is recreated on enqueue if stopped" do
+        GoogleCloudStorage.enqueue_upload(profile_from_stackprof)
+        th = GoogleCloudStorage.instance_variable_get(:@process_queue_thread)
+        assert(th.alive?)
+
+        th.kill
+        th.join
+
+        GoogleCloudStorage.enqueue_upload(profile_from_stackprof)
+        assert_not_predicate(th, :alive?)
+
+        GoogleCloudStorage.send(:start_process_queue_thread)
+        th = GoogleCloudStorage.instance_variable_get(:@process_queue_thread)
+        assert(th.alive?)
+      end
+
       private
 
       def with_forward_metadata_on_upload
@@ -131,10 +147,10 @@ module AppProfiler
 
       def with_stubbed_process_queue_thread
         # Stub out the thread creation, so that tests are not flaky.
-        GoogleCloudStorage.stubs(:process_queue_thread)
+        GoogleCloudStorage.stubs(:start_process_queue_thread)
         yield
       ensure
-        GoogleCloudStorage.unstub(:process_queue_thread)
+        GoogleCloudStorage.unstub(:start_process_queue_thread)
       end
 
       def profile_from_stackprof
