@@ -37,7 +37,7 @@ module AppProfiler
 
         def enqueue_upload(profile)
           mutex.synchronize do
-            process_queue_thread unless @process_queue_thread&.alive?
+            start_process_queue_thread
 
             @queue ||= init_queue
             begin
@@ -60,8 +60,10 @@ module AppProfiler
           @queue = SizedQueue.new(AppProfiler.upload_queue_max_length)
         end
 
-        def process_queue_thread
-          @process_queue_thread ||= Thread.new do
+        def start_process_queue_thread
+          return if @process_queue_thread&.alive?
+
+          @process_queue_thread = Thread.new do
             loop do
               process_queue
               sleep(AppProfiler.upload_queue_interval_secs)
