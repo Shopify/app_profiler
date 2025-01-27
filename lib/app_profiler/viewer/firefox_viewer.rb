@@ -48,7 +48,7 @@ module AppProfiler
 
       def setup_profile_viewer
         exec("which", "profile-viewer", silent: true) do
-          gem_install("profile_viewer")
+          gem_install("profile-viewer")
         end
         @profile_viewer_initialized = true
       end
