@@ -99,6 +99,14 @@ File names of profiles are prefixed by default with timezoned date and time, fol
 AppProfiler.profile_file_prefix = -> { "custom-prefix" }
 # OR
 Rails.application.config.app_profiler.profile_file_prefix = -> { "custom-prefix" }
+
+```
+As opposed to `profile_file_prefix`, which is used to customize the prefix of a file name, `profile_file_name` is used to provide the actual file name. If both are provided, `profile_file_name` takes precedence.
+
+```ruby
+AppProfiler.profile_file_name = ->(metadata) { "profile-#{metadata[:id]}-#{metadata[:hostname]}.json" }
+# OR
+Rails.application.config.app_profiler.profile_file_name = ->(metadata) { "profile-#{metadata[:id]}-#{metadata[:hostname]}.json" }
 ```
 
 To customize the redirect location you can provide a proc:

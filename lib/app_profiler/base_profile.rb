@@ -96,12 +96,16 @@ module AppProfiler
     private
 
     def path
-      filename = [
-        AppProfiler.profile_file_prefix.call,
-        mode,
-        id,
-        Socket.gethostname,
-      ].compact.join("-") << format
+      filename = if AppProfiler.profile_file_name.present?
+        AppProfiler.profile_file_name.call(metadata)
+      else
+        [
+          AppProfiler.profile_file_prefix.call,
+          mode,
+          id,
+          Socket.gethostname,
+        ].compact.join("-") << format
+      end
 
       raise UnsafeFilename if /[^0-9A-Za-z.\-\_]/.match?(filename)
 
