@@ -173,7 +173,7 @@ module AppProfiler
     end
 
     def vernier_supported?
-      RUBY_VERSION >= "3.2.1"
+      RUBY_VERSION >= "3.2.1" && defined?(AppProfiler::Backend::VernierBackend.name)
     end
 
     def profile_header=(profile_header)
