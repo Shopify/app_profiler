@@ -68,8 +68,8 @@ module AppProfiler
   mattr_reader :profile_enqueue_failure, default: nil
   mattr_reader :after_process_queue, default: nil
   mattr_accessor :forward_metadata_on_upload, default: false
-
   mattr_accessor :profile_sampler_config
+  mattr_reader :profile_file_name
 
   class << self
     def deprecator # :nodoc:
@@ -127,6 +127,12 @@ module AppProfiler
 
     def vernier_viewer
       @@vernier_viewer ||= Viewer::FirefoxViewer # rubocop:disable Style/ClassVars
+    end
+
+    def profile_file_name=(value)
+      raise ArgumentError, "profile_file_name must be a proc" if value && !value.is_a?(Proc)
+
+      @@profile_file_name = value # rubocop:disable Style/ClassVars
     end
 
     def profile_sampler_enabled=(value)
