@@ -133,7 +133,7 @@ module AppProfiler
       old_profile_file_name = AppProfiler.profile_file_name
       AppProfiler.profile_file_name = ->(metadata) { "file-name-#{metadata[:id]}" }
       profile = VernierProfile.new(vernier_profile(meta: { id: "foo", context: "bar" }))
-      assert_match("file-name-foo", File.basename(profile.file.to_s))
+      assert_match("file-name-foo.vernier.json", File.basename(profile.file.to_s))
     ensure
       AppProfiler.profile_file_name = old_profile_file_name
     end
