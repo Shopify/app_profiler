@@ -160,7 +160,7 @@ module AppProfiler
       old_profile_file_name = AppProfiler.profile_file_name
       AppProfiler.profile_file_name = ->(metadata) { "file-name-#{metadata[:id]}" }
       profile = StackprofProfile.new(stackprof_profile(metadata: { id: "foo", context: "bar" }))
-      assert_match("file-name-foo", File.basename(profile.file.to_s))
+      assert_match("file-name-foo.stackprof.json", File.basename(profile.file.to_s))
     ensure
       AppProfiler.profile_file_name = old_profile_file_name
     end

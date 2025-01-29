@@ -97,7 +97,7 @@ module AppProfiler
 
     def path
       filename = if AppProfiler.profile_file_name.present?
-        AppProfiler.profile_file_name.call(metadata)
+        AppProfiler.profile_file_name.call(metadata) + format
       else
         [
           AppProfiler.profile_file_prefix.call,
