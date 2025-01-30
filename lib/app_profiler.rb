@@ -182,6 +182,14 @@ module AppProfiler
       @@profile_data_header = nil       # rubocop:disable Style/ClassVars
     end
 
+    def profile_upload_path=(profile_upload_path)
+      @@profile_upload_path = profile_upload_path # rubocop:disable Style/ClassVars
+    end
+
+    def profile_upload_path
+      @@profile_upload_path ||= "X-Profile-Upload-Path" # rubocop:disable Style/ClassVars
+    end
+
     def request_profile_header
       @@request_profile_header ||= profile_header.upcase.tr("-", "_").prepend("HTTP_") # rubocop:disable Style/ClassVars
     end

@@ -8,25 +8,25 @@ module AppProfiler
           if async
             profile.enqueue_upload
             response[1][AppProfiler.profile_async_header] = "true"
-          else
-            profile_upload = profile.upload
-
+            response[1][AppProfiler.profile_upload_path] = profile.upload_path
+          elsif response
             append_headers(
               response,
-              upload: profile_upload,
+              profile: profile,
               autoredirect: autoredirect.nil? ? AppProfiler.autoredirect : autoredirect,
-            ) if response
+            )
           end
         end
 
         private
 
-        def append_headers(response, upload:, autoredirect:)
+        def append_headers(response, profile:, autoredirect:)
+          upload = profile.upload
           return unless upload
 
           response[1][profile_header]      = AppProfiler.profile_url(upload)
           response[1][profile_data_header] = profile_data_url(upload)
-
+          response[1][AppProfiler.profile_upload_path] = profile.upload_path
           return unless autoredirect
 
           # Automatically redirect to profile if autoredirect is true.

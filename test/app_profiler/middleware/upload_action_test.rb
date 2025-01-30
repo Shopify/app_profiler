@@ -84,8 +84,16 @@ module AppProfiler
       end
 
       test ".call with async: true" do
+        @old_file_name = AppProfiler.profile_file_name
+        AppProfiler.profile_file_name = ->(_) {
+          "gcs-filename"
+        }
         UploadAction.call(@profile, response: @response, async: true)
         assert_equal(@response[1][AppProfiler.profile_async_header], "true")
+
+        assert_equal(@profile.upload_path, "gcs-filename" + @profile.format)
+      ensure
+        AppProfiler.profile_file_name = @old_file_name
       end
 
       private

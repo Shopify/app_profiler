@@ -14,6 +14,10 @@ module AppProfiler
         def enqueue_upload(_profile)
           raise NotImplementedError
         end
+
+        def upload_path(_profile)
+          raise NotImplementedError
+        end
       end
     end
   end

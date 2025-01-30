@@ -50,6 +50,10 @@ module AppProfiler
           end
         end
 
+        def upload_path(profile)
+          AppProfiler.storage.bucket_name + gcs_filename(profile)
+        end
+
         private
 
         def mutex
@@ -92,7 +96,7 @@ module AppProfiler
         end
 
         def gcs_filename(profile)
-          File.join(profile.context.to_s, profile.file.basename)
+          File.join(profile.context.to_s, profile.file_name)
         end
 
         def bucket

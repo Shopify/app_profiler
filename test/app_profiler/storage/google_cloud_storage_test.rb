@@ -20,6 +20,17 @@ module AppProfiler
         end
       end
 
+      test "upload file with upload path" do
+        @old_file_name = AppProfiler.profile_file_name
+        AppProfiler.profile_file_name = ->(_) {
+          "gcs-filename"
+        }
+        profile = profile_from_stackprof
+        assert_equal(GoogleCloudStorage.upload_path(profile), "profiles/gcs-filename" + profile.format)
+      ensure
+        AppProfiler.profile_file_name = @old_file_name
+      end
+
       test "sets metadata when forward_metadata_on_upload" do
         with_forward_metadata_on_upload do
           profile = profile_from_stackprof
@@ -42,7 +53,7 @@ module AppProfiler
 
       test "directory includes context" do
         assert_equal(
-          GoogleCloudStorage.send(:gcs_filename, stub(context: "context", file: Pathname.new("foo"))),
+          GoogleCloudStorage.send(:gcs_filename, stub(context: "context", file_name: "foo")),
           "context/foo",
         )
       end

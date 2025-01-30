@@ -62,8 +62,28 @@ module AppProfiler
       AppProfiler.storage.enqueue_upload(self)
     end
 
+    def upload_path
+      AppProfiler.storage.upload_path(self)
+    end
+
     def valid?
       mode.present?
+    end
+
+    def file_name
+      filename = if AppProfiler.profile_file_name.present?
+        AppProfiler.profile_file_name.call(metadata) + format
+      else
+        [
+          AppProfiler.profile_file_prefix.call,
+          mode,
+          id,
+          Socket.gethostname,
+        ].compact.join("-") << format
+      end
+      raise UnsafeFilename if /[^0-9A-Za-z.\-\_]/.match?(filename)
+
+      filename
     end
 
     def file
@@ -96,20 +116,7 @@ module AppProfiler
     private
 
     def path
-      filename = if AppProfiler.profile_file_name.present?
-        AppProfiler.profile_file_name.call(metadata) + format
-      else
-        [
-          AppProfiler.profile_file_prefix.call,
-          mode,
-          id,
-          Socket.gethostname,
-        ].compact.join("-") << format
-      end
-
-      raise UnsafeFilename if /[^0-9A-Za-z.\-\_]/.match?(filename)
-
-      AppProfiler.profile_root.join(filename)
+      AppProfiler.profile_root.join(file_name)
     end
   end
 end
