@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.7] - 2025-01-29
+
+- Add profile file name proc (#151)
+- Fix: Add format to profile name (#153)
+- Reintroduce VernierBackend definition check (#154)
+
 ## [0.2.6] - 2025-01-20
 
 - Add support for vernier profile vieweing (#111)
