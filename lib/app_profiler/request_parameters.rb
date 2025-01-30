@@ -27,11 +27,12 @@ module AppProfiler
     end
 
     def valid?
-      if mode.blank?
+      return false if mode.blank?
+
+      unless valid_backend?
+        AppProfiler.logger.info("[AppProfiler] unsupported backend='#{backend}'")
         return false
       end
-
-      return false if backend != AppProfiler::Backend::StackprofBackend.name && !AppProfiler.vernier_supported?
 
       if AppProfiler.vernier_supported? && backend == AppProfiler::Backend::VernierBackend.name &&
           !AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.include?(mode.to_sym)
@@ -48,6 +49,12 @@ module AppProfiler
       end
 
       true
+    end
+
+    def valid_backend?
+      return true if AppProfiler::Backend::StackprofBackend.name == backend
+
+      AppProfiler.vernier_supported? && AppProfiler::Backend::VernierBackend.name == backend
     end
 
     def to_h
