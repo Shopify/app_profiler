@@ -11,15 +11,6 @@ module AppProfiler
       assert_equal("bar", profile.context)
     end
 
-    test ".from_vernier assigns random id when id is not present" do
-      SecureRandom.expects(:hex).returns("mock")
-
-      params_without_id = vernier_profile(vernier_params).tap { |data| data[:meta].delete(:id) }
-      profile = BaseProfile.from_vernier(params_without_id)
-
-      assert_equal("mock", profile.id)
-    end
-
     test "#id" do
       profile = VernierProfile.new(vernier_profile, id: "pass")
 
@@ -27,7 +18,7 @@ module AppProfiler
     end
 
     test "#id is random hex by default" do
-      SecureRandom.expects(:hex).returns("mock")
+      ProfileId.expects(:current).returns("mock")
 
       profile = VernierProfile.new(vernier_profile)
 
@@ -35,7 +26,7 @@ module AppProfiler
     end
 
     test "#id is random hex when passed as empty string" do
-      SecureRandom.expects(:hex).returns("mock")
+      ProfileId.expects(:current).returns("mock")
 
       profile = VernierProfile.new(vernier_profile, id: "")
 

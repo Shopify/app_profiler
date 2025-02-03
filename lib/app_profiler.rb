@@ -45,6 +45,7 @@ module AppProfiler
   autoload(:Backend, "app_profiler/backend")
   autoload(:Server, "app_profiler/server")
   autoload(:Sampler, "app_profiler/sampler")
+  autoload(:ProfileId, "app_profiler/profile_id")
 
   mattr_accessor :logger, default: Logger.new($stdout)
   mattr_accessor :root

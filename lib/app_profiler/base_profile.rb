@@ -34,7 +34,7 @@ module AppProfiler
     # `data` is assumed to be a Hash for Stackprof,
     # a vernier "result" object for vernier
     def initialize(data, id: nil, context: nil)
-      @id      = id.presence || SecureRandom.hex
+      @id      = id.presence || ProfileId.current
       @context = context
       @data    = data
     end
