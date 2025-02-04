@@ -49,17 +49,23 @@ module AppProfiler
         assert_profiles_dumped(3) do
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
-            middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+            with_profile_id_reset do
+              middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+            end
           end
 
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
-            middleware.call(mock_request_env(path: "/?profile=wall&backend=vernier"))
+            with_profile_id_reset do
+              middleware.call(mock_request_env(path: "/?profile=wall&backend=vernier"))
+            end
           end
 
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
-            middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+            with_profile_id_reset do
+              middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+            end
           end
 
           json_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::StackprofProfile::FILE_EXTENSION}$/ }
@@ -435,6 +441,12 @@ module AppProfiler
 
     def mock_request_env(path: "/", opt: {})
       Rack::MockRequest.env_for("https://app-profiler.com#{path}", opt)
+    end
+
+    def with_profile_id_reset
+      yield
+    ensure
+      ProfileId::Current.reset
     end
   end
 end

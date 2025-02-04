@@ -19,15 +19,6 @@ module AppProfiler
       assert_equal("bar", profile.context)
     end
 
-    test ".from_stackprof assigns random id when id is not present" do
-      SecureRandom.expects(:hex).returns("mock")
-
-      params_without_id = stackprof_profile.tap { |data| data[:metadata].delete(:id) }
-      profile = BaseProfile.from_stackprof(params_without_id)
-
-      assert_equal("mock", profile.id)
-    end
-
     test ".from_stackprof removes id and context metadata from profile data" do
       profile = BaseProfile.from_stackprof(stackprof_profile(metadata: { id: "foo", context: "bar" }))
 
@@ -42,7 +33,7 @@ module AppProfiler
     end
 
     test "#id is random hex by default" do
-      SecureRandom.expects(:hex).returns("mock")
+      ProfileId.expects(:current).returns("mock")
 
       profile = StackprofProfile.new(stackprof_profile)
 
@@ -50,7 +41,7 @@ module AppProfiler
     end
 
     test "#id is random hex when passed as empty string" do
-      SecureRandom.expects(:hex).returns("mock")
+      ProfileId.expects(:current).returns("mock")
 
       profile = StackprofProfile.new(stackprof_profile, id: "")
 
