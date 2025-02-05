@@ -8,7 +8,7 @@ require "rails"
 require "app_profiler"
 
 require "active_support"
-require "active_support/time_with_zone"
+require "active_support/core_ext/time/zones"
 require "active_support/test_case"
 require "active_support/testing/autorun"
 
