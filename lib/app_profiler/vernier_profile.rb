@@ -7,8 +7,8 @@ module AppProfiler
     def initialize(data, id: nil, context: nil)
       super(data, id: id, context: context)
       @data[:meta] ||= {}
-      metadata[PROFILE_BACKEND_METADATA_KEY] = Backend::VernierBackend.name.to_s
-      metadata[PROFILE_ID_METADATA_KEY] = id
+      metadata[PROFILE_BACKEND_METADATA_KEY] = "vernier"
+      metadata[PROFILE_ID_METADATA_KEY] = @id
     end
 
     def mode
