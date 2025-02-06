@@ -417,6 +417,16 @@ module AppProfiler
       end
     end
 
+    test "ProfileId is nil after the middleware has finished" do
+      assert_profiles_dumped do
+        assert_profiles_uploaded do
+          middleware = AppProfiler::Middleware.new(app_env)
+          middleware.call(mock_request_env(path: "/?profile=cpu"))
+        end
+      end
+      assert_nil(Thread.current[ProfileId::PROFILE_ID_KEY])
+    end
+
     private
 
     def with_profile_sampler_enabled

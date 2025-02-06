@@ -8,6 +8,7 @@ module AppProfiler
       profile = BaseProfile.from_vernier(vernier_profile(meta: { id: "foo", context: "bar" }))
 
       assert_equal("foo", profile.id)
+      assert_equal("foo", ProfileId.current)
       assert_equal("bar", profile.context)
     end
 

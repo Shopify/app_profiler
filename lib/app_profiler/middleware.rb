@@ -45,6 +45,8 @@ module AppProfiler
       )
 
       response
+    ensure
+      ProfileId::Current.reset
     end
 
     def profile_params(params)
