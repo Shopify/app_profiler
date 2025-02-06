@@ -4,6 +4,13 @@ module AppProfiler
   class VernierProfile < BaseProfile
     FILE_EXTENSION = ".vernier.json"
 
+    def initialize(data, id: nil, context: nil)
+      super(data, id: id, context: context)
+      @data[:meta] ||= {}
+      metadata[PROFILE_BACKEND_METADATA_KEY] = "vernier"
+      metadata[PROFILE_ID_METADATA_KEY] = @id
+    end
+
     def mode
       @data[:meta][:mode]
     end

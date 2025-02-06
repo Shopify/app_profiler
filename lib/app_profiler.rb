@@ -7,6 +7,9 @@ require "logger"
 require "app_profiler/version"
 
 module AppProfiler
+  PROFILE_ID_METADATA_KEY = :profile_id
+  PROFILE_BACKEND_METADATA_KEY = :profiler
+
   class ConfigurationError < StandardError
   end
 
