@@ -75,6 +75,8 @@ module AppProfiler
 
       assert_match(/.*\.json/, profile.file.to_s)
       assert_equal(profile_data.to_h, JSON.parse(profile.file.read, symbolize_names: true))
+      assert_equal(ProfileId.current, profile.id)
+      assert_equal("vernier", profile.metadata[PROFILE_BACKEND_METADATA_KEY])
     end
 
     test "#file creates file only once" do

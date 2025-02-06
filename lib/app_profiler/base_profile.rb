@@ -8,6 +8,7 @@ module AppProfiler
     private_constant :INTERNAL_METADATA_KEYS
     class UnsafeFilename < StandardError; end
     PROFILE_ID_METADATA_KEY = :profile_id
+    PROFILE_BACKEND_METADATA_KEY = :profiler
 
     attr_reader :id, :context
 
