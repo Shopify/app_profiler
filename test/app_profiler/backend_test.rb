@@ -9,7 +9,7 @@ module AppProfiler
       assert(AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name)
       AppProfiler.start
       assert(AppProfiler.running?)
-      assert_raises(BackendError) { AppProfiler.backend = AppProfiler::Backend::VernierBackend.name }
+      assert_raises(BackendError) { AppProfiler.backend = AppProfiler::VernierProfile::BACKEND_NAME }
     ensure
       AppProfiler.stop
     end
@@ -21,8 +21,8 @@ module AppProfiler
       assert(AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name)
       assert_equal(AppProfiler.backend, AppProfiler::Backend::StackprofBackend.name)
       refute(AppProfiler.running?)
-      assert(AppProfiler.backend = AppProfiler::Backend::VernierBackend.name)
-      assert_equal(AppProfiler.backend, AppProfiler::Backend::VernierBackend.name)
+      assert(AppProfiler.backend = AppProfiler::VernierProfile::BACKEND_NAME)
+      assert_equal(AppProfiler.backend, AppProfiler::VernierProfile::BACKEND_NAME)
     ensure
       AppProfiler.backend = orig_backend
     end
@@ -49,7 +49,7 @@ module AppProfiler
 
       assert_equal(
         AppProfiler::Backend::VernierBackend,
-        AppProfiler.backend_for(AppProfiler::Backend::VernierBackend.name),
+        AppProfiler.backend_for(AppProfiler::VernierProfile::BACKEND_NAME),
       )
     end
 

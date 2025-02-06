@@ -8,7 +8,7 @@ module AppProfiler
     private_constant :INTERNAL_METADATA_KEYS
     class UnsafeFilename < StandardError; end
 
-    attr_reader :id, :context
+    attr_reader :context
 
     delegate :[], to: :@data
 
@@ -34,9 +34,17 @@ module AppProfiler
     # `data` is assumed to be a Hash for Stackprof,
     # a vernier "result" object for vernier
     def initialize(data, id: nil, context: nil)
-      @id      = id.presence || ProfileId.current
+      ProfileId.current = id if id.present?
+
       @context = context
       @data    = data
+
+      metadata[PROFILE_BACKEND_METADATA_KEY] = self.class.backend_name
+      metadata[PROFILE_ID_METADATA_KEY] = ProfileId.current
+    end
+
+    def id
+      metadata[PROFILE_ID_METADATA_KEY]
     end
 
     def upload

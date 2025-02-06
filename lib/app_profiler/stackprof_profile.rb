@@ -4,6 +4,17 @@ module AppProfiler
   class StackprofProfile < BaseProfile
     FILE_EXTENSION = ".stackprof.json"
 
+    class << self
+      def backend_name
+        Backend::StackprofBackend.name.to_s
+      end
+    end
+
+    def initialize(data, id: nil, context: nil)
+      data[:metadata] ||= {}
+      super(data, id: id, context: context)
+    end
+
     def mode
       @data[:mode]
     end

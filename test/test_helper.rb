@@ -65,6 +65,10 @@ module AppProfiler
   class TestCase < ActiveSupport::TestCase
     include TestHelper
 
+    def teardown
+      ProfileId::Current.reset
+    end
+
     protected
 
     def file_fixture(fixture)
