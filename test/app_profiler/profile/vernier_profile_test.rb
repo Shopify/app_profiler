@@ -8,6 +8,7 @@ module AppProfiler
       profile = BaseProfile.from_vernier(vernier_profile(meta: { id: "foo", context: "bar" }))
 
       assert_equal("foo", profile.id)
+      assert_equal("foo", ProfileId.current)
       assert_equal("bar", profile.context)
     end
 
@@ -74,6 +75,8 @@ module AppProfiler
 
       assert_match(/.*\.json/, profile.file.to_s)
       assert_equal(profile_data.to_h, JSON.parse(profile.file.read, symbolize_names: true))
+      assert_equal(ProfileId.current, profile.id)
+      assert_equal("vernier", profile.metadata[PROFILE_BACKEND_METADATA_KEY])
     end
 
     test "#file creates file only once" do

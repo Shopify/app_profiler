@@ -7,6 +7,9 @@ require "logger"
 require "app_profiler/version"
 
 module AppProfiler
+  PROFILE_ID_METADATA_KEY = :profile_id
+  PROFILE_BACKEND_METADATA_KEY = :profiler
+
   class ConfigurationError < StandardError
   end
 
@@ -90,6 +93,7 @@ module AppProfiler
       yield
     ensure
       self.backend = original_backend if backend
+      ProfileId::Current.reset
     end
 
     def start(*args, backend: nil, **kwargs)
@@ -160,7 +164,7 @@ module AppProfiler
 
     def backend_for(backend_name)
       if vernier_supported? &&
-          backend_name&.to_sym == AppProfiler::Backend::VernierBackend.name
+          backend_name&.to_sym == AppProfiler::VernierProfile::BACKEND_NAME
         AppProfiler::Backend::VernierBackend
       elsif backend_name&.to_sym == AppProfiler::Backend::StackprofBackend.name
         AppProfiler::Backend::StackprofBackend
@@ -174,7 +178,7 @@ module AppProfiler
     end
 
     def vernier_supported?
-      RUBY_VERSION >= "3.2.1" && defined?(AppProfiler::Backend::VernierBackend.name)
+      RUBY_VERSION >= "3.2.1" && defined?(AppProfiler::VernierProfile::BACKEND_NAME)
     end
 
     def profile_header=(profile_header)
