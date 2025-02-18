@@ -76,6 +76,8 @@ module AppProfiler
   mattr_reader :profile_file_name
 
   class << self
+    attr_reader :otel_instrumentation_enabled
+
     def deprecator # :nodoc:
       @deprecator ||= ActiveSupport::Deprecation.new("in future releases", "app_profiler")
     end
@@ -160,6 +162,15 @@ module AppProfiler
         "[AppProfiler.profile_sampler_enabled] exception: #{e}, message: #{e.message}",
       )
       false
+    end
+
+    def otel_instrumentation_enabled=(value)
+      if value
+        gem("opentelemetry-instrumentation-rack")
+        require("opentelemetry/instrumentation/rack")
+      end
+
+      @otel_instrumentation_enabled = value
     end
 
     def backend_for(backend_name)

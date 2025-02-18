@@ -51,6 +51,8 @@ module AppProfiler
       AppProfiler.profile_sampler_enabled = app.config.app_profiler.profile_sampler_enabled || false
       AppProfiler.profile_sampler_config = app.config.app_profiler.profile_sampler_config ||
         AppProfiler::Sampler::Config.new
+
+      AppProfiler.otel_instrumentation_enabled = app.config.app_profiler.otel_instrumentation_enabled || false
     end
 
     initializer "app_profiler.add_middleware" do |app|

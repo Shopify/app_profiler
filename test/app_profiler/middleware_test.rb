@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "opentelemetry/instrumentation/rack"
 
 module AppProfiler
   class MiddlewareTest < TestCase
@@ -17,6 +18,33 @@ module AppProfiler
           middleware = AppProfiler::Middleware.new(app_env)
           middleware.call(mock_request_env(path: "/?profile=cpu"))
         end
+      end
+    end
+
+    test "otel instrumentation works" do
+      with_otel_instrumentation_enabled do
+        AppProfiler::ProfileId.stubs(:current).returns("1")
+        OpenTelemetry::Instrumentation::Rack.current_span.stubs(:recording?).returns(true)
+        assert_profiles_dumped do
+          assert_profiles_uploaded do
+            middleware = AppProfiler::Middleware.new(app_env)
+            OpenTelemetry::Instrumentation::Rack.current_span.expects(:add_attributes).with do |attributes|
+              assert_equal(attributes[AppProfiler::Middleware::OTEL_PROFILE_ID], "1")
+              assert_equal(attributes[AppProfiler::Middleware::OTEL_PROFILE_BACKEND], "stackprof")
+              assert_equal(attributes[AppProfiler::Middleware::OTEL_PROFILE_MODE], "cpu")
+            end
+            middleware.call(mock_request_env(path: "/?profile=cpu"))
+          end
+        end
+      end
+    end
+
+    test "otel attributes are not added when span is not sampled" do
+      with_otel_instrumentation_enabled do
+        OpenTelemetry::Instrumentation::Rack.current_span.stubs(:recording?).returns(false)
+        OpenTelemetry::Instrumentation::Rack.current_span.expects(:add_attributes).never
+
+        AppProfiler::Middleware.new(app_env).call(mock_request_env(path: "/?profile=cpu"))
       end
     end
 
@@ -443,6 +471,14 @@ module AppProfiler
       yield
     ensure
       AppProfiler.storage = old_storage
+    end
+
+    def with_otel_instrumentation_enabled
+      old_status = AppProfiler.otel_instrumentation_enabled
+      AppProfiler.otel_instrumentation_enabled = true
+      yield
+    ensure
+      AppProfiler.otel_instrumentation_enabled = old_status
     end
 
     def app_env

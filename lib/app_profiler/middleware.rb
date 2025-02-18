@@ -7,6 +7,11 @@ require "app_profiler/middleware/view_action"
 
 module AppProfiler
   class Middleware
+    OTEL_PROFILE_ID = "profile.id"
+    OTEL_PROFILE_BACKEND = "profile.profiler"
+    OTEL_PROFILE_MODE = "profile.mode"
+    OTEL_PROFILE_CONTEXT = "profile.context"
+
     class_attribute :action,   default: UploadAction
     class_attribute :disabled, default: false
 
@@ -29,7 +34,10 @@ module AppProfiler
       return yield unless app_profiler_params
 
       params_hash = app_profiler_params.to_h
+
       return yield unless before_profile(env, params_hash)
+
+      add_otel_instrumentation(env, params_hash) if AppProfiler.otel_instrumentation_enabled
 
       profile = AppProfiler.run(**params_hash) do
         response = yield
@@ -45,6 +53,27 @@ module AppProfiler
       )
 
       response
+    end
+
+    def add_otel_instrumentation(env, params)
+      rack_span = OpenTelemetry::Instrumentation::Rack.current_span
+      return unless rack_span.recording?
+
+      metadata = params[:metadata]
+      profile_id = if metadata[:id].present?
+        metadata[:id]
+      else
+        AppProfiler::ProfileId.current
+      end
+
+      attributes = {
+        OTEL_PROFILE_ID => profile_id,
+        OTEL_PROFILE_BACKEND => params[:backend].to_s,
+        OTEL_PROFILE_MODE => params[:mode].to_s,
+        OTEL_PROFILE_CONTEXT => AppProfiler.context,
+      }
+
+      rack_span.add_attributes(attributes)
     end
 
     def profile_params(params)
