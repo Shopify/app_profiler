@@ -6,6 +6,9 @@ require "app_profiler/middleware/upload_action"
 require "app_profiler/middleware/view_action"
 
 module AppProfiler
+  PROFILE_ID = "app_profiler.profile_id"
+  PROFILE_BACKEND = "app_profiler.backend"
+  PROFILE_MODE = "app_profiler.mode"
   class Middleware
     class_attribute :action,   default: UploadAction
     class_attribute :disabled, default: false
@@ -29,6 +32,8 @@ module AppProfiler
       return yield unless app_profiler_params
 
       params_hash = app_profiler_params.to_h
+
+      add_env_params(env, params_hash)
       return yield unless before_profile(env, params_hash)
 
       profile = AppProfiler.run(**params_hash) do
@@ -45,6 +50,18 @@ module AppProfiler
       )
 
       response
+    end
+
+    def add_env_params(env, params)
+      metadata = params[:metadata]
+      env[PROFILE_ID] = if metadata[:id].present?
+        metadata[:id]
+      else
+        AppProfiler::ProfileId.current
+      end
+
+      env[PROFILE_BACKEND] = params[:backend].to_s
+      env[PROFILE_MODE] = params[:mode].to_s
     end
 
     def profile_params(params)
