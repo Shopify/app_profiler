@@ -50,5 +50,17 @@ module AppProfiler
     ensure
       AppProfiler.profile_sampler_enabled = old_status
     end
+
+    test "otel_instrumentation_enabled config works" do
+      old_status = AppProfiler.otel_instrumentation_enabled
+
+      AppProfiler.otel_instrumentation_enabled = true
+      assert(AppProfiler.otel_instrumentation_enabled)
+
+      AppProfiler.otel_instrumentation_enabled = false
+      assert_equal(false, AppProfiler.otel_instrumentation_enabled)
+    ensure
+      AppProfiler.otel_instrumentation_enabled = old_status
+    end
   end
 end

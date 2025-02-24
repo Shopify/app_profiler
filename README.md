@@ -117,6 +117,18 @@ AppProfiler.profile_url_formatter = ->(upload) { "https://host.com/custom/#{uplo
 Rails.application.config.app_profiler.profile_url_formatter = ->(upload) { "https://host.com/custom/#{upload.name}" }
 ```
 
+### OpenTelemetry Instrumentation
+
+Apps using OpenTelemetry can add attributes to traces. This can be useful for correlating profiling data with traces. 
+
+To enable this feature, you can set  `otel_instrumentation_enabled` to `true`. The gem does not require the `opentelemetry` gem to be installed. If the gem is not installed or if it is not loaded, enabling it will raise an `ArgumentError`. By default, the feature is disabled.
+
+```ruby
+AppProfiler.otel_instrumentation_enabled = true
+# OR
+Rails.application.config.app_profiler.otel_instrumentation_enabled = true
+```
+
 When profiling is triggered, the middleware will generate the profile through StackProf and upload the profiles to your specified storage. For example, the default configuration would upload profiles to file storage.
 
 When using a cloud storage provider, you can configure the target bucket name using:

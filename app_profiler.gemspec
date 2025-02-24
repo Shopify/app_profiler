@@ -34,5 +34,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency("minitest")
   spec.add_development_dependency("minitest-stub-const", "0.6")
   spec.add_development_dependency("mocha")
+  spec.add_development_dependency("opentelemetry-instrumentation-rack")
   spec.add_development_dependency("rake")
 end
