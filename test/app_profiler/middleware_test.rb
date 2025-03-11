@@ -21,10 +21,39 @@ module AppProfiler
       end
     end
 
+    class TestSpan < OpenTelemetry::Trace::Span
+      class TestResource
+        attr_accessor :attributes
+
+        def initialize(attributes = {})
+          @attributes = attributes
+        end
+
+        def attribute_enumerator
+          attributes.to_enum
+        end
+      end
+
+      def initialize(resource_attributes = {})
+        @resource = TestResource.new(resource_attributes)
+        super()
+      end
+
+      def recording?
+        true
+      end
+
+      def resource(attributes = {})
+        @resource
+      end
+    end
+
     test "otel instrumentation works" do
       with_otel_instrumentation_enabled do
         AppProfiler::ProfileId.stubs(:current).returns("1")
-        OpenTelemetry::Instrumentation::Rack.current_span.stubs(:recording?).returns(true)
+        span = TestSpan.new({ AppProfiler::Middleware::OTEL_SERVICE_NAME_KEY => "test_app" })
+
+        OpenTelemetry::Instrumentation::Rack.stubs(:current_span).returns(span)
         assert_profiles_dumped do
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
@@ -33,7 +62,10 @@ module AppProfiler
               assert_equal(attributes[AppProfiler::Middleware::OTEL_PROFILE_BACKEND], "stackprof")
               assert_equal(attributes[AppProfiler::Middleware::OTEL_PROFILE_MODE], "cpu")
             end
-            middleware.call(mock_request_env(path: "/?profile=cpu"))
+            response = middleware.call(mock_request_env(path: "/?profile=cpu"))
+            profile = JSON.load_file(tmp_profiles[0])
+            assert_equal(profile["metadata"]["service_name"], "test_app")
+            response
           end
         end
       end

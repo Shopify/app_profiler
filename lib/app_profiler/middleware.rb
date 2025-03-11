@@ -11,6 +11,7 @@ module AppProfiler
     OTEL_PROFILE_BACKEND = "profile.profiler"
     OTEL_PROFILE_MODE = "profile.mode"
     OTEL_PROFILE_CONTEXT = "profile.context"
+    OTEL_SERVICE_NAME_KEY = "service.name"
 
     class_attribute :action,   default: UploadAction
     class_attribute :disabled, default: false
@@ -72,6 +73,16 @@ module AppProfiler
         OTEL_PROFILE_MODE => params[:mode].to_s,
         OTEL_PROFILE_CONTEXT => AppProfiler.context,
       }
+
+      metadata = params[:metadata]
+
+      # https://github.com/open-telemetry/opentelemetry-ruby/blob/aacd8c8e264b110507c2a733dcc5309ca26aac66/sdk/lib/opentelemetry/sdk/resources/resource.rb#L91-L92
+      rack_span.resource.attribute_enumerator.each do |key, value|
+        if key == OTEL_SERVICE_NAME_KEY
+          metadata[:service_name] = value
+          break
+        end
+      end
 
       rack_span.add_attributes(attributes)
     end
