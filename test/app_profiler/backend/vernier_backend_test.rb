@@ -77,7 +77,7 @@ module AppProfiler
         assert_instance_of(AppProfiler::VernierProfile, profile)
         assert_equal("wowza", profile.id)
         assert_equal("bar", profile.context)
-        assert_equal("spam", profile[:meta][:extrameta])
+        assert_equal("spam", profile.metadata[:extrameta])
       end
 
       test ".run wall profile" do
