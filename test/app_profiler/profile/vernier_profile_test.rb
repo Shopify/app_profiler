@@ -5,7 +5,7 @@ require "test_helper"
 module AppProfiler
   class VernierProfileTest < TestCase
     test ".from_vernier assigns id and context metadata" do
-      profile = BaseProfile.from_vernier(vernier_profile(meta: { user_metadata: { id: "foo", context: "bar" } }))
+      profile = BaseProfile.from_vernier(vernier_profile(meta: { vernierUserMetadata: { id: "foo", context: "bar" } }))
 
       assert_equal("foo", profile.id)
       assert_equal("foo", ProfileId.current)
@@ -97,14 +97,19 @@ module AppProfiler
     end
 
     test "#[] forwards to profile metadata" do
-      profile = VernierProfile.new(vernier_profile(meta: { user_metadata: { interval: 10_000 } }))
+      profile = VernierProfile.new(vernier_profile(meta: { vernierUserMetadata: { interval: 10_000 } }))
 
       assert_equal(10_000, profile.metadata[:interval])
     end
 
     test "#path raises an UnsafeFilename exception given chars not in allow list" do
       assert_raises(AppProfiler::BaseProfile::UnsafeFilename) do
-        profile = BaseProfile.from_vernier(vernier_profile(meta: { user_metadata: { id: "|`@${}", context: "bar" } }))
+        profile = BaseProfile.from_vernier(vernier_profile(meta: {
+          vernierUserMetadata: {
+            id: "|`@${}",
+            context: "bar",
+          },
+        }))
         profile.file
       end
     end
@@ -126,7 +131,7 @@ module AppProfiler
     test "#file uses custom profile_file_name block when provided" do
       old_profile_file_name = AppProfiler.profile_file_name
       AppProfiler.profile_file_name = ->(metadata) { "file-name-#{metadata[:id]}" }
-      profile = VernierProfile.new(vernier_profile(meta: { user_metadata: { id: "foo", context: "bar" } }))
+      profile = VernierProfile.new(vernier_profile(meta: { vernierUserMetadata: { id: "foo", context: "bar" } }))
       assert_match("file-name-foo.vernier.json", File.basename(profile.file.to_s))
     ensure
       AppProfiler.profile_file_name = old_profile_file_name

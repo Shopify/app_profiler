@@ -76,6 +76,14 @@ module AppProfiler
 
         return unless vernier_profile
 
+        # Store all vernier metadata
+        meta = vernier_profile.meta.reject { |k, v| k == :user_metadata || v.nil? }
+        meta.merge!(@metadata) if @metadata
+
+        # Internal metadata takes precedence over user metadata, but store
+        # everything in user metadata
+        vernier_profile.meta[:user_metadata]&.merge!(meta)
+
         # HACK: - "data" is private, but we want to avoid serializing to JSON then
         # parsing back from JSON by just directly getting the hash
         data = ::Vernier::Output::Firefox.new(vernier_profile).send(:data)

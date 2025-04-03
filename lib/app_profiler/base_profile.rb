@@ -23,7 +23,7 @@ module AppProfiler
       end
 
       def from_vernier(data)
-        options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:meta]&.[](:user_metadata)&.delete(key)] }.to_h
+        options = INTERNAL_METADATA_KEYS.map { |key| [key, data[:meta]&.[](:vernierUserMetadata)&.delete(key)] }.to_h
 
         VernierProfile.new(data, **options).tap do |profile|
           raise ArgumentError, "invalid profile data" unless profile.valid?
