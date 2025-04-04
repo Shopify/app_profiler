@@ -204,7 +204,6 @@ module AppProfiler
       test ".results contain vernierUserMetadata, and extra meta" do
         skip "metadata output added in >=1.7.0" if Gem.loaded_specs["vernier"].version < Gem::Version.new("1.7.0")
 
-        initial_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond)
         profile = AppProfiler.profiler.run(
           vernier_params(
             interval: 2000,
@@ -219,12 +218,17 @@ module AppProfiler
         end
 
         assert_instance_of(AppProfiler::VernierProfile, profile)
+
         # Stores "internal" vernier metadata
         assert_equal(:wall, profile.metadata[:mode])
         assert_equal(2000, profile.metadata[:interval]) # The internal value takes precedence over the user value
         assert_equal(0, profile.metadata[:allocation_interval])
         assert_equal(false, profile.metadata[:gc])
-        assert_operator(initial_time, :<=, profile.metadata[:started_at])
+
+        # Don't include ignored/private metadata
+        AppProfiler::Backend::VernierBackend::PRIVATE_METADATA.each do |excluded|
+          refute_includes(profile.metadata, excluded)
+        end
 
         # Stores the user supplied data
         assert_equal("foo", profile.metadata[:user_data_1])

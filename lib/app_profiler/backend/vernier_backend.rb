@@ -15,6 +15,10 @@ module AppProfiler
         :retained,
       ].freeze
 
+      PRIVATE_METADATA = [
+        :started_at, # started_at uses a monotonic source, not realtime
+      ].freeze
+
       class << self
         def name
           :vernier
@@ -77,7 +81,7 @@ module AppProfiler
         return unless vernier_profile
 
         # Store all vernier metadata
-        meta = vernier_profile.meta.reject { |k, v| k == :user_metadata || v.nil? }
+        meta = vernier_profile.meta.reject { |k, v| k == :user_metadata || v.nil? || PRIVATE_METADATA.include?(k) }
         meta.merge!(@metadata) if @metadata
 
         # Internal metadata takes precedence over user metadata, but store
