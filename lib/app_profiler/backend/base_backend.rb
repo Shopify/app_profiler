@@ -3,8 +3,27 @@
 module AppProfiler
   module Backend
     class BaseBackend
-      def run(params = {}, &block)
-        raise NotImplementedError
+      def run(params = {})
+        started = start(params)
+        start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+        yield
+
+        return unless started
+
+        duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+
+        stop
+        results_data = results
+
+        if results_data
+          results_data.metadata[:duration] = duration
+        end
+
+        results_data
+      ensure
+        # Only stop the profiler if profiling was started in this context.
+        stop if started
       end
 
       def start(params = {})

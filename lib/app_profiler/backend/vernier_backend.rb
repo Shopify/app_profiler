@@ -21,20 +21,6 @@ module AppProfiler
         end
       end
 
-      def run(params = {})
-        started = start(params)
-
-        yield
-
-        return unless started
-
-        stop
-        results
-      ensure
-        # Only stop the profiler if profiling was started in this context.
-        stop if started
-      end
-
       def start(params = {})
         # Do not start the profiler if we already have a collector started somewhere else.
         return false if running?
