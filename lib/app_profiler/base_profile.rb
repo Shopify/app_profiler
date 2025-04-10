@@ -47,6 +47,10 @@ module AppProfiler
       metadata[PROFILE_ID_METADATA_KEY]
     end
 
+    def duration
+      metadata[:duration]
+    end
+
     def upload
       AppProfiler.storage.upload(self).tap do |upload|
         if upload && defined?(upload.url)

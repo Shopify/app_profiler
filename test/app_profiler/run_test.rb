@@ -26,6 +26,15 @@ module AppProfiler
       assert_instance_of(StackprofProfile, profile)
     end
 
+    test ".run captures duration of the profiled block" do
+      profile = AppProfiler.run do
+        sleep(0.1)
+      end
+
+      assert_instance_of(Float, profile.duration)
+      assert_operator profile.duration, :>=, 0.1
+    end
+
     test ".run sets the backend then returns to the previous value" do
       orig_backend = AppProfiler.backend
       skip("Vernier not supported") unless AppProfiler.vernier_supported?
