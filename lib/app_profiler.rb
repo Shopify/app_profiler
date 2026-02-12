@@ -41,15 +41,16 @@ module AppProfiler
   end
 
   autoload(:Middleware, "app_profiler/middleware")
-  autoload(:Parameters, "app_profiler/parameters")
-  autoload(:RequestParameters, "app_profiler/request_parameters")
   autoload(:BaseProfile, "app_profiler/base_profile")
   autoload :StackprofProfile, "app_profiler/stackprof_profile"
   autoload :VernierProfile, "app_profiler/vernier_profile"
   autoload(:Backend, "app_profiler/backend")
   autoload(:Server, "app_profiler/server")
-  autoload(:Sampler, "app_profiler/sampler")
-  autoload(:ProfileId, "app_profiler/profile_id")
+
+  require "app_profiler/parameters"
+  require "app_profiler/request_parameters"
+  require "app_profiler/profile_id"
+  require "app_profiler/sampler"
 
   mattr_accessor :logger, default: Logger.new($stdout)
   mattr_accessor :root
