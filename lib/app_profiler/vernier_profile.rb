@@ -14,6 +14,7 @@ module AppProfiler
 
     def initialize(data, id: nil, context: nil)
       data[:meta] ||= {}
+      data[:meta][:vernierUserMetadata] ||= {}
       super(data, id: id, context: context)
     end
 
@@ -22,7 +23,7 @@ module AppProfiler
     end
 
     def metadata
-      @data[:meta]
+      @data[:meta][:vernierUserMetadata]
     end
 
     def format
