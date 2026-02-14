@@ -60,7 +60,11 @@ module AppProfiler
         if (Rails.env.development? || Rails.env.test?) && AppProfiler.stackprof_viewer.remote?
           app.middleware.insert_before(0, AppProfiler.viewer::Middleware)
         end
-        app.middleware.insert_before(0, AppProfiler.middleware)
+        if AppProfiler.otel_instrumentation_enabled
+          app.middleware.insert_after(Rack::Events, AppProfiler.middleware)
+        else
+          app.middleware.insert_before(0, AppProfiler.middleware)
+        end
       end
     end
 
