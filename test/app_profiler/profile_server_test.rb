@@ -353,6 +353,19 @@ module AppProfiler
         AppProfiler.stop
       end
 
+      test "app can start profiling again after external conflict clears" do
+        begin
+          AppProfiler.start
+          get("/profile?duration=0.01")
+          assert_equal(decode_status(last_response.status), Net::HTTPConflict)
+        ensure
+          AppProfiler.stop
+        end
+
+        get("/profile?duration=0.01")
+        assert(last_response.ok?)
+      end
+
       private
 
       def with_profiled_workload(workload, &block)
