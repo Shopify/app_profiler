@@ -91,9 +91,13 @@ module AppProfiler
       end
       profiler.run(*args, **kwargs, &block)
     rescue BackendError => e
-      logger.error(
-        "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}",
-      )
+      if ActiveSupport.respond_to?(:error_reporter)
+        ActiveSupport.error_reporter.report(e, context: { app_profiler: { backend: backend } })
+      else
+        logger.error(
+          "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}",
+        )
+      end
       yield
     ensure
       self.backend = original_backend if backend
@@ -160,9 +164,13 @@ module AppProfiler
 
       @profile_sampler_enabled.is_a?(Proc) ? @profile_sampler_enabled.call : @profile_sampler_enabled
     rescue => e
-      logger.error(
-        "[AppProfiler.profile_sampler_enabled] exception: #{e}, message: #{e.message}",
-      )
+      if ActiveSupport.respond_to?(:error_reporter)
+        ActiveSupport.error_reporter.report(e)
+      else
+        logger.error(
+          "[AppProfiler.profile_sampler_enabled] exception: #{e}, message: #{e.message}",
+        )
+      end
       false
     end
 
