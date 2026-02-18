@@ -34,6 +34,7 @@ module AppProfiler
       )
       AppProfiler.profile_header = app.config.app_profiler.profile_header || "X-Profile"
       AppProfiler.profile_async_header = app.config.app_profiler.profile_async_header || "X-Profile-Async"
+      AppProfiler.profile_param = app.config.app_profiler.profile_param || "profile"
       AppProfiler.profile_root = app.config.app_profiler.profile_root || Rails.root.join(
         "tmp", "app_profiler"
       )
