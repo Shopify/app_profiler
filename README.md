@@ -67,6 +67,14 @@ AppProfiler.profile_header = "X-Profile"
 Rails.application.config.app_profiler.profile_header = "X-Profile"
 ```
 
+You can configure the profile query parameter using
+
+```ruby
+AppProfiler.profile_param = "x_profile"
+# OR
+Rails.application.config.app_profiler.profile_param = "x_profile"
+```
+
 ### Here are some examples:
 
 1. `/?profile=cpu&interval=2000&autoredirect=1&ignore_gc=1`

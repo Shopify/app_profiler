@@ -66,7 +66,7 @@ module AppProfiler
     private
 
     def mode
-      query_param("profile") || profile_header_param("mode")
+      query_param(AppProfiler.profile_param) || profile_header_param("mode")
     end
 
     def ignore_gc

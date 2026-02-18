@@ -59,6 +59,7 @@ module AppProfiler
   mattr_accessor :autoredirect, default: false
   mattr_reader   :profile_header, default: "X-Profile"
   mattr_accessor :profile_async_header, default: "X-Profile-Async"
+  mattr_accessor :profile_param, default: "profile"
   mattr_accessor :context, default: nil
   mattr_reader   :profile_url_formatter, default: DefaultProfileFormatter
   mattr_accessor :storage, default: Storage::FileStorage
