@@ -77,7 +77,7 @@ module AppProfiler
         assert_instance_of(AppProfiler::VernierProfile, profile)
         assert_equal("wowza", profile.id)
         assert_equal("bar", profile.context)
-        assert_equal("spam", profile[:meta][:extrameta])
+        assert_equal("spam", profile.metadata[:extrameta])
       end
 
       test ".run wall profile" do
@@ -199,6 +199,50 @@ module AppProfiler
         assert_predicate(profile, :valid?)
 
         assert_nil(AppProfiler.profiler.results)
+      end
+
+      test ".results contain vernierUserMetadata, and extra meta" do
+        skip "metadata output added in >=1.7.0" if Gem.loaded_specs["vernier"].version < Gem::Version.new("1.7.0")
+
+        profile = AppProfiler.profiler.run(
+          vernier_params(
+            interval: 2000,
+            metadata: {
+              user_data_1: "foo",
+              user_data_2: "bar",
+              interval: 1000,
+            },
+          ),
+        ) do
+          sleep(0.1)
+        end
+
+        assert_instance_of(AppProfiler::VernierProfile, profile)
+
+        # Stores "internal" vernier metadata
+        assert_equal(:wall, profile.metadata[:mode])
+        assert_equal(2000, profile.metadata[:interval]) # The internal value takes precedence over the user value
+        assert_equal(0, profile.metadata[:allocation_interval])
+        assert_equal(false, profile.metadata[:gc])
+
+        # Don't include ignored/private metadata
+        AppProfiler::Backend::VernierBackend::PRIVATE_METADATA.each do |excluded|
+          refute_includes(profile.metadata, excluded)
+        end
+
+        # Stores the user supplied data
+        assert_equal("foo", profile.metadata[:user_data_1])
+        assert_equal("foo", profile.metadata[:user_data_1])
+
+        # Check that "extra" meta (for UI display) is also present
+        {
+          user_data_1: "foo",
+          user_data_2: "bar",
+          interval: 2000,
+          mode: :wall,
+        }.each do |k, v|
+          assert(profile[:meta][:extra].first[:entries].find { |e| e[:label] == k && e[:value] == v })
+        end
       end
     end
   end
