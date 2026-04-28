@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    app_profiler (0.5.1)
+    app_profiler (0.6.0)
       activesupport (>= 5.2)
       base64
       bigdecimal
