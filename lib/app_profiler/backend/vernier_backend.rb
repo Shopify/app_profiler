@@ -15,6 +15,10 @@ module AppProfiler
         :retained,
       ].freeze
 
+      PRIVATE_METADATA = [
+        :started_at, # started_at uses a monotonic source, not realtime
+      ].freeze
+
       class << self
         def name
           :vernier
@@ -29,7 +33,9 @@ module AppProfiler
         @mode = params.delete(:mode) || DEFAULTS[:mode]
         raise ArgumentError unless AVAILABLE_MODES.include?(@mode)
 
-        @metadata = params.delete(:metadata)
+        if Gem.loaded_specs["vernier"].version < Gem::Version.new("1.7.0")
+          @metadata = params.delete(:metadata)
+        end
         clear
 
         @collector ||= ::Vernier::Collector.new(@mode, **params)
@@ -60,11 +66,19 @@ module AppProfiler
 
         return unless vernier_profile
 
+        # Store all vernier metadata
+        meta = vernier_profile.meta.reject { |k, v| k == :user_metadata || v.nil? || PRIVATE_METADATA.include?(k) }
+        meta.merge!(@metadata) if @metadata
+
+        # Internal metadata takes precedence over user metadata, but store
+        # everything in user metadata
+        vernier_profile.meta[:user_metadata]&.merge!(meta)
+
         # HACK: - "data" is private, but we want to avoid serializing to JSON then
         # parsing back from JSON by just directly getting the hash
         data = ::Vernier::Output::Firefox.new(vernier_profile).send(:data)
-        data[:meta][:mode] = @mode # TODO: https://github.com/jhawthorn/vernier/issues/30
-        data[:meta].merge!(@metadata) if @metadata
+        data[:meta][:mode] = @mode
+        data[:meta][:vernierUserMetadata] ||= meta # for compatibility with < 1.7.0
         @mode = nil
         @metadata = nil
 
