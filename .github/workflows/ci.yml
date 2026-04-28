@@ -10,26 +10,17 @@ jobs:
       fail-fast: false
       matrix:
         ruby:
-          - version: "2.7"
-            gemfile: Gemfile.legacy-rubies
-          - version: "3.0"
-            gemfile: Gemfile.legacy-rubies
-          - version: "3.1"
-            gemfile: Gemfile.legacy-rubies
-          - version: "3.2"
-            gemfile: Gemfile
-          - version: "3.3"
-            gemfile: Gemfile
-    env: # $BUNDLE_GEMFILE must be set at the job level, so it is set for all steps
-      BUNDLE_GEMFILE: ${{ matrix.ruby.gemfile }}
+          - "3.2"
+          - "3.3"
+          - "3.4"
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-    - name: Set up Ruby ${{ matrix.ruby.version }}
+    - name: Set up Ruby ${{ matrix.ruby }}
       uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1.288.0
       with:
-        ruby-version: ${{ matrix.ruby.version }}
+        ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: Test on ${{ matrix.ruby.version }}
+    - name: Test on ${{ matrix.ruby }}
       run: |
         bundle exec rake
   lint:
