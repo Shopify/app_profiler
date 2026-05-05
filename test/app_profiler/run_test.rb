@@ -59,5 +59,27 @@ module AppProfiler
     ensure
       AppProfiler.backend = orig_backend
     end
+
+    test ".run swaps backend even while a foreign StackProf session is active" do
+      orig_backend = AppProfiler.backend
+      skip("Vernier not supported") unless AppProfiler.vernier_supported?
+      AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name
+      AppProfiler.profiler # force @profiler memoization so AppProfiler.running? actually delegates
+
+      StackProf.start(mode: :wall, interval: 1000)
+      begin
+        profile = AppProfiler.run(backend: AppProfiler::VernierProfile::BACKEND_NAME) do
+          sleep(0.01)
+        end
+
+        assert_instance_of(AppProfiler::VernierProfile, profile)
+        assert_equal(AppProfiler::Backend::StackprofBackend.name, AppProfiler.backend)
+      ensure
+        StackProf.stop
+        StackProf.results
+      end
+    ensure
+      AppProfiler.backend = orig_backend
+    end
   end
 end

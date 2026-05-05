@@ -47,6 +47,10 @@ module AppProfiler
           @run_lock ||= Mutex.new
         end
 
+        def locked?
+          run_lock.locked?
+        end
+
         def name
           raise NotImplementedError
         end
