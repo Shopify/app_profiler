@@ -35,6 +35,17 @@ module AppProfiler
       assert_operator profile.duration, :>=, 0.1
     end
 
+    test ".run runs the block but does not return its result when the backend raises" do
+      ran = false
+      result = AppProfiler.run(backend: "not a real backend") do
+        ran = true
+        :block_value
+      end
+
+      assert(ran)
+      assert_nil(result)
+    end
+
     test ".run sets the backend then returns to the previous value" do
       orig_backend = AppProfiler.backend
       skip("Vernier not supported") unless AppProfiler.vernier_supported?

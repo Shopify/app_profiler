@@ -100,6 +100,7 @@ module AppProfiler
         )
       end
       yield
+      nil # no profile result
     ensure
       self.backend = original_backend if backend
       ProfileId::Current.reset
