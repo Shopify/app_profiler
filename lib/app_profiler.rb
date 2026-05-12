@@ -127,7 +127,7 @@ module AppProfiler
     def backend=(new_backend)
       return if (new_profiler_backend = backend_for(new_backend)) == profiler_backend
 
-      if running?
+      if profiler_backend.locked?
         raise BackendError,
           "cannot change backend to #{new_backend} while #{backend} backend is running"
       end
@@ -269,7 +269,7 @@ module AppProfiler
     end
 
     def clear
-      profiler.stop if running?
+      profiler.stop if profiler_backend.locked?
       @profiler = nil
       @profiler_backend = nil
     end
