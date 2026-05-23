@@ -158,7 +158,12 @@ module AppProfiler
 
           @profile_running = true
 
-          AppProfiler.start(**stackprof_args)
+          AppProfiler.start(**stackprof_args).tap do |started|
+            @profile_running = false unless started
+          end
+        rescue
+          @profile_running = false
+          raise
         end
       end
 
