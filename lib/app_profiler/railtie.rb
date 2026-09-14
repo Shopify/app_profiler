@@ -26,7 +26,8 @@ module AppProfiler
       AppProfiler.server.transport = app.config.app_profiler.server_transport || default_appprofiler_transport
       AppProfiler.server.port = app.config.app_profiler.server_port || 0
       AppProfiler.server.duration = app.config.app_profiler.server_duration || 30
-      AppProfiler.server.cors = app.config.app_profiler.server_cors || true
+      server_cors = app.config.app_profiler.server_cors
+      AppProfiler.server.cors = server_cors.nil? ? true : server_cors
       AppProfiler.server.cors_host = app.config.app_profiler.server_cors_host || "*"
       AppProfiler.autoredirect = app.config.app_profiler.autoredirect || false
       AppProfiler.speedscope_host = app.config.app_profiler.speedscope_host || ENV.fetch(

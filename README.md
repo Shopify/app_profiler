@@ -298,9 +298,23 @@ curl "http://127.0.0.1:$PORT/profile?duration=60&mode=object&interval=10"
 
 #### Usage with speedscope directly
 
-By default the server will allow CORS. This can be disabled if it presents a
-problem, but it should be generally safe given that the server listens for
-requests on localhost only, which is already a private network address.
+By default, the server allows CORS from any origin. To prevent other origins
+from reading profile responses in a browser, disable CORS in your Rails
+configuration before initialization:
+
+```ruby
+config.app_profiler.server_cors = false
+```
+
+Alternatively, allow only a specific origin:
+
+```ruby
+config.app_profiler.server_cors = true
+config.app_profiler.server_cors_host = "http://127.0.0.1:9292"
+```
+
+The server listens on localhost, but CORS is not authentication: it controls
+browser access to responses, not whether requests can reach the server.
 
 This can be used with a local instance of speedscope to directly initiate
 profiling from the browser. Assuming speedscope is running locally on port
