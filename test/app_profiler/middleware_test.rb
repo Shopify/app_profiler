@@ -318,6 +318,16 @@ module AppProfiler
       middleware.call(mock_request_env(opt: opt))
     end
 
+    test "profile without samples will not be uploaded" do
+      profile = AppProfiler::BaseProfile.from_stackprof(stackprof_profile(samples: 0))
+      AppProfiler.expects(:run).returns(profile)
+      AppProfiler.middleware.any_instance.expects(:after_profile).with { |_env, value| value == profile }.returns(true)
+      AppProfiler.middleware.action.expects(:call).never
+      middleware = AppProfiler::Middleware.new(app_env)
+      opt = { AppProfiler.request_profile_header => "mode=cpu;interval=2000" }
+      middleware.call(mock_request_env(opt: opt))
+    end
+
     test "should not profile if #before_profile returns false" do
       AppProfiler.expects(:run).never
       AppProfiler.middleware.any_instance.stubs(:before_profile).returns(false)
@@ -482,7 +492,11 @@ module AppProfiler
     end
 
     def app_env
-      ->(_) { [200, {}, ["OK"]] }
+      lambda do |_env|
+        # Ensure requests expected to produce profiles run long enough to be sampled.
+        1_000_000.times { Object.new } if AppProfiler.running?
+        [200, {}, ["OK"]]
+      end
     end
 
     def mock_request_env(path: "/", opt: {})
