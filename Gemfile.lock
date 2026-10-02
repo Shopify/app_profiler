@@ -131,7 +131,7 @@ GEM
     multi_json (1.15.0)
     multipart-post (2.1.1)
     mutex_m (0.3.0)
-    nokogiri (1.19.3)
+    nokogiri (1.19.4)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     opentelemetry-api (1.4.0)
