@@ -4,8 +4,6 @@ module AppProfiler
   module Sampler
     class VernieConfigTest < TestCase
       test "mode probabilities should sum to 1" do
-        skip("Vernier not supported") unless AppProfiler.vernier_supported?
-
         assert_raises(ArgumentError) do
           VernierConfig.new(
             wall_mode_probability: 0.5,
@@ -15,8 +13,6 @@ module AppProfiler
       end
 
       test "default config" do
-        skip("Vernier not supported") unless AppProfiler.vernier_supported?
-
         config = VernierConfig.new
 
         assert_equal(VernierConfig::WALL_MODE_PROBABILITY, config.modes_probability[:wall])

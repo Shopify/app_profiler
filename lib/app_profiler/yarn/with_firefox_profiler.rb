@@ -42,7 +42,7 @@ module AppProfiler
           package_json = JSON.parse(package_contents)
           package_json["name"] ||= "firefox-profiler"
           package_json["version"] ||= "0.0.1"
-          File.write("firefox-profiler/package.json", package_json.to_json)
+          File.write("firefox-profiler/package.json", JSON.generate(package_json))
         end
         yarn("--cwd", "#{dir}/firefox-profiler")
 

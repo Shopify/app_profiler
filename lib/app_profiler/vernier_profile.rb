@@ -7,7 +7,7 @@ module AppProfiler
 
     class << self
       def backend_name
-        # cannot reference Backend::VernierBackend because of different ruby versions we have to support
+        # Keep metadata access independent of the optional Vernier gem.
         BACKEND_NAME.to_s
       end
     end

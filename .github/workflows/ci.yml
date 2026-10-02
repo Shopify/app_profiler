@@ -4,24 +4,26 @@ on: [push]
 
 jobs:
   test:
+    name: Ruby ${{ matrix.ruby }} / Rails ${{ matrix.rails }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      RAILS_VERSION: ${{ matrix.rails }}
     strategy:
       fail-fast: false
       matrix:
-        ruby:
-          - "3.2"
-          - "3.3"
-          - "3.4"
+        ruby: ["3.3", "3.4", "4.0"]
+        rails: ["7.2", "8.0", "8.1"]
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: Set up Ruby ${{ matrix.ruby }}
       uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f # v1.310.0
       with:
         ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true
-    - name: Test on ${{ matrix.ruby }}
+        bundler: "4.0.22"
+    - name: Test
       run: |
+        bundle update --all --jobs 4 --retry 3
         bundle exec rake
   lint:
     runs-on: ubuntu-latest
@@ -34,9 +36,9 @@ jobs:
       uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f # v1.310.0
       with:
         ruby-version: "3.3"
+        bundler: "4.0.22"
     - name: Build
       run: |
-        gem install bundler
         bundle install --jobs 4 --retry 3
     - name: Lint
       run: |
