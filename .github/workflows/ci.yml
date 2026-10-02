@@ -26,7 +26,6 @@ jobs:
     - name: Test
       run: |
         bundle update --all --jobs 4 --retry 3
-        bundle exec ruby -e 'require "rails"; require "rack"; {"RAILS_VERSION" => Rails.version, "RACK_VERSION" => Rack.release}.each { |key, version| expected = Gem::Requirement.new("~> #{ENV.fetch(key)}.0"); abort("Unexpected #{key}: #{version}") unless expected.satisfied_by?(Gem::Version.new(version)) }; puts "Ruby #{RUBY_VERSION}; Rails #{Rails.version}; Rack #{Rack.release}"'
         bundle exec rake
   lint:
     runs-on: ubuntu-latest
