@@ -8,7 +8,7 @@ module AppProfiler
       class MiddlewareTest < TestCase
         setup do
           @app = Middleware.new(
-            proc { [200, { "Content-Type" => "text/plain" }, ["Hello world!"]] },
+            proc { [200, { "content-type" => "text/plain" }, ["Hello world!"]] },
           )
         end
 
@@ -22,11 +22,11 @@ module AppProfiler
         test "#call index" do
           profiles = Array.new(3) { BaseProfile.from_stackprof(stackprof_profile).tap(&:file) }
 
-          code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler" })
+          status, headers, html = call_middleware(@app, Rack::MockRequest.env_for("/app_profiler"))
           html = html.first
 
-          assert_equal(200, code)
-          assert_equal({ "Content-Type" => "text/html" }, content_type)
+          assert_equal(200, status)
+          assert_equal({ "content-type" => "text/html" }, headers)
           assert_match(%r(<title>App Profiler</title>), html)
           profiles.each do |profile|
             id = Middleware.id(profile.file)
@@ -39,11 +39,11 @@ module AppProfiler
         test "#call index with slash" do
           profiles = Array.new(3) { BaseProfile.from_stackprof(stackprof_profile).tap(&:file) }
 
-          code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/" })
+          status, headers, html = call_middleware(@app, Rack::MockRequest.env_for("/app_profiler/"))
           html = html.first
 
-          assert_equal(200, code)
-          assert_equal({ "Content-Type" => "text/html" }, content_type)
+          assert_equal(200, status)
+          assert_equal({ "content-type" => "text/html" }, headers)
           assert_match(%r(<title>App Profiler</title>), html)
           profiles.each do |profile|
             id = Middleware.id(profile.file)
@@ -57,10 +57,13 @@ module AppProfiler
           profile = BaseProfile.from_stackprof(stackprof_profile)
           id = Middleware.id(profile.file)
 
-          code, content_type, body = @app.call({ "PATH_INFO" => "/app_profiler/speedscope/#{id}" })
+          status, headers, body = call_middleware(
+            @app,
+            Rack::MockRequest.env_for("/app_profiler/speedscope/#{id}"),
+          )
 
-          assert_equal(200, code)
-          assert_equal({ "Content-Type" => "application/json" }, content_type)
+          assert_equal(200, status)
+          assert_equal({ "content-type" => "application/json" }, headers)
           assert_equal(JSON.dump(profile.to_h), body.first)
         end
 
@@ -76,25 +79,46 @@ module AppProfiler
             "--ignore-workspace-root-check",
           ).returns(true)
 
-          @app.call({ "PATH_INFO" => "/app_profiler/speedscope/viewer/index.html" })
+          call_middleware(@app, Rack::MockRequest.env_for("/app_profiler/speedscope/viewer/index.html"))
 
           assert_predicate(@app, :yarn_setup)
         end
 
-        test "#call viewer" do
-          with_yarn_setup(@app) do
-            @app.expects(:speedscope).returns(proc { [200, { "Content-Type" => "text/plain" }, ["Speedscope"]] })
+        test "#call viewer serves static files" do
+          old_root = AppProfiler.root
+          Dir.mktmpdir do |directory|
+            AppProfiler.root = Pathname.new(directory)
+            assets = AppProfiler.root.join("node_modules/speedscope/dist/release")
+            assets.mkpath
+            html = "<html>viewer</html>"
+            assets.join("index.html").write(html)
 
-            response = @app.call({ "PATH_INFO" => "/app_profiler/speedscope/viewer/index.html" })
+            app = Middleware.new(proc { [200, { "content-type" => "text/plain" }, ["Hello world!"]] })
+            app.yarn_setup = true
+            handler = app.instance_variable_get(:@speedscope)
+            app.instance_variable_set(:@speedscope, Rack::Lint.new(handler))
 
-            assert_equal([200, { "Content-Type" => "text/plain" }, ["Speedscope"]], response)
+            status, _, body = call_middleware(
+              app,
+              Rack::MockRequest.env_for("/app_profiler/speedscope/viewer/index.html"),
+            )
+            assert_equal(200, status)
+            assert_equal(html, body.join)
+
+            status, _, = call_middleware(
+              app,
+              Rack::MockRequest.env_for("/app_profiler/speedscope/viewer/missing.js"),
+            )
+            assert_equal(404, status)
           end
+        ensure
+          AppProfiler.root = old_root
         end
 
         test "#call" do
-          response = @app.call({ "PATH_INFO" => "/app_level_route" })
+          response = call_middleware(@app, Rack::MockRequest.env_for("/app_level_route"))
 
-          assert_equal([200, { "Content-Type" => "text/plain" }, ["Hello world!"]], response)
+          assert_equal([200, { "content-type" => "text/plain" }, ["Hello world!"]], response)
         end
       end
     end

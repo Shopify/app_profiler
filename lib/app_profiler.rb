@@ -58,8 +58,8 @@ module AppProfiler
 
   mattr_accessor :speedscope_host, default: "https://speedscope.app"
   mattr_accessor :autoredirect, default: false
-  mattr_reader   :profile_header, default: "X-Profile"
-  mattr_accessor :profile_async_header, default: "X-Profile-Async"
+  mattr_reader   :profile_header, default: "x-profile"
+  mattr_reader :profile_async_header, default: "x-profile-async"
   mattr_accessor :profile_param, default: "profile"
   mattr_accessor :context, default: nil
   mattr_reader   :profile_url_formatter, default: DefaultProfileFormatter
@@ -188,9 +188,13 @@ module AppProfiler
     end
 
     def profile_header=(profile_header)
-      @@profile_header = profile_header # rubocop:disable Style/ClassVars
+      @@profile_header = profile_header.downcase # rubocop:disable Style/ClassVars
       @@request_profile_header = nil    # rubocop:disable Style/ClassVars
       @@profile_data_header = nil       # rubocop:disable Style/ClassVars
+    end
+
+    def profile_async_header=(profile_async_header)
+      @@profile_async_header = profile_async_header.downcase # rubocop:disable Style/ClassVars
     end
 
     def request_profile_header
@@ -198,7 +202,7 @@ module AppProfiler
     end
 
     def profile_data_header
-      @@profile_data_header ||= profile_header.dup << "-Data" # rubocop:disable Style/ClassVars
+      @@profile_data_header ||= profile_header.dup << "-data" # rubocop:disable Style/ClassVars
     end
 
     def profile_url_formatter=(block)

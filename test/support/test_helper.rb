@@ -25,10 +25,10 @@ module AppProfiler
       assert_predicate(response[1][AppProfiler.profile_data_header], :present?)
 
       if autoredirect
-        assert_predicate(response[1]["Location"], :present?)
+        assert_predicate(response[1]["location"], :present?)
         assert_equal(response[0], 303)
       else
-        assert_predicate(response[1]["Location"], :blank?)
+        assert_predicate(response[1]["location"], :blank?)
         assert_equal(response[0], 200)
       end
     end
@@ -39,6 +39,15 @@ module AppProfiler
       yield
     ensure
       AppProfiler.context = old_context
+    end
+
+    def call_middleware(app, env)
+      status, headers, body = Rack::Lint.new(app).call(env)
+      chunks = []
+      body.each { |chunk| chunks << chunk }
+      [status, headers, chunks]
+    ensure
+      body.close if body.respond_to?(:close)
     end
 
     private
