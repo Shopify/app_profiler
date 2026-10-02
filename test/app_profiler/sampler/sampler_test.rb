@@ -22,9 +22,9 @@ module AppProfiler
         assert_nil(Sampler.profile_params(request, config))
       end
 
-      test "mode probabilities without stubbing Kernel.rand" do
+      test "mode probabilities select configured modes" do
         config = Config.new(
-          sample_rate: 0.1,
+          sample_rate: 1.0,
           backends_config: {
             stackprof: StackprofConfig.new(
               wall_mode_probability: 0.8,
@@ -33,15 +33,21 @@ module AppProfiler
           },
         )
 
-        modes = Hash.new { |hash, key| hash[key] = 0 }
+        random_values = [[0.5, 0.5, 0.05], [0.5, 0.5, 0.15]] + Array.new(8) { [0.5, 0.5, 0.5] }
+        Kernel.stubs(:rand).returns(*random_values.flatten)
+        modes = Hash.new(0)
 
-        100.times do
+        10.times do
           request = RequestParameters.new(Rack::Request.new({ "PATH_INFO" => "/foo" }))
           profile_params = Sampler.profile_params(request, config)
-          modes[profile_params.mode] += 1 if profile_params
+          modes[profile_params.mode] += 1
         end
 
-        assert(modes[:wall] > modes[:cpu])
+        assert_equal(1, modes[:cpu])
+        assert_equal(1, modes[:object])
+        assert_equal(8, modes[:wall])
+      ensure
+        Kernel.unstub(:rand)
       end
 
       test "only path specified in the config is profiled" do
