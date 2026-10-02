@@ -7,7 +7,7 @@ module AppProfiler
         def call(profile, response: nil, autoredirect: nil, async: false)
           if async
             profile.enqueue_upload
-            response[1][AppProfiler.profile_async_header.downcase] = "true"
+            response[1][AppProfiler.profile_async_header] = "true"
           else
             profile_upload = profile.upload
 
@@ -42,11 +42,11 @@ module AppProfiler
         end
 
         def profile_header
-          AppProfiler.profile_header.downcase
+          AppProfiler.profile_header
         end
 
         def profile_data_header
-          AppProfiler.profile_data_header.downcase
+          AppProfiler.profile_data_header
         end
       end
     end

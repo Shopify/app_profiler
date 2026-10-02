@@ -192,8 +192,8 @@ module AppProfiler
       middleware = AppProfiler::Middleware.new(app_env)
       AppProfiler.storage.stubs(:upload).raises(StandardError, "upload error")
       response = call_middleware(middleware, mock_request_env(path: "/?profile=cpu"))
-      assert_nil(response[1][AppProfiler.profile_header.downcase])
-      assert_nil(response[1][AppProfiler.profile_data_header.downcase])
+      assert_nil(response[1][AppProfiler.profile_header])
+      assert_nil(response[1][AppProfiler.profile_data_header])
     end
 
     test "profiles are uploaded when request is profiled through headers" do
