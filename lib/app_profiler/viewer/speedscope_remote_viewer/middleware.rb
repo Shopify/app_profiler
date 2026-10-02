@@ -11,7 +11,7 @@ module AppProfiler
 
         def initialize(app)
           super
-          @speedscope = Rack::File.new(
+          @speedscope = Rack::Files.new(
             File.join(AppProfiler.root, "node_modules/speedscope/dist/release"),
           )
         end
@@ -32,7 +32,7 @@ module AppProfiler
         def viewer(env, path)
           setup_yarn unless yarn_setup
 
-          env[Rack::PATH_INFO] = path.delete_prefix("/app_profiler/speedscope")
+          env[Rack::PATH_INFO] = "/#{path.delete_prefix("/")}"
           speedscope.call(env)
         end
 
@@ -41,7 +41,7 @@ module AppProfiler
             id(file) == name
           end || raise(ArgumentError)
 
-          [200, { "Content-Type" => "application/json" }, [profile.read]]
+          [200, { "content-type" => "application/json" }, [profile.read]]
         end
       end
     end

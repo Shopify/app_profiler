@@ -8,7 +8,8 @@ rails_version = ENV.fetch("RAILS_VERSION", "7.2")
 
 gem("activesupport", "~> #{rails_version}.0")
 gem("railties", "~> #{rails_version}.0")
-gem("rack", "~> 2.2.0")
+rack_version = ENV.fetch("RACK_VERSION", "2.2")
+gem("rack", "~> #{rack_version}.0")
 gem("vernier", "~> 1.10.0")
 
 gem("google-cloud-storage", "~> 1.21")

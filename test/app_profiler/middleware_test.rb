@@ -8,7 +8,7 @@ module AppProfiler
     test "requests are not profiled by default" do
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
-        middleware.call(mock_request_env)
+        call_middleware(middleware, mock_request_env)
       end
     end
 
@@ -16,7 +16,7 @@ module AppProfiler
       assert_profiles_dumped do
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
-          middleware.call(mock_request_env(path: "/?profile=cpu"))
+          call_middleware(middleware, mock_request_env(path: "/?profile=cpu"))
         end
       end
     end
@@ -33,7 +33,7 @@ module AppProfiler
               assert_equal(attributes[AppProfiler::Middleware::OTEL_PROFILE_BACKEND], "stackprof")
               assert_equal(attributes[AppProfiler::Middleware::OTEL_PROFILE_MODE], "cpu")
             end
-            middleware.call(mock_request_env(path: "/?profile=cpu"))
+            call_middleware(middleware, mock_request_env(path: "/?profile=cpu"))
           end
         end
       end
@@ -44,7 +44,7 @@ module AppProfiler
         OpenTelemetry::Instrumentation::Rack.current_span.stubs(:recording?).returns(false)
         OpenTelemetry::Instrumentation::Rack.current_span.expects(:add_attributes).never
 
-        AppProfiler::Middleware.new(app_env).call(mock_request_env(path: "/?profile=cpu"))
+        call_middleware(AppProfiler::Middleware.new(app_env), mock_request_env(path: "/?profile=cpu"))
       end
     end
 
@@ -53,7 +53,7 @@ module AppProfiler
         assert_profiles_dumped do
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
-            middleware.call(mock_request_env(path: "/?profile=#{mode}"))
+            call_middleware(middleware, mock_request_env(path: "/?profile=#{mode}"))
           end
         end
       end
@@ -64,7 +64,7 @@ module AppProfiler
         assert_profiles_dumped do
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
-            middleware.call(mock_request_env(path: "/?profile=#{mode}&backend=vernier"))
+            call_middleware(middleware, mock_request_env(path: "/?profile=#{mode}&backend=vernier"))
           end
         end
       end
@@ -75,21 +75,21 @@ module AppProfiler
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
           with_profile_id_reset do
-            middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+            call_middleware(middleware, mock_request_env(path: "/?profile=wall&backend=stackprof"))
           end
         end
 
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
           with_profile_id_reset do
-            middleware.call(mock_request_env(path: "/?profile=wall&backend=vernier"))
+            call_middleware(middleware, mock_request_env(path: "/?profile=wall&backend=vernier"))
           end
         end
 
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
           with_profile_id_reset do
-            middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+            call_middleware(middleware, mock_request_env(path: "/?profile=wall&backend=stackprof"))
           end
         end
 
@@ -105,7 +105,7 @@ module AppProfiler
       assert_profiles_dumped do
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
-          middleware.call(mock_request_env(path: "/?profile=cpu&interval=2000"))
+          call_middleware(middleware, mock_request_env(path: "/?profile=cpu&interval=2000"))
         end
       end
     end
@@ -113,7 +113,7 @@ module AppProfiler
     test "interval without profile mode will not profile" do
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
-        middleware.call(mock_request_env(path: "/?interval=2000"))
+        call_middleware(middleware, mock_request_env(path: "/?interval=2000"))
       end
     end
 
@@ -121,7 +121,7 @@ module AppProfiler
       assert_profiles_dumped do
         assert_profiles_uploaded(autoredirect: true) do
           middleware = AppProfiler::Middleware.new(app_env)
-          middleware.call(mock_request_env(path: "/?profile=cpu&autoredirect=1"))
+          call_middleware(middleware, mock_request_env(path: "/?profile=cpu&autoredirect=1"))
         end
       end
     end
@@ -131,7 +131,7 @@ module AppProfiler
       assert_profiles_dumped do
         assert_profiles_uploaded(autoredirect: true) do
           middleware = AppProfiler::Middleware.new(app_env)
-          middleware.call(mock_request_env(path: "/?profile=cpu"))
+          call_middleware(middleware, mock_request_env(path: "/?profile=cpu"))
         end
       end
       AppProfiler.autoredirect = false
@@ -140,7 +140,7 @@ module AppProfiler
     test "autoredirect without profile will not profile" do
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
-        middleware.call(mock_request_env(path: "/?autoredirect=1"))
+        call_middleware(middleware, mock_request_env(path: "/?autoredirect=1"))
       end
     end
 
@@ -148,7 +148,7 @@ module AppProfiler
       assert_profiles_dumped do
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
-          middleware.call(mock_request_env(path: "/?profile=cpu&ignore_gc=1"))
+          call_middleware(middleware, mock_request_env(path: "/?profile=cpu&ignore_gc=1"))
         end
       end
     end
@@ -158,7 +158,7 @@ module AppProfiler
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
           opt = { AppProfiler.request_profile_header => "mode=cpu;interval=2000;ignore_gc=1" }
-          middleware.call(mock_request_env(opt: opt))
+          call_middleware(middleware, mock_request_env(opt: opt))
         end
       end
     end
@@ -167,31 +167,22 @@ module AppProfiler
       assert_profiles_dumped(0) do
         AppProfiler.logger.expects(:info).with { |value| value =~ /unsupported profiling mode=hello/ }
         middleware = AppProfiler::Middleware.new(app_env)
-        middleware.call(mock_request_env(path: "/?profile=hello"))
+        call_middleware(middleware, mock_request_env(path: "/?profile=hello"))
       end
     end
 
     test "invalid profile interval will not profile" do
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
-        middleware.call(mock_request_env(path: "/?profile=cpu&interval=1"))
+        call_middleware(middleware, mock_request_env(path: "/?profile=cpu&interval=1"))
       end
     end
 
-    test "profiles will not be generated when query string failed to be parsed" do
+    test "profiles will not be generated when query string exceeds the parser depth limit" do
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
-        middleware.call(
-          mock_request_env(
-            path: <<~PATH.delete("\n"),
-              /?profile=cpu&contact%5Bemail%5D]%F0%9D%92%B6]%F0%9D%92%B6]%22]
-              %22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]
-              %22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]
-              %22]%22]%22]%22%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22]%22]%22]
-              %22]]%22]%22%22]%22]%22]%22]%22]%22]%22]%22]%22]%22]]%22]%22]%22]%22]%22]%22]%22%22]%22]%22]%22]
-            PATH
-          ),
-        )
+        path = "/?profile=cpu&contact#{"[child]" * (Rack::Utils.param_depth_limit + 1)}=value"
+        call_middleware(middleware, mock_request_env(path: path))
       end
     end
 
@@ -200,9 +191,9 @@ module AppProfiler
       AppProfiler.logger.expects(:info).with { |value| value =~ /failed to upload profile/ }
       middleware = AppProfiler::Middleware.new(app_env)
       AppProfiler.storage.stubs(:upload).raises(StandardError, "upload error")
-      response = middleware.call(mock_request_env(path: "/?profile=cpu"))
-      assert_nil(response[1][AppProfiler.profile_header])
-      assert_nil(response[1][AppProfiler.profile_data_header])
+      response = call_middleware(middleware, mock_request_env(path: "/?profile=cpu"))
+      assert_nil(response[1][AppProfiler.profile_header.downcase])
+      assert_nil(response[1][AppProfiler.profile_data_header.downcase])
     end
 
     test "profiles are uploaded when request is profiled through headers" do
@@ -210,9 +201,55 @@ module AppProfiler
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
           opt = { AppProfiler.request_profile_header => "mode=cpu" }
-          middleware.call(mock_request_env(opt: opt))
+          call_middleware(middleware, mock_request_env(opt: opt))
         end
       end
+    end
+
+    test "nil formatter omits profile and redirect headers" do
+      old_storage = AppProfiler.storage
+      old_formatter = AppProfiler.profile_url_formatter
+      AppProfiler.storage = MockStorage
+      AppProfiler.profile_url_formatter = nil
+
+      assert_profiles_dumped do
+        middleware = AppProfiler::Middleware.new(app_env)
+        status, headers, body = call_middleware(
+          middleware,
+          mock_request_env(path: "/?profile=cpu&autoredirect=1"),
+        )
+
+        assert_equal(200, status)
+        assert_equal(["OK"], body)
+        assert_equal("/profile/file.json", headers["x-profile-data"])
+        refute(headers.key?("x-profile"))
+        refute(headers.key?("location"))
+      end
+    ensure
+      AppProfiler.storage = old_storage
+      AppProfiler.profile_url_formatter = old_formatter
+    end
+
+    test "custom profile headers use lowercase response keys" do
+      old_profile_header = AppProfiler.profile_header
+      AppProfiler.profile_header = "X-Custom-Profile"
+      expected_profile_url = AppProfiler.profile_url(MockStorage::FileInfo.new("/profile/file.json"))
+      response = nil
+
+      assert_profiles_dumped do
+        assert_profiles_uploaded do
+          middleware = AppProfiler::Middleware.new(app_env)
+          response = call_middleware(
+            middleware,
+            mock_request_env(opt: { "HTTP_X_CUSTOM_PROFILE" => "mode=cpu" }),
+          )
+        end
+      end
+
+      assert_equal(expected_profile_url, response[1]["x-custom-profile"])
+      assert_equal("/profile/file.json", response[1]["x-custom-profile-data"])
+    ensure
+      AppProfiler.profile_header = old_profile_header
     end
 
     AppProfiler::Backend::StackprofBackend::AVAILABLE_MODES.each do |mode|
@@ -221,7 +258,7 @@ module AppProfiler
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
             opt = { AppProfiler.request_profile_header => "mode=#{mode}" }
-            middleware.call(mock_request_env(opt: opt))
+            call_middleware(middleware, mock_request_env(opt: opt))
           end
         end
       end
@@ -233,7 +270,7 @@ module AppProfiler
           assert_profiles_uploaded do
             middleware = AppProfiler::Middleware.new(app_env)
             opt = { AppProfiler.request_profile_header => "mode=#{mode};backend=vernier" }
-            middleware.call(mock_request_env(opt: opt))
+            call_middleware(middleware, mock_request_env(opt: opt))
           end
         end
       end
@@ -244,7 +281,7 @@ module AppProfiler
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
           opt = { AppProfiler.request_profile_header => "mode=cpu;interval=2000" }
-          middleware.call(mock_request_env(opt: opt))
+          call_middleware(middleware, mock_request_env(opt: opt))
         end
       end
     end
@@ -254,7 +291,7 @@ module AppProfiler
         assert_profiles_uploaded(autoredirect: true) do
           middleware = AppProfiler::Middleware.new(app_env)
           opt = { AppProfiler.request_profile_header => "mode=cpu;autoredirect=1" }
-          middleware.call(mock_request_env(opt: opt))
+          call_middleware(middleware, mock_request_env(opt: opt))
         end
       end
     end
@@ -265,7 +302,7 @@ module AppProfiler
         assert_profiles_uploaded(autoredirect: true) do
           middleware = AppProfiler::Middleware.new(app_env)
           opt = { AppProfiler.request_profile_header => "mode=cpu" }
-          middleware.call(mock_request_env(opt: opt))
+          call_middleware(middleware, mock_request_env(opt: opt))
         end
       end
       AppProfiler.autoredirect = false
@@ -276,7 +313,7 @@ module AppProfiler
         AppProfiler.logger.expects(:info).with { |value| value =~ /unsupported profiling mode=hello/ }
         middleware = AppProfiler::Middleware.new(app_env)
         opt = { AppProfiler.request_profile_header => "mode=hello" }
-        middleware.call(mock_request_env(opt: opt))
+        call_middleware(middleware, mock_request_env(opt: opt))
       end
     end
 
@@ -284,7 +321,7 @@ module AppProfiler
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
         opt = { AppProfiler.request_profile_header => "mode=cpu;interval=1" }
-        middleware.call(mock_request_env(opt: opt))
+        call_middleware(middleware, mock_request_env(opt: opt))
       end
     end
 
@@ -292,7 +329,7 @@ module AppProfiler
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
         opt = { AppProfiler.request_profile_header => "mode=cpu&interval=1" }
-        middleware.call(mock_request_env(opt: opt))
+        call_middleware(middleware, mock_request_env(opt: opt))
       end
     end
 
@@ -300,16 +337,16 @@ module AppProfiler
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
         opt = { AppProfiler.request_profile_header => "helloworld" }
-        middleware.call(mock_request_env(opt: opt))
+        call_middleware(middleware, mock_request_env(opt: opt))
       end
     end
 
     test "invalid profile will not be uploaded" do
-      AppProfiler.expects(:run).returns(nil)
+      AppProfiler.expects(:run).yields.returns(nil)
       AppProfiler.middleware.action.expects(:call).never
       middleware = AppProfiler::Middleware.new(app_env)
       opt = { AppProfiler.request_profile_header => "mode=cpu;interval=2000" }
-      middleware.call(mock_request_env(opt: opt))
+      call_middleware(middleware, mock_request_env(opt: opt))
     end
 
     test "should not profile if #before_profile returns false" do
@@ -317,16 +354,16 @@ module AppProfiler
       AppProfiler.middleware.any_instance.stubs(:before_profile).returns(false)
 
       middleware = AppProfiler::Middleware.new(app_env)
-      middleware.call(mock_request_env(path: "/?profile=cpu"))
+      call_middleware(middleware, mock_request_env(path: "/?profile=cpu"))
     end
 
     test "should not upload if #after_profile returns false" do
-      AppProfiler.expects(:run).returns({})
+      AppProfiler.expects(:run).yields.returns({})
       AppProfiler.middleware.action.expects(:call).never
       AppProfiler.middleware.any_instance.stubs(:after_profile).returns(false)
 
       middleware = AppProfiler::Middleware.new(app_env)
-      middleware.call(mock_request_env(path: "/?profile=cpu"))
+      call_middleware(middleware, mock_request_env(path: "/?profile=cpu"))
     end
 
     test "#before_profile called with env and profiling params" do
@@ -335,7 +372,7 @@ module AppProfiler
         request_env == env && params.is_a?(Hash)
       end.returns(false)
       middleware = AppProfiler::Middleware.new(app_env)
-      middleware.call(request_env)
+      call_middleware(middleware, request_env)
     end
 
     test "#after_profile called with env and profile data" do
@@ -344,7 +381,7 @@ module AppProfiler
         request_env == env && profile.is_a?(AppProfiler::BaseProfile)
       end.returns(false)
       middleware = AppProfiler::Middleware.new(app_env)
-      middleware.call(request_env)
+      call_middleware(middleware, request_env)
     end
 
     test "should pass modified params to Profiler" do
@@ -366,22 +403,25 @@ module AppProfiler
           end.returns(true)
 
           middleware = AppProfiler::Middleware.new(app_env)
-          middleware.call(request_env)
+          call_middleware(middleware, request_env)
         end
       end
     end
 
     test "profiles are not uploaded synchronously when async is requested" do
       old_storage = AppProfiler.storage
+      old_async_header = AppProfiler.profile_async_header
       AppProfiler.storage = AppProfiler::Storage::GoogleCloudStorage
+      AppProfiler.profile_async_header = "X-Custom-Async"
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
-        response = middleware.call(mock_request_env(path: "/?profile=cpu&async=true"))
-        assert(response[1]["X-Profile-Async"])
+        response = call_middleware(middleware, mock_request_env(path: "/?profile=cpu&async=true"))
+        assert_equal("true", response[1]["x-custom-async"])
       end
     ensure
       reset_process_queue_thread # kill the background thread and reset the queue
       AppProfiler.storage = old_storage
+      AppProfiler.profile_async_header = old_async_header
     end
 
     class CustomMiddleware < AppProfiler::Middleware
@@ -394,7 +434,7 @@ module AppProfiler
       assert_profiles_dumped do
         assert_profiles_uploaded do
           middleware = CustomMiddleware.new(app_env)
-          middleware.call(mock_request_env)
+          call_middleware(middleware, mock_request_env)
         end
       end
     end
@@ -409,8 +449,8 @@ module AppProfiler
 
           assert_profiles_dumped(0) do
             middleware = AppProfiler::Middleware.new(app_env)
-            response = middleware.call(mock_request_env(path: "/"))
-            assert(response[1]["X-Profile-Async"])
+            response = call_middleware(middleware, mock_request_env(path: "/"))
+            assert(response[1]["x-profile-async"])
           end
         end
       end
@@ -421,8 +461,8 @@ module AppProfiler
         AppProfiler.profile_sampler_config = AppProfiler::Sampler::Config.new(sample_rate: 1.0)
         assert_profiles_dumped(0) do
           middleware = AppProfiler::Middleware.new(app_env)
-          response = middleware.call(mock_request_env(path: "/"))
-          assert_nil(response[1]["X-Profile-Async"])
+          response = call_middleware(middleware, mock_request_env(path: "/"))
+          assert_nil(response[1]["x-profile-async"])
         end
       end
     end
@@ -433,8 +473,8 @@ module AppProfiler
         AppProfiler.profile_sampler_enabled = -> { false }
         assert_profiles_dumped(0) do
           middleware = AppProfiler::Middleware.new(app_env)
-          response = middleware.call(mock_request_env(path: "/"))
-          assert_nil(response[1]["X-Profile-Async"])
+          response = call_middleware(middleware, mock_request_env(path: "/"))
+          assert_nil(response[1]["x-profile-async"])
         end
       end
     end
@@ -443,7 +483,7 @@ module AppProfiler
       assert_profiles_dumped do
         assert_profiles_uploaded do
           middleware = AppProfiler::Middleware.new(app_env)
-          middleware.call(mock_request_env(path: "/?profile=cpu"))
+          call_middleware(middleware, mock_request_env(path: "/?profile=cpu"))
         end
       end
       assert_nil(Thread.current[ProfileId::Current::PROFILE_ID_KEY])

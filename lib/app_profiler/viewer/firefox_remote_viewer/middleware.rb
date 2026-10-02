@@ -11,7 +11,7 @@ module AppProfiler
 
         def initialize(app)
           super
-          @firefox_profiler = Rack::File.new(
+          @firefox_profiler = Rack::Files.new(
             File.join(AppProfiler.root, "node_modules/firefox-profiler/dist"),
           )
         end
@@ -40,9 +40,9 @@ module AppProfiler
             source = "#{proto}://#{host}/app_profiler/firefox/#{path}"
             target = "/from-url/#{CGI.escape(source)}"
 
-            [302, { "Location" => target }, [""]]
+            [302, { "location" => target }, [""]]
           else
-            env[Rack::PATH_INFO] = path.delete_prefix("/app_profiler")
+            env[Rack::PATH_INFO] = "/#{path.delete_prefix("/")}"
             firefox_profiler.call(env)
           end
         end
@@ -50,7 +50,7 @@ module AppProfiler
         def from(env, path)
           setup_yarn unless yarn_setup
           index = File.read(File.join(AppProfiler.root, "node_modules/firefox-profiler/dist/index.html"))
-          [200, { "Content-Type" => "text/html" }, [index]]
+          [200, { "content-type" => "text/html" }, [index]]
         end
 
         def show(_env, name)
@@ -58,7 +58,7 @@ module AppProfiler
             id(file) == name
           end || raise(ArgumentError)
 
-          [200, { "Content-Type" => "application/json" }, [profile.read]]
+          [200, { "content-type" => "application/json" }, [profile.read]]
         end
       end
     end
