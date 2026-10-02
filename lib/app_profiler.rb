@@ -59,7 +59,7 @@ module AppProfiler
   mattr_accessor :speedscope_host, default: "https://speedscope.app"
   mattr_accessor :autoredirect, default: false
   mattr_reader   :profile_header, default: "x-profile"
-  mattr_accessor :profile_async_header, default: "x-profile-async"
+  mattr_reader :profile_async_header, default: "x-profile-async"
   mattr_accessor :profile_param, default: "profile"
   mattr_accessor :context, default: nil
   mattr_reader   :profile_url_formatter, default: DefaultProfileFormatter
