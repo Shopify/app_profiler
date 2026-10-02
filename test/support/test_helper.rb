@@ -21,8 +21,8 @@ module AppProfiler
 
       response = yield
 
-      assert_predicate(response[1][AppProfiler.profile_header.downcase], :present?)
-      assert_predicate(response[1][AppProfiler.profile_data_header.downcase], :present?)
+      assert_predicate(response[1][AppProfiler.profile_header], :present?)
+      assert_predicate(response[1][AppProfiler.profile_data_header], :present?)
 
       if autoredirect
         assert_predicate(response[1]["location"], :present?)
