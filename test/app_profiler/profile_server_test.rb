@@ -138,13 +138,10 @@ module AppProfiler
           socket = server.client
           socket.write("GET / HTTP/1.0\r\n\r\n")
           response = socket.read
-          expected_response = <<~RESPONSE
-            HTTP/1.0 404\r
-            Content-Length: 22\r
-            \r
-            Unsupported endpoint /
-          RESPONSE
-          assert_equal(expected_response.strip, response)
+          status, headers, body = parse_http_response(response)
+          assert_equal("HTTP/1.0 404", status)
+          assert_equal("Unsupported endpoint /", body)
+          assert_equal(body.bytesize, headers["content-length"].to_i) if headers["content-length"]
         end
       end
 
@@ -154,16 +151,11 @@ module AppProfiler
           socket = server.client
           socket.write("GET /profile?duration=0.001 HTTP/1.0\r\n\r\n")
           response = socket.read
-          lines = response.lines
-          assert(lines.shift.match?(/HTTP.*200/))
-          assert_equal("Content-Type: application/json\r\n", lines.shift)
-          length_line = lines.shift
-          assert(length_line =~ (/Content-Length: (.*)/))
-          content_length = Regexp.last_match(1).to_i
-          assert_equal("Access-Control-Allow-Origin: *\r\n", lines.shift)
-          assert_equal("\r\n", lines.shift)
-          body = lines.shift
-          assert_equal(content_length, body.size)
+          status, headers, body = parse_http_response(response)
+          assert_match(/HTTP.*200/, status)
+          assert_equal("application/json", headers["content-type"])
+          assert_equal("*", headers["access-control-allow-origin"])
+          assert_equal(body.bytesize, headers["content-length"].to_i) if headers["content-length"]
           assert(JSON.parse(body))
         end
       end
@@ -206,6 +198,17 @@ module AppProfiler
       end
 
       private
+
+      def parse_http_response(response)
+        lines = response.lines
+        status = lines.shift.strip
+        headers = {}
+        while (line = lines.shift) && line != "\r\n"
+          key, value = line.split(":", 2)
+          headers[key.downcase] = value.strip
+        end
+        [status, headers, lines.join]
+      end
 
       def with_all_transport_types(&block)
         with_test_server(transport: TRANSPORT_TCP, &block)

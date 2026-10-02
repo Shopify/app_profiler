@@ -6,6 +6,9 @@ $LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
 
 require "rails"
 require "app_profiler"
+require "rack/lint"
+require "rack/mock"
+require "tmpdir"
 
 require "active_support"
 require "active_support/test_case"

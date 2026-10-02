@@ -33,19 +33,19 @@ module AppProfiler
       test ".call uploads and appends headers with autoredirect" do
         UploadAction.call(@profile, response: @response, autoredirect: true)
 
-        assert_predicate(@response[1][AppProfiler.profile_header], :present?)
-        assert_predicate(@response[1][AppProfiler.profile_data_header], :present?)
-        assert_predicate(@response[1]["Location"], :present?)
+        assert_predicate(@response[1][AppProfiler.profile_header.downcase], :present?)
+        assert_predicate(@response[1][AppProfiler.profile_data_header.downcase], :present?)
+        assert_predicate(@response[1]["location"], :present?)
         assert_equal(@response[0], 303)
       end
 
       test ".call uploads and appends headers without autoredirect" do
         UploadAction.call(@profile, response: @response, autoredirect: false)
 
-        assert_predicate(@response[1][AppProfiler.profile_header], :present?)
-        assert_predicate(@response[1][AppProfiler.profile_data_header], :present?)
-        assert_equal(@response[1][AppProfiler.profile_data_header].class, String)
-        assert_predicate(@response[1]["Location"], :blank?)
+        assert_predicate(@response[1][AppProfiler.profile_header.downcase], :present?)
+        assert_predicate(@response[1][AppProfiler.profile_data_header.downcase], :present?)
+        assert_equal(@response[1][AppProfiler.profile_data_header.downcase].class, String)
+        assert_predicate(@response[1]["location"], :blank?)
         assert_equal(@response[0], 200)
       end
 
@@ -54,11 +54,11 @@ module AppProfiler
           UploadAction.call(@profile, response: @response)
         end
 
-        assert_predicate(@response[1][AppProfiler.profile_header], :present?)
-        assert_predicate(@response[1][AppProfiler.profile_data_header], :present?)
-        assert_predicate(@response[1][AppProfiler.profile_async_header], :blank?)
+        assert_predicate(@response[1][AppProfiler.profile_header.downcase], :present?)
+        assert_predicate(@response[1][AppProfiler.profile_data_header.downcase], :present?)
+        assert_predicate(@response[1][AppProfiler.profile_async_header.downcase], :blank?)
 
-        assert_predicate(@response[1]["Location"], :present?)
+        assert_predicate(@response[1]["location"], :present?)
         assert_equal(@response[0], 303)
       end
 
@@ -69,8 +69,8 @@ module AppProfiler
           end
         end
 
-        assert_predicate(@response[1]["Location"], :present?)
-        assert_equal("https://foo.com/prefix/#{@profile.file.basename}", @response[1]["Location"])
+        assert_predicate(@response[1]["location"], :present?)
+        assert_equal("https://foo.com/prefix/#{@profile.file.basename}", @response[1]["location"])
       end
 
       test ".call does not redirect if the default formatter is nil" do
@@ -80,12 +80,12 @@ module AppProfiler
           end
         end
 
-        refute_predicate(@response[1]["Location"], :present?)
+        refute_predicate(@response[1]["location"], :present?)
       end
 
       test ".call with async: true" do
         UploadAction.call(@profile, response: @response, async: true)
-        assert_equal(@response[1][AppProfiler.profile_async_header], "true")
+        assert_equal(@response[1][AppProfiler.profile_async_header.downcase], "true")
       end
 
       private

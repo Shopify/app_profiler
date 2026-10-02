@@ -86,7 +86,7 @@ module AppProfiler
       def render(html)
         [
           200,
-          { "Content-Type" => "text/html" },
+          { "content-type" => "text/html" },
           [
             +<<~HTML,
               <!doctype html>

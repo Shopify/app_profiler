@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "cgi"
 
 module AppProfiler
   module Viewer
@@ -8,7 +9,7 @@ module AppProfiler
       class MiddlewareTest < TestCase
         setup do
           @app = Middleware.new(
-            proc { [200, { "Content-Type" => "text/plain" }, ["Hello world!"]] },
+            proc { [200, { "content-type" => "text/plain" }, ["Hello world!"]] },
           )
         end
 
@@ -22,11 +23,11 @@ module AppProfiler
         test "#call index" do
           profiles = Array.new(3) { VernierProfile.new(vernier_profile).tap(&:file) }
 
-          code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler" })
+          status, headers, html = call_middleware(@app, Rack::MockRequest.env_for("/app_profiler"))
           html = html.first
 
-          assert_equal(200, code)
-          assert_equal({ "Content-Type" => "text/html" }, content_type)
+          assert_equal(200, status)
+          assert_equal({ "content-type" => "text/html" }, headers)
           assert_match(%r(<title>App Profiler</title>), html)
           profiles.each do |profile|
             id = Middleware.id(profile.file)
@@ -39,11 +40,11 @@ module AppProfiler
         test "#call index with slash" do
           profiles = Array.new(3) { VernierProfile.new(vernier_profile).tap(&:file) }
 
-          code, content_type, html = @app.call({ "PATH_INFO" => "/app_profiler/" })
+          status, headers, html = call_middleware(@app, Rack::MockRequest.env_for("/app_profiler/"))
           html = html.first
 
-          assert_equal(200, code)
-          assert_equal({ "Content-Type" => "text/html" }, content_type)
+          assert_equal(200, status)
+          assert_equal({ "content-type" => "text/html" }, headers)
           assert_match(%r(<title>App Profiler</title>), html)
           profiles.each do |profile|
             id = Middleware.id(profile.file)
@@ -57,10 +58,13 @@ module AppProfiler
           profile = VernierProfile.new(vernier_profile)
           id = Middleware.id(profile.file)
 
-          code, content_type, body = @app.call({ "PATH_INFO" => "/app_profiler/firefox/#{id}" })
+          status, headers, body = call_middleware(
+            @app,
+            Rack::MockRequest.env_for("/app_profiler/firefox/#{id}"),
+          )
 
-          assert_equal(200, code)
-          assert_equal({ "Content-Type" => "application/json" }, content_type)
+          assert_equal(200, status)
+          assert_equal({ "content-type" => "application/json" }, headers)
           assert_equal(JSON.dump(profile.to_h), body.first)
         end
 
@@ -91,25 +95,70 @@ module AppProfiler
           File.expects(:write).with("#{dir}/firefox-profiler/dist/index.html", "").returns(true)
 
           @app.expects(:system).with({}, "yarn", "add", "--dev", "#{dir}/firefox-profiler").returns(true)
-          @app.call({ "PATH_INFO" => "/app_profiler/firefox/viewer/index.html" })
+          call_middleware(@app, Rack::MockRequest.env_for("/app_profiler/firefox/viewer/index.html"))
 
           assert_predicate(@app, :yarn_setup)
         end
 
-        test "#call viewer" do
-          with_yarn_setup(@app) do
-            @app.expects(:firefox_profiler).returns(proc { [200, { "Content-Type" => "text/plain" }, ["Firefox"]] })
+        test "#call viewer serves static files and Firefox routes" do
+          old_root = AppProfiler.root
+          Dir.mktmpdir do |directory|
+            AppProfiler.root = Pathname.new(directory)
+            assets = AppProfiler.root.join("node_modules/firefox-profiler/dist")
+            assets.mkpath
+            html = "<html>viewer</html>"
+            assets.join("index.html").write(html)
 
-            response = @app.call({ "PATH_INFO" => "/app_profiler/firefox/viewer/index.html" })
+            app = Middleware.new(proc { [200, { "content-type" => "text/plain" }, ["Hello world!"]] })
+            app.yarn_setup = true
+            handler = app.instance_variable_get(:@firefox_profiler)
+            app.instance_variable_set(:@firefox_profiler, Rack::Lint.new(handler))
 
-            assert_equal([200, { "Content-Type" => "text/plain" }, ["Firefox"]], response)
+            status, _, body = call_middleware(
+              app,
+              Rack::MockRequest.env_for("/app_profiler/firefox/viewer/index.html"),
+            )
+            assert_equal(200, status)
+            assert_equal(html, body.join)
+
+            status, _, = call_middleware(
+              app,
+              Rack::MockRequest.env_for("/app_profiler/firefox/viewer/missing.js"),
+            )
+            assert_equal(404, status)
+
+            profile = VernierProfile.new(vernier_profile)
+            id = Middleware.id(profile.file)
+            source = "https://app-profiler.com/app_profiler/firefox/#{id}"
+            status, headers, = call_middleware(
+              app,
+              Rack::MockRequest.env_for(
+                "https://app-profiler.com/app_profiler/firefox/viewer/#{id}",
+                "HTTP_HOST" => "app-profiler.com",
+              ),
+            )
+            assert_equal(302, status)
+            assert_equal("/from-url/#{CGI.escape(source)}", headers["location"])
+
+            status, headers, body = call_middleware(
+              app,
+              Rack::MockRequest.env_for(
+                "https://app-profiler.com/from-url/#{CGI.escape(source)}",
+                "HTTP_HOST" => "app-profiler.com",
+              ),
+            )
+            assert_equal(200, status)
+            assert_equal("text/html", headers["content-type"])
+            assert_equal(html, body.join)
           end
+        ensure
+          AppProfiler.root = old_root
         end
 
         test "#call" do
-          response = @app.call({ "PATH_INFO" => "/app_level_route" })
+          response = call_middleware(@app, Rack::MockRequest.env_for("/app_level_route"))
 
-          assert_equal([200, { "Content-Type" => "text/plain" }, ["Hello world!"]], response)
+          assert_equal([200, { "content-type" => "text/plain" }, ["Hello world!"]], response)
         end
       end
     end
