@@ -22,11 +22,11 @@ Gem::Specification.new do |spec|
 
   spec.files = Dir["lib/**/*.rb"]
   spec.require_paths = ["lib"]
-  spec.required_ruby_version = ">= 3.2.1"
+  spec.required_ruby_version = ">= 3.3"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
-  spec.add_dependency("activesupport", ">= 5.2")
+  spec.add_dependency("activesupport", ">= 7.2")
   spec.add_dependency("base64")
   spec.add_dependency("bigdecimal")
   spec.add_dependency("mutex_m")
@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency("stackprof", "~> 0.2")
 
   spec.add_development_dependency("bundler")
-  spec.add_development_dependency("minitest")
+  spec.add_development_dependency("minitest", "< 6")
   spec.add_development_dependency("minitest-stub-const", "0.6")
   spec.add_development_dependency("mocha")
   spec.add_development_dependency("opentelemetry-instrumentation-rack")

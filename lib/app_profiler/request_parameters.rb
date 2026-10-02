@@ -31,9 +31,7 @@ module AppProfiler
         return false
       end
 
-      return false if backend != AppProfiler::Backend::StackprofBackend.name && !AppProfiler.vernier_supported?
-
-      if AppProfiler.vernier_supported? && backend == AppProfiler::VernierProfile::BACKEND_NAME &&
+      if backend == AppProfiler::VernierProfile::BACKEND_NAME &&
           !AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.include?(mode.to_sym)
         AppProfiler.logger.info("[AppProfiler] unsupported profiling mode=#{mode} for backend #{backend}")
         return false

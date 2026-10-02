@@ -48,7 +48,6 @@ module AppProfiler
 
     test ".run sets the backend then returns to the previous value" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless AppProfiler.vernier_supported?
 
       assert_equal(AppProfiler::Backend::StackprofBackend.name, AppProfiler.backend)
       refute(AppProfiler.running?)
@@ -62,7 +61,6 @@ module AppProfiler
 
     test ".run swaps backend even while a foreign StackProf session is active" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless AppProfiler.vernier_supported?
       AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name
       AppProfiler.profiler # force @profiler memoization so AppProfiler.running? actually delegates
 

@@ -4,12 +4,15 @@ source("https://rubygems.org")
 gemspec
 
 # Specify the same dependency sources as the application Gemfile
-gem("activesupport", "~> 5.2")
-gem("railties", "~> 5.2")
-gem("vernier", "~> 1.7.0")
+rails_version = ENV.fetch("RAILS_VERSION", "7.2")
+
+gem("activesupport", "~> #{rails_version}.0")
+gem("railties", "~> #{rails_version}.0")
+gem("rack", "~> 2.2.0")
+gem("vernier", "~> 1.10.0")
 
 gem("google-cloud-storage", "~> 1.21")
-gem("rubocop", require: false)
-gem("rubocop-shopify", require: false)
-gem("rubocop-performance", require: false)
+gem("rubocop", "~> 1.64.1", require: false)
+gem("rubocop-shopify", "~> 2.15.1", require: false)
+gem("rubocop-performance", "~> 1.6.0", require: false)
 gem("debug")

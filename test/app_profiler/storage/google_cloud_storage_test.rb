@@ -49,15 +49,20 @@ module AppProfiler
 
       test "'gcs_upload.app_profiler' event is emitted through ActiveSupport::Notifications" do
         event_emitted = false
-        monotonic_subscribe_or_subscribe("gcs_upload.app_profiler") do |_, _, _, _, tags|
+        subscriber = ActiveSupport::Notifications.monotonic_subscribe("gcs_upload.app_profiler") do |_, _, _, _, tags|
           assert(tags[:file_size].present?)
           event_emitted = true
         end
-        profile = profile_from_stackprof
-        with_mock_gcs_bucket(profile) do
-          uploaded_file = GoogleCloudStorage.upload(profile)
-          assert_equal(uploaded_file.url, TEST_FILE_URL)
-          assert(event_emitted)
+
+        begin
+          profile = profile_from_stackprof
+          with_mock_gcs_bucket(profile) do
+            uploaded_file = GoogleCloudStorage.upload(profile)
+            assert_equal(uploaded_file.url, TEST_FILE_URL)
+            assert(event_emitted)
+          end
+        ensure
+          ActiveSupport::Notifications.unsubscribe(subscriber)
         end
       end
 
@@ -181,14 +186,6 @@ module AppProfiler
         GoogleCloudStorage.stubs(:bucket).returns(bucket)
 
         yield
-      end
-
-      def monotonic_subscribe_or_subscribe(topic, &block)
-        if ActiveSupport::Notifications.respond_to?(:monotonic_subscribe)
-          ActiveSupport::Notifications.monotonic_subscribe(topic, &block)
-        else
-          ActiveSupport::Notifications.subscribe(topic, &block)
-        end
       end
     end
   end

@@ -59,49 +59,45 @@ module AppProfiler
       end
     end
 
-    if AppProfiler.vernier_supported?
-      AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.each do |mode|
-        test "profile mode #{mode} is supported by vernier backend" do
-          assert_profiles_dumped do
-            assert_profiles_uploaded do
-              middleware = AppProfiler::Middleware.new(app_env)
-              middleware.call(mock_request_env(path: "/?profile=#{mode}&backend=vernier"))
-            end
+    AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.each do |mode|
+      test "profile mode #{mode} is supported by vernier backend" do
+        assert_profiles_dumped do
+          assert_profiles_uploaded do
+            middleware = AppProfiler::Middleware.new(app_env)
+            middleware.call(mock_request_env(path: "/?profile=#{mode}&backend=vernier"))
           end
         end
       end
     end
 
-    if AppProfiler.vernier_supported?
-      test "the backend can be toggled between requests" do
-        assert_profiles_dumped(3) do
-          assert_profiles_uploaded do
-            middleware = AppProfiler::Middleware.new(app_env)
-            with_profile_id_reset do
-              middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
-            end
+    test "the backend can be toggled between requests" do
+      assert_profiles_dumped(3) do
+        assert_profiles_uploaded do
+          middleware = AppProfiler::Middleware.new(app_env)
+          with_profile_id_reset do
+            middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
           end
-
-          assert_profiles_uploaded do
-            middleware = AppProfiler::Middleware.new(app_env)
-            with_profile_id_reset do
-              middleware.call(mock_request_env(path: "/?profile=wall&backend=vernier"))
-            end
-          end
-
-          assert_profiles_uploaded do
-            middleware = AppProfiler::Middleware.new(app_env)
-            with_profile_id_reset do
-              middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
-            end
-          end
-
-          json_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::StackprofProfile::FILE_EXTENSION}$/ }
-          vernier_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::VernierProfile::FILE_EXTENSION}$/ }
-          stackprof_profiles = json_profiles - vernier_profiles
-          assert_equal(2, stackprof_profiles.size)
-          assert_equal(1, vernier_profiles.size)
         end
+
+        assert_profiles_uploaded do
+          middleware = AppProfiler::Middleware.new(app_env)
+          with_profile_id_reset do
+            middleware.call(mock_request_env(path: "/?profile=wall&backend=vernier"))
+          end
+        end
+
+        assert_profiles_uploaded do
+          middleware = AppProfiler::Middleware.new(app_env)
+          with_profile_id_reset do
+            middleware.call(mock_request_env(path: "/?profile=wall&backend=stackprof"))
+          end
+        end
+
+        json_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::StackprofProfile::FILE_EXTENSION}$/ }
+        vernier_profiles = tmp_profiles.select { |p| p.to_s =~ /#{AppProfiler::VernierProfile::FILE_EXTENSION}$/ }
+        stackprof_profiles = json_profiles - vernier_profiles
+        assert_equal(2, stackprof_profiles.size)
+        assert_equal(1, vernier_profiles.size)
       end
     end
 
@@ -231,15 +227,13 @@ module AppProfiler
       end
     end
 
-    if AppProfiler.vernier_supported?
-      AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.each do |mode|
-        test "profile mode #{mode} is supported through headers by vernier backend" do
-          assert_profiles_dumped do
-            assert_profiles_uploaded do
-              middleware = AppProfiler::Middleware.new(app_env)
-              opt = { AppProfiler.request_profile_header => "mode=#{mode};backend=vernier" }
-              middleware.call(mock_request_env(opt: opt))
-            end
+    AppProfiler::Backend::VernierBackend::AVAILABLE_MODES.each do |mode|
+      test "profile mode #{mode} is supported through headers by vernier backend" do
+        assert_profiles_dumped do
+          assert_profiles_uploaded do
+            middleware = AppProfiler::Middleware.new(app_env)
+            opt = { AppProfiler.request_profile_header => "mode=#{mode};backend=vernier" }
+            middleware.call(mock_request_env(opt: opt))
           end
         end
       end

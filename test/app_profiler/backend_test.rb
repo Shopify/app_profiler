@@ -5,7 +5,6 @@ require "test_helper"
 module AppProfiler
   class BackendTest < TestCase
     test ".backend= fails to update the backend if already profiling" do
-      skip("Vernier not supported") unless AppProfiler.vernier_supported?
       assert(AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name)
       AppProfiler.start
       assert(AppProfiler.running?)
@@ -16,7 +15,6 @@ module AppProfiler
 
     test ".backend= updates the backend if not already profiling" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless AppProfiler.vernier_supported?
       refute(AppProfiler.running?)
       assert(AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name)
       assert_equal(AppProfiler.backend, AppProfiler::Backend::StackprofBackend.name)
@@ -29,7 +27,6 @@ module AppProfiler
 
     test ".backend= updates the backend while a foreign StackProf session is active" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless AppProfiler.vernier_supported?
       AppProfiler.backend = AppProfiler::Backend::StackprofBackend.name
       AppProfiler.profiler # force @profiler memoization so AppProfiler.running? actually delegates
 
@@ -47,7 +44,6 @@ module AppProfiler
 
     test ".backend= accepts a symbol with the backend name" do
       orig_backend = AppProfiler.backend
-      skip("Vernier not supported") unless AppProfiler.vernier_supported?
       refute(AppProfiler.running?)
       assert(AppProfiler.backend = :stackprof)
       assert_equal(AppProfiler.backend, :stackprof)
@@ -63,7 +59,6 @@ module AppProfiler
         AppProfiler::Backend::StackprofBackend,
         AppProfiler.backend_for(AppProfiler::Backend::StackprofBackend.name),
       )
-      return unless AppProfiler.vernier_supported?
 
       assert_equal(
         AppProfiler::Backend::VernierBackend,

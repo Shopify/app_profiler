@@ -71,8 +71,6 @@ module AppProfiler
       end
 
       test "mixed backend probabilities" do
-        skip("Vernier not supported") unless AppProfiler.vernier_supported?
-
         test_cases = [
           {
             sample_rate: 0.9,

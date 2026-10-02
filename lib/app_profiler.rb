@@ -92,13 +92,7 @@ module AppProfiler
       end
       profiler.run(*args, **kwargs, &block)
     rescue BackendError => e
-      if ActiveSupport.respond_to?(:error_reporter)
-        ActiveSupport.error_reporter.report(e, context: { app_profiler: { backend: backend } })
-      else
-        logger.error(
-          "[AppProfiler.run] exception #{e} configuring backend #{backend}: #{e.message}",
-        )
-      end
+      ActiveSupport.error_reporter.report(e, context: { app_profiler: { backend: backend } })
       yield
       nil # no profile result
     ensure
@@ -166,13 +160,7 @@ module AppProfiler
 
       @profile_sampler_enabled.is_a?(Proc) ? @profile_sampler_enabled.call : @profile_sampler_enabled
     rescue => e
-      if ActiveSupport.respond_to?(:error_reporter)
-        ActiveSupport.error_reporter.report(e)
-      else
-        logger.error(
-          "[AppProfiler.profile_sampler_enabled] exception: #{e}, message: #{e.message}",
-        )
-      end
+      ActiveSupport.error_reporter.report(e)
       false
     end
 
@@ -186,8 +174,7 @@ module AppProfiler
     end
 
     def backend_for(backend_name)
-      if vernier_supported? &&
-          backend_name&.to_sym == AppProfiler::VernierProfile::BACKEND_NAME
+      if backend_name&.to_sym == AppProfiler::VernierProfile::BACKEND_NAME
         AppProfiler::Backend::VernierBackend
       elsif backend_name&.to_sym == AppProfiler::Backend::StackprofBackend.name
         AppProfiler::Backend::StackprofBackend
@@ -198,10 +185,6 @@ module AppProfiler
 
     def backend
       profiler_backend.name
-    end
-
-    def vernier_supported?
-      RUBY_VERSION >= "3.2.1" && defined?(AppProfiler::VernierProfile::BACKEND_NAME)
     end
 
     def profile_header=(profile_header)

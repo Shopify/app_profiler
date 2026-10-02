@@ -2,8 +2,6 @@
 
 require "test_helper"
 
-return unless AppProfiler.vernier_supported?
-
 module AppProfiler
   module Backend
     class VernierBackendTest < TestCase
@@ -163,8 +161,8 @@ module AppProfiler
       end
 
       test ".stop" do
-        Vernier::Collector.any_instance.expects(:start)
-        Vernier::Collector.any_instance.expects(:stop)
+        Vernier::Collector::TimeCollector.any_instance.expects(:start)
+        Vernier::Collector::TimeCollector.any_instance.expects(:stop)
 
         AppProfiler.profiler.start
         AppProfiler.profiler.stop
