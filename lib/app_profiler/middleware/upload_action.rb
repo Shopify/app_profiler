@@ -24,15 +24,15 @@ module AppProfiler
         def append_headers(response, upload:, autoredirect:)
           return unless upload
 
-          response[1][profile_header]      = AppProfiler.profile_url(upload)
+          location = AppProfiler.profile_url(upload)
+          response[1][profile_header] = location if location
           response[1][profile_data_header] = profile_data_url(upload)
 
           return unless autoredirect
 
           # Automatically redirect to profile if autoredirect is true.
-          location = AppProfiler.profile_url(upload)
           if response[0].to_i < 500 && location
-            response[1]["Location"] = location
+            response[1]["location"] = location
             response[0] = 303
           end
         end

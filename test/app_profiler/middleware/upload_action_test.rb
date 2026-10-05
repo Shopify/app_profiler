@@ -35,7 +35,7 @@ module AppProfiler
 
         assert_predicate(@response[1][AppProfiler.profile_header], :present?)
         assert_predicate(@response[1][AppProfiler.profile_data_header], :present?)
-        assert_predicate(@response[1]["Location"], :present?)
+        assert_predicate(@response[1]["location"], :present?)
         assert_equal(@response[0], 303)
       end
 
@@ -45,7 +45,7 @@ module AppProfiler
         assert_predicate(@response[1][AppProfiler.profile_header], :present?)
         assert_predicate(@response[1][AppProfiler.profile_data_header], :present?)
         assert_equal(@response[1][AppProfiler.profile_data_header].class, String)
-        assert_predicate(@response[1]["Location"], :blank?)
+        assert_predicate(@response[1]["location"], :blank?)
         assert_equal(@response[0], 200)
       end
 
@@ -58,7 +58,7 @@ module AppProfiler
         assert_predicate(@response[1][AppProfiler.profile_data_header], :present?)
         assert_predicate(@response[1][AppProfiler.profile_async_header], :blank?)
 
-        assert_predicate(@response[1]["Location"], :present?)
+        assert_predicate(@response[1]["location"], :present?)
         assert_equal(@response[0], 303)
       end
 
@@ -69,8 +69,8 @@ module AppProfiler
           end
         end
 
-        assert_predicate(@response[1]["Location"], :present?)
-        assert_equal("https://foo.com/prefix/#{@profile.file.basename}", @response[1]["Location"])
+        assert_predicate(@response[1]["location"], :present?)
+        assert_equal("https://foo.com/prefix/#{@profile.file.basename}", @response[1]["location"])
       end
 
       test ".call does not redirect if the default formatter is nil" do
@@ -80,7 +80,7 @@ module AppProfiler
           end
         end
 
-        refute_predicate(@response[1]["Location"], :present?)
+        refute_predicate(@response[1]["location"], :present?)
       end
 
       test ".call with async: true" do
