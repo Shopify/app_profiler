@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Support Rails 7.2, 8.0, and 8.1 on Ruby 3.3, 3.4, and 4.0.
-- Test Rack 2.2, 3.0, 3.1, and 3.2.
+- Emit profiling response headers in lowercase for Rack 3 compatibility.
 
 ## [0.6.0] - 2026-04-28
 
