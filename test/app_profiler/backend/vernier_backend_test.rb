@@ -61,6 +61,17 @@ module AppProfiler
         assert_equal(1, profile[:meta][:interval])
       end
 
+      test ".run keeps the shared lock until the profile is built" do
+        profile = BaseProfile.from_vernier(vernier_profile(meta: { mode: :wall }))
+        BaseProfile.expects(:from_vernier).with do |_data|
+          assert_predicate(VernierBackend, :locked?)
+          true
+        end.returns(profile)
+
+        assert_same(profile, AppProfiler.profiler.run(vernier_params) { :completed })
+        refute_predicate(VernierBackend, :locked?)
+      end
+
       test ".run assigns metadata to profiles" do
         profile = AppProfiler.profiler.run(
           vernier_params(metadata: {

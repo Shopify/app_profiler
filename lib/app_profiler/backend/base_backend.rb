@@ -13,8 +13,8 @@ module AppProfiler
 
         duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
 
-        stop
-        results_data = results
+        started = false
+        results_data = stop_and_results
 
         if results_data
           results_data.metadata[:duration] = duration
@@ -36,6 +36,15 @@ module AppProfiler
 
       def results
         raise NotImplementedError
+      end
+
+      def stop_and_results
+        @collecting_results_thread = Thread.current
+        stop
+        results.tap { yield if block_given? }
+      ensure
+        @collecting_results_thread = nil
+        release_run_lock
       end
 
       def running?
@@ -63,6 +72,9 @@ module AppProfiler
       end
 
       def release_run_lock
+        # Keep capture ownership through result collection, including stop overrides.
+        return if @collecting_results_thread == Thread.current
+
         self.class.run_lock.unlock if self.class.run_lock.locked?
       rescue ThreadError
         AppProfiler.logger.warn("[AppProfiler] run lock not released as it was never acquired")

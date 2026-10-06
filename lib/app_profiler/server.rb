@@ -156,9 +156,7 @@ module AppProfiler
         @semaphore.synchronize do
           return false if @profile_running
 
-          @profile_running = true
-
-          AppProfiler.start(**stackprof_args)
+          @profile_running = !!AppProfiler.start(**stackprof_args)
         end
       end
 
