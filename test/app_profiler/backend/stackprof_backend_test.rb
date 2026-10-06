@@ -214,6 +214,30 @@ module AppProfiler
         AppProfiler.stop
       end
 
+      test ".stop discards its cached profiler before a later capture starts" do
+        backend = AppProfiler.profiler
+        release = backend.method(:release_run_lock)
+        replacement = nil
+        params = stackprof_profile
+        AppProfiler.start(params)
+        backend.stubs(:release_run_lock).with do
+          release.call
+          unless StackprofBackend.locked?
+            replacement = AppProfiler.profiler
+            refute_same(backend, replacement)
+            assert(replacement.start(params))
+          end
+          true
+        end
+
+        assert_instance_of(StackprofProfile, AppProfiler.stop)
+        assert_same(replacement, AppProfiler.profiler)
+        assert_predicate(replacement, :running?)
+      ensure
+        replacement&.stop
+        replacement&.results
+      end
+
       test ".stop keeps the shared lock until results are collected" do
         AppProfiler.start(stackprof_profile)
         StackProf.expects(:results).once.with do
