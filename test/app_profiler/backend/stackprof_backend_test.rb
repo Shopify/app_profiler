@@ -61,6 +61,59 @@ module AppProfiler
         assert_equal(1000, profile[:interval])
       end
 
+      test ".run stops its capture only once" do
+        stop = StackProf.method(:stop)
+        StackProf.expects(:stop).once.with do
+          stop.call
+          true
+        end
+
+        AppProfiler.profiler.run(stackprof_profile) { :completed }
+      end
+
+      test ".run releases the lock when result collection raises" do
+        backend = StackprofBackend.new
+        backend.expects(:results).raises(RuntimeError, "collection failed")
+
+        error = assert_raises(RuntimeError) { backend.run(stackprof_profile) { :completed } }
+
+        assert_equal("collection failed", error.message)
+        refute_predicate(StackprofBackend, :locked?)
+        refute_predicate(backend, :running?)
+      ensure
+        StackProf.results
+      end
+
+      test ".run honors backend stop overrides" do
+        backend = StackprofBackend.new
+        stop = backend.method(:stop)
+        backend.expects(:stop).once.with do
+          stop.call
+          true
+        end
+
+        assert_instance_of(StackprofProfile, backend.run(stackprof_profile) { :completed })
+      ensure
+        StackProf.stop
+        StackProf.results
+      end
+
+      test ".run keeps the shared lock until results are collected" do
+        competitor = StackprofBackend.new
+        StackProf.expects(:results).twice.with do
+          assert_predicate(StackprofBackend, :locked?)
+          true
+        end.returns(nil, stackprof_profile)
+
+        assert_instance_of(StackprofProfile, AppProfiler.profiler.run(stackprof_profile) { :completed })
+        StackProf.unstub(:results)
+        assert(competitor.start(stackprof_profile))
+      ensure
+        StackProf.unstub(:results)
+        competitor.stop
+        competitor.results
+      end
+
       test ".run assigns metadata to profiles" do
         profile = AppProfiler.profiler.run(stackprof_profile(metadata: { id: "wowza", context: "bar" })) do
           sleep(0.1)
@@ -158,6 +211,20 @@ module AppProfiler
 
       test ".stop" do
         StackProf.expects(:stop)
+        AppProfiler.stop
+      end
+
+      test ".stop keeps the shared lock until results are collected" do
+        AppProfiler.start(stackprof_profile)
+        StackProf.expects(:results).once.with do
+          assert_predicate(StackprofBackend, :locked?)
+          true
+        end.returns(stackprof_profile)
+
+        assert_instance_of(StackprofProfile, AppProfiler.stop)
+        refute_predicate(StackprofBackend, :locked?)
+      ensure
+        StackProf.unstub(:results)
         AppProfiler.stop
       end
 

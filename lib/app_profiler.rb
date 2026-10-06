@@ -106,8 +106,7 @@ module AppProfiler
     end
 
     def stop
-      profiler.stop
-      profiler.results.tap { clear }
+      profiler.stop_and_results { discard_profiler }
     end
 
     def running?
@@ -257,6 +256,10 @@ module AppProfiler
 
     def clear
       profiler.stop if profiler_backend.locked?
+      discard_profiler
+    end
+
+    def discard_profiler
       @profiler = nil
       @profiler_backend = nil
     end

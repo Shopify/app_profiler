@@ -356,6 +356,18 @@ module AppProfiler
         AppProfiler.stop
       end
 
+      test "app can capture after an external profiling conflict clears" do
+        AppProfiler.start
+        get("/profile?duration=0")
+        assert_equal(409, last_response.status)
+
+        AppProfiler.stop
+        get("/profile?duration=0")
+        assert_equal(200, last_response.status)
+      ensure
+        AppProfiler.stop
+      end
+
       private
 
       def with_profiled_workload(workload, &block)
