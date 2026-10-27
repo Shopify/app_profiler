@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Drop support for Ruby 3.2 and Rails 5.2 through 7.1.
 - Emit profiling response headers in lowercase for Rack 3 compatibility.
+- Remove the unused `mutex_m` runtime dependency.
 
 ## [0.6.0] - 2026-04-28
 

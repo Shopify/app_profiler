@@ -29,7 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency("activesupport", ">= 7.2")
   spec.add_dependency("base64")
   spec.add_dependency("bigdecimal")
-  spec.add_dependency("mutex_m")
   spec.add_dependency("rack")
   spec.add_dependency("stackprof", "~> 0.2")
 
