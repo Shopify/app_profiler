@@ -44,6 +44,7 @@ module AppProfiler
       end
 
       return response unless profile && after_profile(env, profile)
+      return response if profile[:samples] == 0
 
       action.call(
         profile,
