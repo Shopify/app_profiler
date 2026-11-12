@@ -56,8 +56,8 @@ module AppProfiler
     end
 
     def add_otel_instrumentation(env, params)
-      rack_span = OpenTelemetry::Instrumentation::Rack.current_span
-      return unless rack_span.recording?
+      rack_span = AppProfiler.otel_rack_instrumentation&.current_span
+      return unless rack_span&.recording?
 
       metadata = params[:metadata]
       profile_id = if metadata[:id].present?

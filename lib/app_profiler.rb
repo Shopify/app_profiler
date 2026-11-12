@@ -165,12 +165,22 @@ module AppProfiler
     end
 
     def otel_instrumentation_enabled=(value)
-      if value
-        gem("opentelemetry-instrumentation-rack")
-        require("opentelemetry/instrumentation/rack")
-      end
+      load_otel_rack_instrumentation if value
 
       @otel_instrumentation_enabled = value
+    end
+
+    # The OpenTelemetry Rack instrumentation whose server span the middleware adds the profile
+    # attributes to, or nil when none is loaded: opentelemetry-shopify 2.0's
+    # (OpenTelemetry::Shopify::Instrumentation::Rack) when it is defined, otherwise
+    # opentelemetry-instrumentation-rack's (OpenTelemetry::Instrumentation::Rack). Looked up when
+    # it is used, because opentelemetry-shopify may be required after the integration is enabled.
+    def otel_rack_instrumentation # :nodoc:
+      if defined?(::OpenTelemetry::Shopify::Instrumentation::Rack)
+        ::OpenTelemetry::Shopify::Instrumentation::Rack
+      elsif defined?(::OpenTelemetry::Instrumentation::Rack)
+        ::OpenTelemetry::Instrumentation::Rack
+      end
     end
 
     def backend_for(backend_name)
@@ -250,6 +260,24 @@ module AppProfiler
     end
 
     private
+
+    # Loads opentelemetry-instrumentation-rack unless opentelemetry-shopify 2.0 has defined its Rack
+    # instrumentation already. opentelemetry-shopify 2.0 doesn't depend on that gem, so it may be
+    # missing when opentelemetry-shopify is in the bundle, which defines
+    # OpenTelemetry::Shopify::Instrumentation::Rack when it is required (possibly after this).
+    # With neither gem, raises Gem::LoadError.
+    def load_otel_rack_instrumentation
+      return if defined?(::OpenTelemetry::Shopify::Instrumentation::Rack)
+
+      begin
+        gem("opentelemetry-instrumentation-rack")
+      rescue Gem::LoadError
+        raise unless Gem.loaded_specs.key?("opentelemetry-shopify")
+
+        return
+      end
+      require("opentelemetry/instrumentation/rack")
+    end
 
     def profiler_backend
       @profiler_backend ||= Backend::StackprofBackend

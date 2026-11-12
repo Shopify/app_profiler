@@ -131,7 +131,7 @@ Rails.application.config.app_profiler.profile_url_formatter = ->(upload) { "http
 
 Apps using OpenTelemetry can add attributes to traces. This can be useful for correlating profiling data with traces. 
 
-To enable this feature, you can set  `otel_instrumentation_enabled` to `true`. The gem does not require the `opentelemetry` gem to be installed. If the gem is not installed or if it is not loaded, enabling it will raise an `ArgumentError`. By default, the feature is disabled.
+To enable this feature, you can set  `otel_instrumentation_enabled` to `true`. The middleware then adds the profile attributes to the server span of the app's OpenTelemetry Rack instrumentation: `OpenTelemetry::Shopify::Instrumentation::Rack` when the app uses `opentelemetry-shopify` 2.0 or later, otherwise `OpenTelemetry::Instrumentation::Rack` from `opentelemetry-instrumentation-rack`. The gem depends on neither. If neither is in the bundle, enabling it will raise a `Gem::LoadError`. By default, the feature is disabled.
 
 ```ruby
 AppProfiler.otel_instrumentation_enabled = true

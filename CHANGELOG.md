@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Support opentelemetry-shopify 2.0's Rack instrumentation (`OpenTelemetry::Shopify::Instrumentation::Rack`) for the OpenTelemetry integration, without `opentelemetry-instrumentation-rack` in the bundle.
+
 ## [0.7.1] - 2026-10-27
 
 - Remove the unused `mutex_m` runtime dependency.

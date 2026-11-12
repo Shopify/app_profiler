@@ -5,6 +5,8 @@ require "opentelemetry/instrumentation/rack"
 
 module AppProfiler
   class MiddlewareTest < TestCase
+    include OtelHelper
+
     test "requests are not profiled by default" do
       assert_profiles_dumped(0) do
         middleware = AppProfiler::Middleware.new(app_env)
@@ -45,6 +47,70 @@ module AppProfiler
         OpenTelemetry::Instrumentation::Rack.current_span.expects(:add_attributes).never
 
         call_middleware(AppProfiler::Middleware.new(app_env), mock_request_env(path: "/?profile=cpu"))
+      end
+    end
+
+    test "otel attributes are added to the opentelemetry-shopify 2.0 rack span" do
+      rack_span = OpenTelemetry::Trace::Span.new
+      rack_span.stubs(:recording?).returns(true)
+      with_shopify_rack_instrumentation(rack_span) do
+        with_otel_instrumentation_enabled do
+          AppProfiler::ProfileId.stubs(:current).returns("1")
+          OpenTelemetry::Instrumentation::Rack.expects(:current_span).never
+          rack_span.expects(:add_attributes).with do |attributes|
+            assert_equal("1", attributes[AppProfiler::Middleware::OTEL_PROFILE_ID])
+            assert_equal("stackprof", attributes[AppProfiler::Middleware::OTEL_PROFILE_BACKEND])
+            assert_equal("cpu", attributes[AppProfiler::Middleware::OTEL_PROFILE_MODE])
+          end
+
+          assert_profiles_dumped do
+            call_middleware(AppProfiler::Middleware.new(app_env), mock_request_env(path: "/?profile=cpu"))
+          end
+        end
+      end
+    end
+
+    test "otel attributes are added to the opentelemetry-shopify 2.0 rack span without opentelemetry-instrumentation-rack" do
+      rack_span = OpenTelemetry::Trace::Span.new
+      rack_span.stubs(:recording?).returns(true)
+      without_contrib_rack_instrumentation do
+        with_shopify_rack_instrumentation(rack_span) do
+          with_otel_instrumentation_enabled do
+            AppProfiler::ProfileId.stubs(:current).returns("1")
+            rack_span.expects(:add_attributes).with do |attributes|
+              assert_equal("1", attributes[AppProfiler::Middleware::OTEL_PROFILE_ID])
+            end
+
+            assert_profiles_dumped do
+              call_middleware(AppProfiler::Middleware.new(app_env), mock_request_env(path: "/?profile=cpu"))
+            end
+          end
+        end
+      end
+    end
+
+    test "otel attributes are not added when the opentelemetry-shopify 2.0 rack span is not recording" do
+      rack_span = OpenTelemetry::Trace::Span.new
+      rack_span.stubs(:recording?).returns(false)
+      rack_span.expects(:add_attributes).never
+      with_shopify_rack_instrumentation(rack_span) do
+        with_otel_instrumentation_enabled do
+          assert_profiles_dumped do
+            call_middleware(AppProfiler::Middleware.new(app_env), mock_request_env(path: "/?profile=cpu"))
+          end
+        end
+      end
+    end
+
+    test "requests are profiled when otel instrumentation is enabled but no rack instrumentation is loaded" do
+      with_otel_instrumentation_enabled do
+        without_contrib_rack_instrumentation do
+          assert_nil(AppProfiler.otel_rack_instrumentation)
+
+          assert_profiles_dumped do
+            call_middleware(AppProfiler::Middleware.new(app_env), mock_request_env(path: "/?profile=cpu"))
+          end
+        end
       end
     end
 
